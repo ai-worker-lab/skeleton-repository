@@ -2,7 +2,7 @@
 
 - 단계: 티켓
 - 역할: orchestrator
-- 상태: 진행
+- 상태: 완료
 - 종류: 유지보수
 - 우선순위: P1
 - 작성일: 2026-10-01
@@ -13,10 +13,10 @@
 
 ## 수용 기준
 
-- [ ] `api`·`web`·`app`·`infra` 정의가 입력(티켓·`docs/specs` 절·`design/<기능>/handoff.md`·`packages/shared`), 작업 방식, 설계 검토 요청에 대한 의견 범위, 끝내는 조건(`pnpm work:scope`·`pnpm verify`·영역별 확인·변경 기록·`진행 기록`)을 담는다.
-- [ ] `infra`가 worktree별 인스턴스(ADR 0008)와 맞고, 루트 `Makefile`·`ecosystem.config.cjs`·`scripts/` 변경을 `orchestrator` 몫으로 둔다.
-- [ ] `product`·`designer`가 기술 설계 검토에서 맡는 확인 범위를 담는다.
-- [ ] 루트 `CHANGELOGS.md`를 모든 역할이 고칠 수 있어 `packages/`·`design/` 변경을 정책대로 기록해도 `pnpm work:scope`가 실패하지 않는다.
+- [x] `api`·`web`·`app`·`infra` 정의가 입력(티켓·`docs/specs` 절·`design/<기능>/handoff.md`·`packages/shared`), 작업 방식, 설계 검토 요청에 대한 의견 범위, 끝내는 조건(`pnpm work:scope`·`pnpm verify`·영역별 확인·변경 기록·`진행 기록`)을 담는다.
+- [x] `infra`가 worktree별 인스턴스(ADR 0008)와 맞고, 루트 `Makefile`·`ecosystem.config.cjs`·`scripts/` 변경을 `orchestrator` 몫으로 둔다.
+- [x] `product`·`designer`가 기술 설계 검토에서 맡는 확인 범위를 담는다.
+- [x] 루트 `CHANGELOGS.md`를 모든 역할이 고칠 수 있어 `packages/`·`design/` 변경을 정책대로 기록해도 `pnpm work:scope`가 실패하지 않는다.
 
 ## 범위
 
@@ -34,3 +34,5 @@
 ## 진행 기록
 
 - 2026-10-01: 생성.
+- 2026-10-01: 검증. `pnpm verify --fast` 6단계 통과. 임시 clone의 `work/0099` 브랜치(역할 `api`)에서 `packages/shared`·루트 `CHANGELOGS.md` 변경은 `pnpm work:scope` 통과, `Makefile` 변경은 "전용 역할 없음(orchestrator 범위)"으로 실패. 새 OMP 세션의 task 목록에 7개 역할이 새 설명으로 나타남.
+- 2026-10-01: 완료.
