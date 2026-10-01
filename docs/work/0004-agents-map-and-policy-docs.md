@@ -3,7 +3,7 @@
 - 단계: 티켓
 - 역할: orchestrator
 - 선행: 0001, 0002, 0003, 0005
-- 상태: 검증
+- 상태: 완료
 - 종류: 유지보수
 - 우선순위: P1
 - 작성일: 2026-10-01
@@ -38,3 +38,4 @@
 - 2026-10-01: 생성.
 - 2026-10-01: 정책 원문을 `docs/development/repository-policy.md`로 옮기고 루트 `AGENTS.md`를 지도로 다시 씀(47줄·2159자, 이전 79줄·5592자). 영역 `AGENTS.md`·영역/루트 `CHANGELOGS.md`·`RELEASES.md`·`docs/faq.md`의 `AGENTS.md#변경-기록`·`#영역별-적용` 링크를 새 위치로 바꿈. 위임 원칙은 `parallel-work.md`로 옮김. `docs/README.md`·`README.md`·`parallel-work.md`·`local-environment.md`·`environment-secrets.md`·`docs/alm/workflow.md`·`docs/architecture/nextjs-web.md`·`expo-mobile.md`·`apps/app/docs/device-testing.md`를 0001~0003·0005 결과에 맞춤. 실행기 `workspace.branch_prefix` 설정을 없애고 `WORK_BRANCH_PREFIX` 상수로 고정, 주기 작업은 기록이 없으면 기준 시각만 남기도록 바꿈.
 - 2026-10-01: 검증. 주 checkout에서 `pnpm verify --fast` 통과(5단계), `make up` 후 `pnpm verify` 통과(7단계, API 테스트 포함), `pnpm smoke` 5 passed, `pnpm logs api --lines 5` 출력 확인.
+- 2026-10-01: 완료. 선행 0001·0002·0003·0005 완료와 함께 `main`에 통합.

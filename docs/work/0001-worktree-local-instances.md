@@ -2,7 +2,7 @@
 
 - 단계: 티켓
 - 역할: orchestrator
-- 상태: 검증
+- 상태: 완료
 - 종류: 유지보수
 - 우선순위: P1
 - 작성일: 2026-10-01
@@ -49,3 +49,4 @@
   - 변경 스크립트 `pnpm exec eslint`·`pnpm exec prettier --check` 통과, `pnpm work:check` 통과. 임시 clone·worktree·컨테이너·볼륨·PM2는 모두 정리했고 사용자 주 checkout의 `app-skeleton` 서비스·볼륨은 건드리지 않음.
 - 2026-10-01: 통합 검증(주 저장소). 주 checkout(슬롯 0)에서 `make up`, 연결 worktree `/tmp/skel-wt-smoke2`(슬롯 1, project `app-skeleton-skel-wt-smoke2`)에서 `make infra-up api-up web-up`을 동시에 띄워 두 곳 모두 `/api/health/ready` 200, `pnpm smoke` 5 passed. worktree에서 `pnpm verify` 7단계 통과(테스트가 슬롯 1 DB 사용). worktree `make instance-destroy CONFIRM=1`이 컨테이너·볼륨을 지우고 주 checkout에서는 거부됨.
   - 발견·수정: 주 checkout의 `.local/instance.env`(슬롯 0)가 복사된 연결 worktree는 그 값을 그대로 써서 주 인스턴스의 Compose project·포트와 겹쳤다. `ensureInstance`가 연결 worktree의 슬롯 0 설정을 버리고 새 슬롯을 받도록 고침(`scripts/lib/instance.mjs`). 복사 후 `pnpm instance`가 슬롯 1을 받는 것을 확인.
+- 2026-10-01: 완료. 수용 기준과 통합 검증을 확인했고 `main`에 통합. 사용자가 다음 단계(템플릿 준비, 0006)를 요청.

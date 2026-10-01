@@ -2,7 +2,7 @@
 // 템플릿 자리표시자(이름·저장소·포트)를 새 서비스 값으로 바꾸고 검사를 실행합니다. 한 번만 실행합니다.
 // 사용법: node scripts/init-project.mjs --name my-service [--repo owner/name] [--port-offset 0] [--no-verify]
 import { execFileSync } from 'node:child_process';
-import { readFileSync, rmSync, writeFileSync } from 'node:fs';
+import { existsSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { parseArgs } from 'node:util';
@@ -43,9 +43,13 @@ const packageJson = JSON.parse(readFileSync(join(root, 'package.json'), 'utf8'))
 if (packageJson.name !== PLACEHOLDER.name) fail(`이미 초기화된 저장소입니다(package.json name: ${packageJson.name}).`);
 
 const snake = name.replaceAll('-', '_');
-const files = execFileSync('git', ['ls-files'], { cwd: root, encoding: 'utf8' })
-  .split('\n')
-  .filter((file) => file && file !== self && !BINARY.test(file));
+let tracked;
+try {
+  tracked = execFileSync('git', ['ls-files'], { cwd: root, encoding: 'utf8', stdio: ['ignore', 'pipe', 'ignore'] });
+} catch {
+  fail('git 저장소가 아닙니다. 복사한 폴더라면 먼저 `git init && git add -A`로 파일을 추적시킨 뒤 다시 실행하세요.');
+}
+const files = tracked.split('\n').filter((file) => file && file !== self && !BINARY.test(file));
 
 let changed = 0;
 for (const file of files) {
@@ -89,8 +93,20 @@ writeFileSync(
 );
 
 console.log(`init-project: ${changed}개 파일을 바꿨습니다. 이름 ${name}, 저장소 ${repo}, 포트 오프셋 ${offset}.`);
-// 템플릿 이름·포트로 만든 인스턴스 설정은 낡았으므로 지웁니다. 다음 make·pnpm instance가 새 값으로 다시 만듭니다.
+// 템플릿 이름·포트로 만든 인스턴스 설정과 로컬 설정 파일은 낡았으므로 지웁니다. 다음 make·pnpm instance가 새 값으로 다시 만듭니다.
 rmSync(join(root, '.local/instance.env'), { force: true });
+const templateValue = new RegExp(
+  [PLACEHOLDER.name, PLACEHOLDER.snake, ...Object.keys(PORTS)]
+    .map((value) => `(?<![\\w-])${value}(?![\\w-])`)
+    .join('|'),
+);
+for (const local of ['infra/local/.env', 'apps/api/.env', 'apps/web/.env.local', 'apps/app/.env']) {
+  const path = join(root, local);
+  if (existsSync(path) && templateValue.test(readFileSync(path, 'utf8'))) {
+    rmSync(path);
+    console.log(`init-project: 템플릿 값이 든 ${local}을 지웠습니다. make up이 새 값으로 다시 만듭니다.`);
+  }
+}
 
 if (!values['no-verify']) {
   const run = (args) => {
@@ -99,7 +115,7 @@ if (!values['no-verify']) {
   };
   try {
     run(['install']);
-    for (const script of ['tokens:check', 'work:check', 'lint', 'typecheck', 'build']) run([script]);
+    for (const args of [['verify', '--fast'], ['build']]) run(args);
   } catch {
     fail(
       '검사가 실패했습니다. 출력을 확인해 고친 뒤 같은 명령을 직접 실행하세요. 초기화 스크립트는 지우지 않았습니다.',
@@ -108,6 +124,8 @@ if (!values['no-verify']) {
 }
 
 rmSync(join(root, self));
-console.log(
-  `\ninit-project: 완료했습니다. ${self}를 지웠습니다. README 첫 부분에 서비스 소개를 적고 변경을 커밋하세요.`,
-);
+console.log(`
+init-project: 완료했습니다. ${self}를 지웠습니다. 다음 순서로 시작하세요.
+  1. README 첫 부분에 서비스 소개를 적고 변경을 커밋합니다.
+  2. make up && pnpm verify && pnpm smoke   # 로컬 인스턴스 기동과 전체 검증
+  3. docs/work/TEMPLATE.md로 첫 work item을 만들고 pnpm work:next로 확인합니다.`);

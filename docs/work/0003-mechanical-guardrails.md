@@ -2,7 +2,7 @@
 
 - 단계: 티켓
 - 역할: orchestrator
-- 상태: 검증
+- 상태: 완료
 - 종류: 유지보수
 - 우선순위: P1
 - 작성일: 2026-10-01
@@ -36,3 +36,4 @@
 - 2026-10-01: `pnpm docs:check` 실행 시 남은 오류는 루트 `AGENTS.md` 3500자 예산 초과(5592자) 1건뿐이며 0004에서 축소합니다. 임시 미추적 문서로 깨진 링크, 없는 anchor, 고아 문서, ADR 번호 불일치·날짜 형식·허용 외 상태·`대체됨` 링크 누락·`범위` 누락·폴더 내 번호 중복, 역순·중복 `CHANGELOGS.md` 날짜, 41줄 영역 `AGENTS.md`가 각각 오류로 보고되고 인라인 코드·코드 블록·외부 링크·중복 제목 anchor(`-1`)·디렉터리 링크는 오류가 아님을 확인한 뒤 삭제했습니다.
 - 2026-10-01: `pnpm exec eslint .` 통과. 임시 파일로 web의 `@nestjs/common`·`../../api/src/...`·`@app-skeleton/app/...`, shared의 `react`·`pg`, app의 `next/link`·`@nestjs/common`, api의 `react`·`react-dom/client`가 경계 메시지로 실패하고 web의 `../lib/api/server`는 통과함을 확인 후 삭제했습니다. `eslint --print-config`로 앱 파일에서 Expo 규칙과 경계 규칙이 병합됨을 확인했습니다.
 - 2026-10-01: `/tmp` 임시 clone의 `work/0001-x` 브랜치에서 0001 역할을 `web`으로 바꾸고 `apps/web/**` 변경은 `pnpm work:scope` 통과, `Makefile` 변경과 `infra/README.md` 이름 변경(양쪽 경로 보고)은 exit 1로 실패, `WORK_BRANCH=work/0003-y`가 브랜치보다 우선함을 확인 후 clone을 삭제했습니다. `pnpm work:check` 통과.
+- 2026-10-01: 완료. 통합 후 `pnpm docs:check`·`pnpm verify --fast` 통과, 실행기 종단 실행에서 `pnpm work:scope 0006` 통과를 확인했고 `main`에 통합.

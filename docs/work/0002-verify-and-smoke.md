@@ -2,7 +2,7 @@
 
 - 단계: 티켓
 - 역할: orchestrator
-- 상태: 검증
+- 상태: 완료
 - 종류: 유지보수
 - 우선순위: P1
 - 작성일: 2026-10-01
@@ -43,3 +43,4 @@
   - 서비스 중지 상태·주소 없음·Chromium 없음(`PLAYWRIGHT_BROWSERS_PATH` 빈 디렉터리)에서 각각 `make up`·`pnpm logs`·`pnpm exec playwright install chromium` 안내와 종료 코드 1.
   - CI YAML은 `actionlint`가 없어 `yaml` 패키지로 파싱해 job·단계 구성을 확인. smoke job의 시작·준비 대기 셸 단계를 로컬 포트로 그대로 실행 후 `pnpm smoke` 5개 통과. GitHub Actions에서의 실제 실행은 아직 확인하지 않았습니다.
   - 임시 컨테이너·프로세스·`.local` 산출물 정리.
+- 2026-10-01: 완료. 주 checkout·worktree에서 `pnpm verify`·`pnpm smoke` 통과를 확인했고 `main`에 통합. CI는 GitHub Actions에서 아직 실행하지 않음.

@@ -1,20 +1,36 @@
 # app-skeleton
 
 <!-- template:start -->
-서비스를 시작하기 위한 모노레포 뼈대입니다. pnpm workspace에 NestJS API, Next.js App Router 웹, Expo + React Native 앱, 공유 TypeScript 계약, 디자인 토큰, PostgreSQL·Valkey 로컬 인프라와 개발·운영 규칙(work item, ADR, CI)을 담고 있습니다. 제품 기능은 없습니다.
+서비스를 시작하기 위한 에이전트 친화 모노레포 뼈대입니다. pnpm workspace에 NestJS API, Next.js App Router 웹, Expo + React Native 앱, 공유 TypeScript 계약, 디자인 토큰, PostgreSQL·Valkey 로컬 인프라와 개발·운영 규칙(work item, ADR, CI), 그리고 코딩 에이전트가 혼자 검증하고 일할 수 있는 하네스(worktree별 로컬 인스턴스, `pnpm verify`·`pnpm smoke`, 규칙 검사, work item 실행기)를 담고 있습니다. 제품 기능은 없습니다.
 
 ## 이 템플릿으로 새 서비스 만들기
 
-1. GitHub에서 이 저장소를 템플릿으로 새 저장소를 만들고 clone합니다.
+필요한 도구는 아래 [요구사항](#요구사항)을 봅니다.
+
+1. 새 저장소를 만듭니다. GitHub에서는 이 저장소의 **Use this template**로 만들어 clone합니다. 템플릿 기능을 쓸 수 없으면 이력 없이 복사합니다.
+
+   ```sh
+   git clone --depth 1 <이 저장소 URL> my-service && cd my-service
+   rm -rf .git && git init -b main && git add -A
+   ```
+
 2. 이름과 로컬 포트를 바꿉니다. 이름은 소문자 kebab-case이며 패키지 범위(`@<이름>/*`), DB·Compose·PM2 이름에 쓰입니다.
 
    ```sh
+   corepack enable
    node scripts/init-project.mjs --name my-service --repo ai-worker-lab/my-service --port-offset 0
    ```
 
-   `--port-offset`은 같은 PC에서 여러 서비스를 함께 실행할 때 겹치지 않도록 기본 포트(API 3000, 웹 5173, Expo 8081, PostgreSQL 5432, Valkey 6379)에 더할 값입니다. 스크립트는 바꾼 뒤 `pnpm install`과 `tokens:check`·`work:check`·`lint`·`typecheck`·`build`를 실행해 결과를 확인합니다.
-3. 스크립트는 이 안내 블록을 서비스 소개 자리로 바꾸고 `CHANGELOGS.md`에 시작 기록을 남긴 뒤 스스로를 지웁니다. README 첫 부분에 서비스 소개를 적습니다.
-4. 첫 work item(예: MVP 범위)을 [docs/work/](docs/work/README.md)에 만들고 `pnpm work:check`로 확인합니다.
+   `--port-offset`은 같은 PC에서 여러 서비스를 함께 실행할 때 겹치지 않도록 기본 포트(API 3000, 웹 5173, Expo 8081, PostgreSQL 5432, Valkey 6379)에 더할 값입니다. 스크립트는 이름·저장소·포트를 바꾸고, 템플릿 값으로 만든 로컬 설정(`.local/instance.env`, `.env` 파일)을 지운 뒤 `pnpm install`, `pnpm verify --fast`, `pnpm build`로 결과를 확인합니다. 이 안내 블록을 서비스 소개 자리로 바꾸고 `CHANGELOGS.md`에 시작 기록을 남긴 뒤 스스로를 지웁니다.
+3. 실행과 검증을 확인하고 첫 커밋을 만듭니다.
+
+   ```sh
+   pnpm exec playwright install chromium   # smoke용 브라우저, 처음 한 번
+   make up && pnpm verify && pnpm smoke
+   git add -A && git commit -m "my-service로 초기화"
+   ```
+
+4. README 첫 부분에 서비스 소개를 적고, 첫 work item(예: MVP 범위)을 [docs/work/TEMPLATE.md](docs/work/TEMPLATE.md)로 만들어 `pnpm work:check`·`pnpm work:next`로 확인합니다. 에이전트에게 맡길 때는 티켓을 `준비`로 두고 `pnpm work:run`을 띄우거나([work item 실행기](docs/development/agent-runner.md)), 대화형 세션에서 티켓 경로를 알려 줍니다. 에이전트는 [AGENTS.md](AGENTS.md)를 지도로 씁니다.
 
 <!-- template:end -->
 
