@@ -62,8 +62,15 @@ export function readInstanceEnv(root) {
 export function ensureInstance(root) {
   const override = process.env.PORT_SLOT || undefined;
   let env = readInstanceEnv(root);
-  if (!env || INSTANCE_KEYS.some((key) => !(key in env)) || (override !== undefined && override !== env.PORT_SLOT)) {
-    env = createInstance(root, override, env);
+  // 주 checkout의 .local을 복사해 온 연결 worktree가 슬롯 0(주 인스턴스의 Compose project·포트)을 같이 쓰지 않게 다시 만듭니다.
+  const copiedMain = env?.PORT_SLOT === '0' && override === undefined && !isMainCheckout(root);
+  if (
+    !env ||
+    copiedMain ||
+    INSTANCE_KEYS.some((key) => !(key in env)) ||
+    (override !== undefined && override !== env.PORT_SLOT)
+  ) {
+    env = createInstance(root, override, copiedMain ? null : env);
     mkdirSync(join(root, '.local'), { recursive: true });
     writeFileSync(
       join(root, INSTANCE_FILE),
