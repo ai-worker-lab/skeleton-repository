@@ -12,3 +12,5 @@ coverage/
 design/.file-versions/
 .local/
 .playwright-mcp
+test-results/
+playwright-report/

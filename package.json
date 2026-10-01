@@ -13,6 +13,14 @@
     "tokens:check": "pnpm --filter @app-skeleton/design-tokens check",
     "work": "node scripts/work.mjs",
     "work:check": "node scripts/work.mjs --check",
+    "work:next": "node scripts/work.mjs --next",
+    "work:scope": "node scripts/work-scope.mjs",
+    "work:run": "node scripts/runner.mjs",
+    "instance": "node scripts/instance.mjs",
+    "logs": "node scripts/logs.mjs",
+    "verify": "node scripts/verify.mjs",
+    "smoke": "node scripts/smoke.mjs",
+    "docs:check": "node scripts/docs-check.mjs",
     "test": "pnpm --filter @app-skeleton/shared build && pnpm -r --if-present test",
     "lint": "pnpm --filter @app-skeleton/shared build && eslint . && prettier --check .",
     "format": "prettier --write . && pnpm --filter @app-skeleton/shared build && eslint . --fix",
@@ -22,6 +30,7 @@
   "devDependencies": {
     "@eslint/js": "^9.39.5",
     "@next/eslint-plugin-next": "^15.5.27",
+    "@playwright/test": "^1.63.0",
     "eslint": "^9.39.5",
     "eslint-config-expo": "^10.0.0",
     "eslint-config-prettier": "^10.1.8",
@@ -29,6 +38,7 @@
     "globals": "^17.12.0",
     "pm2": "6.0.14",
     "prettier": "^3.9.9",
-    "typescript-eslint": "^8.71.0"
+    "typescript-eslint": "^8.71.0",
+    "yaml": "^2.9.1"
   }
 }
