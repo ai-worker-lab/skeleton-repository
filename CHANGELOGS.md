@@ -6,6 +6,7 @@
 
 ## 2026-10-01
 
+- 역할 정의 정비: `api`·`web`·`app`·`infra` 정의를 입력(티켓·설계 문서·디자인 인계·계약)·작업 방식·설계 검토·끝내는 조건 틀로 다시 씀, `infra`의 공용 포트·DB 공유 서술을 worktree별 인스턴스에 맞게 고침, `product`·`designer`의 설계 검토 범위 추가, `pnpm work:scope`가 루트 `CHANGELOGS.md`를 모든 역할에 허용. 근거 `docs/work/0010-role-definitions.md`.
 - 기술 설계와 티켓 분해: [기술 설계와 티켓 분해](docs/specs/README.md)(디자인 기술 검토 → 설계 문서 → 역할별 검토 → 사용자 승인 → 계약·병렬 구현·통합 티켓), [설계 템플릿](docs/specs/TEMPLATE.md), `technical-design` 스킬(`orchestrator`가 자동으로 읽음), 디자인 흐름에 기술 검토 단계 추가, ALM 2단계·제품 탐색·작업 관리·병렬 개발·`WORKFLOW.md`·`AGENTS.md` 갱신. 근거 `docs/work/0009-technical-design-decomposition.md`.
 - PRD 전 탐색 조사 절차: [제품 탐색과 PRD](docs/product/README.md)(유사 서비스 벤치마킹 → 기술 조사 → PRD 확정 → 구현 티켓), PRD·벤치마킹·기술 조사 템플릿, `product-discovery` 스킬(`product`가 자동으로 읽음), `orchestrator`의 기술 조사 담당·웹 검색 도구, `pnpm docs:check`의 조사 문서 `확인일`·출처 검사, ALM 2단계·`AGENTS.md`·README 안내 갱신. 근거 `docs/work/0008-product-discovery-research.md`.
 - OpenDesign 연결 강화: `pnpm tokens:generate`가 OpenDesign 디자인 시스템 패키지(`design/system/tokens.css`·`manifest.json`, 원본 `packages/design-tokens/src/opendesign.json`)를 생성하고 공통 슬롯 누락·슬롯 색 리터럴을 거부, `design/system/DESIGN.md` 작성, 경고 색 토큰(`color.status.warning`, `-subtle`) 추가. `pnpm design:sync`(Workspace에 묶어 published로 설치), `pnpm design:check`(색 리터럴·`handoff.md`·`od lint`, `pnpm verify`에 포함), `pnpm od`(로컬 od CLI). `designer`가 `opendesign` 스킬(`.omp/skills/opendesign/`)을 자동으로 읽음. [OpenDesign 사용 기준](design/docs/opendesign.md), [디자인 ADR 0001](design/docs/adr/0001-opendesign-integration.md). 근거 `docs/work/0007-opendesign-integration.md`.

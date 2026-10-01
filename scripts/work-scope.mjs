@@ -5,7 +5,9 @@ import { dirname, resolve } from 'node:path';
 import { loadAgents } from './lib/agents.mjs';
 import { branchItemId, loadWorkItems } from './lib/work-items.mjs';
 
-const ALWAYS_ALLOWED = ['docs/work/**'];
+// work item과 루트 변경 기록은 모든 역할이 고칩니다. 전용 로그가 없는 영역(packages/, design/ 등)의 변경은 루트
+// CHANGELOGS.md에 기록하는 것이 정책이기 때문입니다(docs/development/repository-policy.md#변경-기록).
+const ALWAYS_ALLOWED = ['docs/work/**', 'CHANGELOGS.md'];
 const USAGE = '사용법: pnpm work:scope [NNNN] [--base <ref>]';
 
 const root = resolve(dirname(new URL(import.meta.url).pathname), '..');
