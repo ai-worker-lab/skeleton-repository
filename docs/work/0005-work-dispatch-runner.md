@@ -51,3 +51,6 @@
   - 기본 `agent.command` 형식(`omp -p --approval-mode yolo --no-session --max-time "${WORK_TIMEOUT_MINUTES}m" "@$WORK_PROMPT_FILE"`)을 짧은 프롬프트 파일로 실제 실행해 응답과 종료 코드 0 확인. Codex·Claude Code 예시는 `--help`로 플래그만 확인.
   - 브랜치 삭제로 점유가 풀리는 것: worktree 제거와 `git branch -D` 뒤 `work:next`에 다시 나타남.
   - 이 checkout에서 `pnpm work:check` 통과, 변경한 `.mjs`의 `eslint`·`prettier --check` 통과.
+- 2026-10-01: 통합 후 변경과 실제 종단 실행. `workspace.branch_prefix` 설정을 없애고 `WORK_BRANCH_PREFIX`(`work/`) 상수로 고정(`scripts/lib/work-items.mjs`; `work:next`·`work:scope`·실행기가 같은 값 사용). 주기 작업은 기록이 없으면 기준 시각만 남기고 간격 뒤 처음 실행.
+  - 주 저장소에서 `pnpm work:run --dry-run`이 착수 없이 끝나고 `.local/runner`를 만들지 않음.
+  - 저장소 clone(`/tmp`, origin 제거)에 web 역할 시험 티켓 0006(문서 변경)을 `준비`로 커밋하고, 저장소 기본 `WORKFLOW.md` 그대로 `pnpm work:run --once` 실행: 실제 `after_create`(`pnpm install … && pnpm instance`) → OMP 에이전트(`omp -p …`) 실행 → 2분 후 `handoff state=검증 exit=0`. 에이전트가 `진행` 커밋 → `apps/web/README.md`·`apps/web/CHANGELOGS.md` 수정 → `pnpm work:scope 0006`·`pnpm verify --fast`·`make infra-up` 후 `pnpm verify` 통과를 진행 기록에 남기고 `검증` 커밋. 이후 `work:next --all`이 0006을 `점유 브랜치 work/0006-web-readme-verify`로 제외. worktree 인스턴스 `make instance-destroy CONFIRM=1`과 clone 삭제로 정리.

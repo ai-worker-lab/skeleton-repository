@@ -37,7 +37,7 @@ checkout마다 인스턴스 설정 `.local/instance.env`(Git 제외)가 Compose 
 | Valkey | `16379` | `127.0.0.1:16379` |
 
 - 주 checkout은 슬롯 0으로 위 포트와 Compose project `app-skeleton`을 씁니다. 각 값은 기본 포트(API 3000, 웹 5173, Expo 8081, PostgreSQL 5432, Valkey 6379)에 같은 오프셋을 더한 것으로, 같은 PC의 다른 서비스와 겹치지 않게 정합니다.
-- 연결된 git worktree는 다른 worktree가 쓰지 않는 가장 작은 슬롯 k(1~20)를 받아 모든 포트에 100×k를 더하고, Compose project `app-skeleton-<worktree 디렉터리 이름>`과 그 project의 별도 볼륨을 씁니다. 슬롯은 `PORT_SLOT=<번호> pnpm instance`로 바꿀 수 있습니다(Compose project는 유지). 이미 있는 로컬 `.env` 파일의 포트는 바뀌지 않으며, `make`로 띄운 서버는 인스턴스 값을 프로세스 환경으로 받아 파일 값보다 우선합니다.
+- 연결된 git worktree는 다른 worktree가 쓰지 않는 가장 작은 슬롯 k(1~20)를 받아 모든 포트에 100×k를 더하고, Compose project `app-skeleton-<worktree 디렉터리 이름>`과 그 project의 별도 볼륨을 씁니다. 주 checkout에서 복사해 온 슬롯 0 설정은 버리고 새 슬롯을 받습니다. 슬롯은 `PORT_SLOT=<번호> pnpm instance`로 바꿀 수 있습니다(Compose project는 유지). 이미 있는 로컬 `.env` 파일의 포트는 바뀌지 않으며, `make`로 띄운 서버는 인스턴스 값을 프로세스 환경으로 받아 파일 값보다 우선합니다.
 - 웹 `start`는 `next dev --port ${WEB_PORT:-15173}`, 앱 `start`·`android`·`ios`는 `expo start --port ${EXPO_PORT:-18081}`이므로 변수 없이 직접 실행하면 슬롯 0 포트를 씁니다.
 - worktree를 지우기 전에 `make instance-destroy CONFIRM=1`로 그 인스턴스의 컨테이너·데이터 볼륨·PM2 프로세스를 지웁니다. 주 checkout(슬롯 0, project `app-skeleton`)에서는 거부하며, 주 checkout은 `make down`으로 멈추고 볼륨을 보존합니다.
 
