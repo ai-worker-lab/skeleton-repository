@@ -1,0 +1,57 @@
+# PR과 main push에서 저장소 검사를 실행합니다. 기준: docs/development/local-environment.md#ci
+name: CI
+
+on:
+  pull_request:
+    branches: [main]
+  push:
+    branches: [main]
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  check:
+    name: check (Node ${{ matrix.node }})
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    strategy:
+      fail-fast: false
+      matrix:
+        # 지원하는 Node.js LTS 메이저 버전. 로컬 개발 기본값은 .nvmrc입니다.
+        node: [22, 24, 26]
+    services:
+      postgres:
+        image: postgres:17-alpine
+        env:
+          POSTGRES_DB: app_skeleton
+          POSTGRES_USER: app_skeleton
+          POSTGRES_PASSWORD: app-skeleton-ci-only
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U app_skeleton -d app_skeleton"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 10
+    env:
+      TEST_DATABASE_URL: postgresql://app_skeleton:app-skeleton-ci-only@127.0.0.1:5432/app_skeleton
+    steps:
+      - uses: actions/checkout@v7
+      # pnpm 버전은 package.json의 packageManager를 읽습니다.
+      - uses: pnpm/action-setup@v6
+      - uses: actions/setup-node@v7
+        with:
+          node-version: ${{ matrix.node }}
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm tokens:check
+      - run: pnpm work:check
+      - run: pnpm lint
+      - run: pnpm typecheck
+      - run: pnpm build
+      - run: pnpm test

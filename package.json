@@ -1,0 +1,34 @@
+{
+  "name": "app-skeleton",
+  "private": true,
+  "packageManager": "pnpm@10.10.0",
+  "scripts": {
+    "dev:app": "pnpm --filter @app-skeleton/app start",
+    "dev:web": "pnpm --filter @app-skeleton/web start",
+    "dev:api": "pnpm --filter @app-skeleton/api start:dev",
+    "db:up": "make infra-up",
+    "db:down": "make infra-down",
+    "db:logs": "make infra-logs",
+    "tokens:generate": "pnpm --filter @app-skeleton/design-tokens generate",
+    "tokens:check": "pnpm --filter @app-skeleton/design-tokens check",
+    "work": "node scripts/work.mjs",
+    "work:check": "node scripts/work.mjs --check",
+    "test": "pnpm --filter @app-skeleton/shared build && pnpm -r --if-present test",
+    "lint": "pnpm --filter @app-skeleton/shared build && eslint . && prettier --check .",
+    "format": "prettier --write . && pnpm --filter @app-skeleton/shared build && eslint . --fix",
+    "build": "pnpm --filter @app-skeleton/design-tokens check && pnpm --filter @app-skeleton/shared build && pnpm --filter @app-skeleton/api build && pnpm --filter @app-skeleton/web build",
+    "typecheck": "pnpm --filter @app-skeleton/design-tokens check && pnpm --filter @app-skeleton/shared build && pnpm --filter @app-skeleton/api typecheck && pnpm --filter @app-skeleton/app typecheck && pnpm --filter @app-skeleton/web typecheck"
+  },
+  "devDependencies": {
+    "@eslint/js": "^9.39.5",
+    "@next/eslint-plugin-next": "^15.5.27",
+    "eslint": "^9.39.5",
+    "eslint-config-expo": "^10.0.0",
+    "eslint-config-prettier": "^10.1.8",
+    "eslint-plugin-react-hooks": "^7.1.1",
+    "globals": "^17.12.0",
+    "pm2": "6.0.14",
+    "prettier": "^3.9.9",
+    "typescript-eslint": "^8.71.0"
+  }
+}
