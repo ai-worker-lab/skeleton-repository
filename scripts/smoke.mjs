@@ -21,7 +21,7 @@ if (!apiUrl || !webUrl) {
   fail(
     'smoke 대상 주소(API_URL·WEB_URL)가 없습니다.\n' +
       '- 이 작업공간의 서비스를 띄우세요: make up (주소는 인스턴스 설정 .local/instance.env를 씁니다. 설정 확인: pnpm instance)\n' +
-      '- 다른 주소를 검사하려면: API_URL=http://127.0.0.1:13000 WEB_URL=http://127.0.0.1:15173 pnpm smoke',
+      '- 다른 주소를 검사하려면: API_URL=http://127.0.0.1:<API 포트> WEB_URL=http://127.0.0.1:<웹 포트> pnpm smoke (포트: pnpm instance)',
   );
 }
 

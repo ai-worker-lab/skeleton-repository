@@ -14,7 +14,7 @@
 ## 절차
 
 1. 루트 `AGENTS.md`, [문서 색인](../README.md), [작업 관리](../work/README.md)를 읽습니다.
-2. `pnpm docs:check`를 실행해 링크·anchor·진입점 연결·ADR 형식·변경 기록 순서·`AGENTS.md` 크기 오류를 확인합니다.
+2. `pnpm docs:check`를 실행해 링크·anchor·진입점 연결·ADR 형식과 work item 링크·변경 기록 순서·`AGENTS.md` 크기·조사 문서 확인일과 출처 오류를 확인합니다.
 3. 문서의 서술을 실행 가능한 원본과 대조합니다. 명령은 `package.json` scripts와 `Makefile`, 포트·환경변수는 각 `.env.example`과 `infra/local/`, 실행기 설정은 `WORKFLOW.md`, 역할 소유 경로는 `.omp/agents/*.md`의 `owns`, CI는 `.github/workflows/`가 기준입니다. 근거를 찾을 수 없는 서술은 문제로 봅니다.
 4. 판단이 필요 없는 수정(깨진 링크, 바뀐 명령·경로·포트, 삭제된 기능의 안내, 색인 누락)은 직접 고칩니다. 수정은 work item과 함께 합니다. `docs/work/TEMPLATE.md` 형식으로 다음 빈 번호에 `역할: orchestrator`, `종류: 유지보수`, `우선순위: P3 (AI 제안)` 티켓을 만들고, 고친 내용과 근거를 `진행 기록`에 적고, 마칠 때 상태를 `검증`으로 둡니다. 이 브랜치 이름에는 번호가 없으므로 범위 검사는 `pnpm work:scope <번호>`로 실행합니다.
 5. 판단이 필요한 문제(정책 사이의 모순, 제품 서술, 결정이 필요한 문서 삭제, 대체 여부가 불분명한 ADR)는 고치지 않고 문제마다 `상태: 분류 대기`, 우선순위 뒤 `(AI 제안)`인 work item으로 등록합니다. 근거 파일과 위치, 선택지를 적습니다.

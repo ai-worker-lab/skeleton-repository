@@ -10,6 +10,7 @@ polling:
   interval_seconds: 60
 workspace:
   # root를 생략하면 ../<저장소 디렉터리 이름>-worktrees 입니다.
+  # base는 새 작업 브랜치의 시작점이며, pnpm work:scope가 --base 없이 비교할 기준 브랜치이기도 합니다.
   base: main
   push: false
 hooks:

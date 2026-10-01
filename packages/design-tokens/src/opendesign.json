@@ -51,7 +51,7 @@
     "--radius-pill": "9999px",
     "--elev-flat": "none",
     "--elev-ring": "0 0 0 1px var(--border)",
-    "--elev-raised": "0 8px 24px var(--ds-color-overlay-shadow)",
+    "--elev-raised": "0 8px 24px {color.overlay.shadow}",
     "--focus-ring": "0 0 0 3px var(--accent)",
     "--motion-fast": "150ms",
     "--motion-base": "200ms",

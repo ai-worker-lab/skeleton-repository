@@ -7,7 +7,7 @@ services:
       POSTGRES_USER: ${POSTGRES_USER:-app_skeleton}
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-app-skeleton-local-only}
     ports:
-      - '127.0.0.1:${POSTGRES_PORT:-15432}:5432'
+      - '127.0.0.1:${POSTGRES_PORT:?POSTGRES_PORT가 없습니다. 저장소 루트에서 make infra-up으로 실행하거나 pnpm instance가 만든 infra/local/.env를 --env-file로 넘기세요}:5432'
     volumes:
       - postgres_data:/var/lib/postgresql/data
     healthcheck:
@@ -21,7 +21,7 @@ services:
     restart: unless-stopped
     command: ['valkey-server', '--appendonly', 'yes']
     ports:
-      - '127.0.0.1:${VALKEY_PORT:-16379}:6379'
+      - '127.0.0.1:${VALKEY_PORT:?VALKEY_PORT가 없습니다. 저장소 루트에서 make infra-up으로 실행하거나 pnpm instance가 만든 infra/local/.env를 --env-file로 넘기세요}:6379'
     volumes:
       - valkey_data:/data
     healthcheck:

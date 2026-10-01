@@ -28,7 +28,7 @@
 검사 항목([`tests/smoke/smoke.spec.ts`](../../tests/smoke/smoke.spec.ts)):
 
 - API liveness `GET /api/health`가 200과 `{ status: 'ok' }`, readiness `GET /api/health/ready`가 200과 `{ status: 'ready' }`. 경로와 응답 형식의 기준은 [`packages/shared/src/index.ts`](../../packages/shared/src/index.ts)입니다.
-- 웹 첫 화면(`apps/web/src/app/(public)/page.tsx`)이 200으로 열리고 제목·`h1`·`API·DB 상태: 정상` 문구가 보이며 브라우저 콘솔 오류와 페이지 예외가 없음.
+- 웹 첫 화면(`/`)이 200으로 열리고 보이는 내용이 있으며 브라우저 콘솔 오류와 페이지 예외가 없음. 특정 화면 문구는 검사하지 않으므로 첫 화면을 바꾸는 기능 티켓도 smoke를 고치지 않고 통과합니다. 화면별 시나리오와 웹→API 연결은 기능의 통합 티켓이 E2E로 확인합니다([기술 설계와 티켓 분해](../specs/README.md)).
 - 1280px·390px 폭에서 `document.documentElement.scrollWidth <= clientWidth`(가로 넘침 없음).
 
 실패한 테스트의 trace는 `.local/smoke/test-results/`에 남습니다. `pnpm exec playwright show-trace <trace.zip>`으로 엽니다.
@@ -40,7 +40,7 @@
 | job | 내용 |
 | --- | --- |
 | `check` | 지원 Node.js LTS(`matrix.node`: 22·24·26)마다 `pnpm install --frozen-lockfile` 후 `pnpm verify --keep-going`. PostgreSQL 17 서비스 컨테이너에 `TEST_DATABASE_URL`로 연결합니다. 한 버전이 실패해도 나머지 버전 결과를 끝까지 봅니다. |
-| `smoke` | `.nvmrc` Node로 공용 패키지·API·웹을 빌드하고, PostgreSQL 서비스에 연결한 API(`node apps/api/dist/main.js`, 포트 13000)와 웹(`next start --port 15173`)을 백그라운드로 띄운 뒤 준비를 기다려 `pnpm smoke`를 실행합니다. 실패하면 API·웹 로그를 출력합니다. |
+| `smoke` | `.nvmrc` Node로 `node scripts/instance.mjs --print-env`의 슬롯 0 포트·주소(`API_PORT`·`WEB_PORT`·`API_URL`·`WEB_URL`, 원본 `infra/local/.env.example`)를 job 환경에 넣고, 공용 패키지·API·웹을 빌드해 PostgreSQL 서비스에 연결한 API(`node apps/api/dist/main.js`, `PORT=$API_PORT`)와 웹(`next start --port $WEB_PORT`)을 백그라운드로 띄운 뒤 준비를 기다려 `pnpm smoke`를 실행합니다. 실패하면 API·웹 로그를 출력합니다. |
 | `work scope` | `work/NNNN-*` 브랜치의 PR에서만 전체 이력을 받아 `pnpm work:scope --base origin/<기준 브랜치>`로 변경 파일이 티켓 역할의 소유 경로 안에 있는지 검사합니다. |
 
 지원 Node.js 버전을 바꾸면 workflow의 `matrix.node`와 README 요구사항을 함께 고칩니다.
@@ -63,5 +63,5 @@ work item을 `검증` 상태로 올리거나 완료를 보고하기 전에 변�
 ## 실패 출력 읽는 법
 
 - `pnpm verify`: 맨 아래 `검증 요약`에서 `실패` 단계를 찾고, `해결 안내`의 명령을 먼저 실행합니다. 원인은 요약 위쪽의 `▶ <단계>` 아래 출력에 있습니다. 같은 단계만 다시 볼 때는 `pnpm <단계>`(예: `pnpm lint`)를 실행합니다.
-- `pnpm smoke`: 테스트 전 확인 단계가 실패하면 출력의 명령(`make up`, `pnpm logs api`, `pnpm exec playwright install chromium`)을 따릅니다. 테스트 실패는 Playwright 출력의 테스트 이름·기대값과 함께 적힌 설명(예: readiness 503이면 API의 `DATABASE_URL`, 연결 실패 문구면 웹의 `API_INTERNAL_URL`)을 확인합니다.
+- `pnpm smoke`: 테스트 전 확인 단계가 실패하면 출력의 명령(`make up`, `pnpm logs api`, `pnpm exec playwright install chromium`)을 따릅니다. 테스트 실패는 Playwright 출력의 테스트 이름·기대값과 함께 적힌 설명(예: readiness 503이면 API의 `DATABASE_URL`)을 확인합니다. 콘솔 오류는 `pnpm logs web`·`pnpm logs api`와 함께 봅니다.
 - CI: 실패한 job의 단계 로그를 봅니다. `check`는 `pnpm verify` 요약을, `smoke`는 `pnpm smoke` 출력과 `API·웹 로그` 단계를 확인합니다.

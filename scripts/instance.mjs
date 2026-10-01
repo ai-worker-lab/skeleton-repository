@@ -1,6 +1,7 @@
 #!/usr/bin/env node
 // 현재 checkout의 로컬 인스턴스 설정(.local/instance.env)을 만들거나 읽어 이름·포트·주소를 출력합니다.
-// 사용법: pnpm instance [--print-env]   슬롯 지정: PORT_SLOT=<번호> pnpm instance
+// 슬롯 0 포트 원본은 infra/local/.env.example입니다(scripts/lib/instance.mjs).
+// 사용법: pnpm instance [--print-env | --get <KEY>]   슬롯 지정: PORT_SLOT=<번호> pnpm instance
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { parseArgs } from 'node:util';
@@ -8,19 +9,25 @@ import { ensureInstance, INSTANCE_KEYS } from './lib/instance.mjs';
 
 const root = join(dirname(fileURLToPath(import.meta.url)), '..');
 
+const usage = '사용법: pnpm instance [--print-env | --get <KEY>]  (슬롯 지정: PORT_SLOT=<번호> pnpm instance)';
 let values;
 let env;
 try {
-  ({ values } = parseArgs({ options: { 'print-env': { type: 'boolean' } } }));
+  ({ values } = parseArgs({ options: { 'print-env': { type: 'boolean' }, get: { type: 'string' } } }));
+  if (values.get !== undefined && !INSTANCE_KEYS.includes(values.get)) {
+    throw new Error(
+      `--get "${values.get}"은 인스턴스 키가 아닙니다. 다음 중 하나를 지정하세요: ${INSTANCE_KEYS.join(', ')}`,
+    );
+  }
   env = ensureInstance(root);
 } catch (error) {
-  console.error(
-    `instance: ${error.message}\n사용법: pnpm instance [--print-env]  (슬롯 지정: PORT_SLOT=<번호> pnpm instance)`,
-  );
+  console.error(`instance: ${error.message}\n${usage}`);
   process.exit(1);
 }
 
-if (values['print-env']) {
+if (values.get !== undefined) {
+  console.log(env[values.get]);
+} else if (values['print-env']) {
   for (const key of INSTANCE_KEYS) console.log(`${key}=${env[key]}`);
 } else {
   const rows = [

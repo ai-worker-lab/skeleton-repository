@@ -70,9 +70,6 @@ jobs:
           --health-interval 5s
           --health-timeout 5s
           --health-retries 10
-    env:
-      API_URL: http://127.0.0.1:13000
-      WEB_URL: http://127.0.0.1:15173
     steps:
       - uses: actions/checkout@v7
       - uses: pnpm/action-setup@v6
@@ -81,18 +78,19 @@ jobs:
           node-version-file: .nvmrc
           cache: pnpm
       - run: pnpm install --frozen-lockfile
+      # 포트·주소는 이 checkout 인스턴스(슬롯 0, 원본 infra/local/.env.example) 값을 다음 단계 환경으로 넘깁니다.
+      - name: 인스턴스 포트
+        run: node scripts/instance.mjs --print-env | grep -E '^(API_PORT|WEB_PORT|API_URL|WEB_URL)=' >> "$GITHUB_ENV"
       - run: pnpm --filter @app-skeleton/shared build
       - run: pnpm --filter @app-skeleton/api build
       - run: pnpm --filter @app-skeleton/web build
       - name: API·웹 시작
         env:
           DATABASE_URL: postgresql://app_skeleton:app-skeleton-ci-only@127.0.0.1:5432/app_skeleton
-          PORT: 13000
-          API_INTERNAL_URL: http://127.0.0.1:13000
         run: |
           mkdir -p .local/ci
-          nohup node apps/api/dist/main.js > .local/ci/api.log 2>&1 &
-          nohup pnpm --filter @app-skeleton/web exec next start --port 15173 > .local/ci/web.log 2>&1 &
+          PORT="$API_PORT" nohup node apps/api/dist/main.js > .local/ci/api.log 2>&1 &
+          API_INTERNAL_URL="$API_URL" nohup pnpm --filter @app-skeleton/web exec next start --port "$WEB_PORT" > .local/ci/web.log 2>&1 &
       - name: 서비스 준비 대기
         run: |
           for _ in $(seq 60); do

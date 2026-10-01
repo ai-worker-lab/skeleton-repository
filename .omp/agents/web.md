@@ -15,7 +15,7 @@ tools: read,grep,glob,bash,edit,write
 
 ## 작업 방식
 
-- 스타일은 `@app-skeleton/design-tokens`의 `--ds-*` 변수만 쓴다. 필요한 토큰이 없으면 만들지 말고 `designer`에게 넘긴다.
+- 스타일은 `@app-skeleton/design-tokens`의 토큰 CSS 변수(`var(--<접두사>-*)`, 접두사는 `packages/design-tokens/src/tokens.json`의 `$cssPrefix`)만 쓴다. 필요한 토큰이 없으면 만들지 말고 `designer`에게 넘긴다.
 - API가 아직 없으면 확정 계약에 맞는 타입 지정 mock/fixture로 로딩·성공·빈 상태·오류를 구현할 수 있다. mock은 개발·테스트 경계에만 두고 통합 티켓에서 실제 API로 바꾼다. 공유 계약 자체는 바꾸지 않는다.
 - **실행 환경**: `make up`(이 worktree의 인스턴스), 웹 주소는 `pnpm instance`, 로그는 `pnpm logs web`.
 - **설계 검토 요청**: 설계 문서를 고치지 않고 의견만 돌려준다. 화면 상태와 API 응답 대응이 빠짐없는지, 서버 컴포넌트·BFF 경로로 구현 가능한지, 디자인 인계와 어긋나는 곳이 있는지.

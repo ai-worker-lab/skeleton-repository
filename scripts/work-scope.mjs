@@ -1,8 +1,11 @@
 // work item 브랜치의 변경이 티켓 `역할`의 소유 경로(.omp/agents/*.md frontmatter owns) 안에 있는지 검사합니다.
 // 사용법: pnpm work:scope [NNNN] [--base <ref>]
+// --base를 생략하면 WORKFLOW.md의 workspace.base(기본 main)와 origin/<같은 이름> 중 HEAD와의 머지 베이스가 더
+// 최근인 쪽을 기준으로 삼습니다. 로컬 기준 브랜치가 origin보다 앞서도 티켓 브랜치의 변경만 셉니다.
 import { execFileSync } from 'node:child_process';
 import { dirname, resolve } from 'node:path';
 import { loadAgents } from './lib/agents.mjs';
+import { readWorkspaceBase } from './lib/runner-workflow.mjs';
 import { branchItemId, loadWorkItems } from './lib/work-items.mjs';
 
 // work item과 루트 변경 기록은 모든 역할이 고칩니다. 전용 로그가 없는 영역(packages/, design/ 등)의 변경은 루트
@@ -16,12 +19,20 @@ const fail = (message) => {
   process.exit(1);
 };
 const git = (...args) => execFileSync('git', args, { cwd: root, encoding: 'utf8', stdio: ['ignore', 'pipe', 'pipe'] });
-const refExists = (ref) => {
+const gitSucceeds = (...args) => {
   try {
-    git('rev-parse', '--verify', '--quiet', `${ref}^{commit}`);
+    git(...args);
     return true;
   } catch {
     return false;
+  }
+};
+const refExists = (ref) => gitSucceeds('rev-parse', '--verify', '--quiet', `${ref}^{commit}`);
+const mergeBase = (ref) => {
+  try {
+    return git('merge-base', ref, 'HEAD').trim();
+  } catch {
+    return undefined;
   }
 };
 
@@ -49,9 +60,45 @@ if (!id) {
   }
 }
 
-base ??= refExists('origin/main') ? 'origin/main' : 'main';
-if (!refExists(base))
-  fail(`기준 ref '${base}'가 없습니다. git fetch origin main을 실행하거나 --base로 있는 ref를 지정하세요.`);
+/** 비교 시작점(diff `${from}...HEAD`)과 출력용 설명. --base를 주면 기존처럼 그 ref와 HEAD의 머지 베이스입니다. */
+let from;
+let baseLabel;
+if (base) {
+  if (!refExists(base))
+    fail(`기준 ref '${base}'가 없습니다. git fetch origin <기준 브랜치>를 실행하거나 --base로 있는 ref를 지정하세요.`);
+  from = base;
+  baseLabel = base;
+} else {
+  let branch;
+  try {
+    branch = readWorkspaceBase(root);
+  } catch (error) {
+    fail(error.message);
+  }
+  const candidates = [branch, ...(branch.startsWith('origin/') ? [] : [`origin/${branch}`])].filter(refExists);
+  if (!candidates.length) {
+    fail(
+      `기준 브랜치 '${branch}'(WORKFLOW.md workspace.base)가 로컬에도 origin에도 없습니다. ` +
+        `git fetch origin ${branch}를 실행하거나 --base로 있는 ref를 지정하세요.`,
+    );
+  }
+  // 로컬과 origin 중 HEAD에 더 가까운(다른 쪽의 자손인) 머지 베이스를 고릅니다. 같으면 로컬 이름을 씁니다.
+  let chosen;
+  for (const ref of candidates) {
+    const commit = mergeBase(ref);
+    if (!commit) continue;
+    if (!chosen || (commit !== chosen.commit && gitSucceeds('merge-base', '--is-ancestor', chosen.commit, commit))) {
+      chosen = { ref, commit };
+    }
+  }
+  if (!chosen) {
+    fail(
+      `${candidates.join(', ')}와 HEAD의 머지 베이스를 찾지 못했습니다. 얕은 clone이면 git fetch --unshallow로 이력을 받거나 --base로 기준 ref를 지정하세요.`,
+    );
+  }
+  from = chosen.commit;
+  baseLabel = `${chosen.ref}(머지 베이스 ${chosen.commit.slice(0, 7)})`;
+}
 
 const { items } = loadWorkItems({ root });
 const item = items.get(id);
@@ -83,7 +130,7 @@ const matches = (file, glob) => {
 };
 
 // 기준 ref 이후 커밋된 변경과 작업 트리의 변경. 이름 변경은 --no-renames로 옛 경로와 새 경로를 모두 셉니다.
-const committed = git('diff', '--name-only', '--no-renames', '-z', `${base}...HEAD`).split('\0');
+const committed = git('diff', '--name-only', '--no-renames', '-z', `${from}...HEAD`).split('\0');
 const working = git('status', '--porcelain', '-z', '--no-renames', '--untracked-files=all')
   .split('\0')
   .map((entry) => entry.slice(3));
@@ -94,7 +141,7 @@ const outside = changed.filter((file) => !allowed.some((glob) => matches(file, g
 
 if (outside.length) {
   console.error(
-    `work item ${id}(역할 ${item.role})의 소유 경로 밖 변경 ${outside.length}개 (기준 ${base}...HEAD + 작업 트리):`,
+    `work item ${id}(역할 ${item.role})의 소유 경로 밖 변경 ${outside.length}개 (기준 ${baseLabel}...HEAD + 작업 트리):`,
   );
   for (const file of outside) {
     const owners = [...agents.values()]
@@ -110,5 +157,5 @@ if (outside.length) {
   process.exit(1);
 }
 console.log(
-  `work:scope 통과: ${id}(역할 ${item.role}) 변경 파일 ${changed.length}개가 모두 소유 경로 안입니다 (기준 ${base}...HEAD + 작업 트리).`,
+  `work:scope 통과: ${id}(역할 ${item.role}) 변경 파일 ${changed.length}개가 모두 소유 경로 안입니다 (기준 ${baseLabel}...HEAD + 작업 트리).`,
 );

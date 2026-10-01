@@ -10,9 +10,12 @@ pnpm work:check                       # 아래 규칙 검사. 위반이 있으�
 pnpm work:next [--all] [--json]       # 착수 가능한 work item. --all은 제외 사유까지
 pnpm work:scope [NNNN] [--base <ref>] # 티켓 역할의 소유 경로 밖 변경 검사
 pnpm work:run [--once] [--dry-run]   # 착수 가능한 work item마다 worktree와 코딩 에이전트 실행
+pnpm work:run --print-prompt [NNNN]  # 에이전트를 실행하지 않고 프롬프트만 출력
 ```
 
 `work`, `work:check`, `work:next`는 [scripts/work.mjs](../../scripts/work.mjs), `work:scope`는 [scripts/work-scope.mjs](../../scripts/work-scope.mjs)(소유 경로 원본은 `.omp/agents/*.md`의 `owns`, [영역별 병렬 개발](../development/parallel-work.md#역할과-에이전트별-소유-경계)), `work:run`은 [작업 실행기](../development/agent-runner.md)가 실행합니다. work item을 추가·수정하면 커밋 전에 `pnpm work:check`를 실행합니다.
+
+`work:scope`는 기준 이후 티켓 브랜치에서 커밋한 변경과 작업 트리의 변경을 셉니다. `--base`를 생략하면 [WORKFLOW.md](../../WORKFLOW.md)의 `workspace.base`(기본 `main`)와 `origin/<같은 이름>` 중 HEAD와의 머지 베이스가 더 최근인 쪽에서 비교하므로, 로컬 기준 브랜치가 `origin`보다 앞서거나 뒤처져도 티켓 브랜치의 커밋만 셉니다. 둘 다 없으면 `git fetch` 또는 `--base`를 안내하고 실패합니다. `--base <ref>`를 주면 그 ref와 HEAD의 머지 베이스에서 비교합니다(CI는 PR의 `--base origin/<기준 브랜치>`). 출력에 쓰인 기준이 표시됩니다.
 
 ## 단계
 

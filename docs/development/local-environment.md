@@ -10,9 +10,9 @@ make up       # 인스턴스 설정과 없는 로컬 설정 파일을 만든 뒤
 make status   # 인스턴스 주소, 컨테이너, PM2 프로세스
 ```
 
-`make`는 처음 실행할 때 `pnpm instance`와 같은 일을 먼저 합니다. 없는 로컬 설정 파일(`infra/local/.env`, `apps/api/.env`, `apps/web/.env.local`, `apps/app/.env`)을 추적 예시에서 권한 `600`으로 만들고, 이미 있는 파일은 덮어쓰지 않습니다. 예시의 포트·연결 값(`PORT`, `DATABASE_URL`, `API_INTERNAL_URL`, `EXPO_PUBLIC_API_BASE_URL`, `POSTGRES_PORT`, `VALKEY_PORT`)은 이 checkout 인스턴스의 값으로 씁니다. 웹 설정은 `API_INTERNAL_URL`, 앱 설정은 `EXPO_PUBLIC_API_BASE_URL`이며 웹·앱 `.env.example`은 각 영역 담당자가 관리합니다.
+`make`는 처음 실행할 때 `pnpm instance`와 같은 일을 먼저 합니다. 없는 로컬 설정 파일(`infra/local/.env`, `apps/api/.env`, `apps/web/.env.local`, `apps/app/.env`)을 추적 예시에서 권한 `600`으로 만들고, 이미 있는 파일은 덮어쓰지 않습니다. 예시의 포트·연결 키(`PORT`, `DATABASE_URL`, `API_INTERNAL_URL`, `EXPO_PUBLIC_API_BASE_URL`, `API_PORT`, `WEB_PORT`, `EXPO_PORT`, `POSTGRES_PORT`, `VALKEY_PORT`)는 이 checkout 인스턴스의 값으로 씁니다. 앱 예시(`apps/*/.env.example`)의 이 키들은 숫자 없이 빈 값과 형식 주석만 둡니다. 웹 설정은 `API_INTERNAL_URL`, 앱 설정은 `EXPO_PUBLIC_API_BASE_URL`이며 웹·앱 `.env.example`은 각 영역 담당자가 관리합니다.
 
-API는 시작 시 `apps/api/.env`가 있으면 읽고, 이미 프로세스 환경에 있는 값은 덮어쓰지 않습니다. 필수 설정은 `DATABASE_URL`(PostgreSQL 연결 문자열)이고, `PORT`(기본 `13000`)는 선택입니다. `DATABASE_URL`이 빠지면 API는 `DATABASE_URL is required` 오류로 종료됩니다. `.env`는 커밋하지 마세요. 마이그레이션은 API 시작 시 PostgreSQL advisory lock을 사용하여 인스턴스 간 직렬 실행됩니다.
+API는 시작 시 `apps/api/.env`가 있으면 읽고, 이미 프로세스 환경에 있는 값은 덮어쓰지 않습니다. 필수 설정은 `DATABASE_URL`(PostgreSQL 연결 문자열)과 `PORT`(API 포트)이며 기본값은 없습니다. 둘 중 하나가 빠지면 API는 `DATABASE_URL is required` 또는 `PORT is required` 오류로 종료됩니다. `pnpm instance`가 만든 `apps/api/.env`에 이 checkout 값이 들어 있고, `make api-up`은 인스턴스 값을 환경으로 넘깁니다. `.env`는 커밋하지 마세요. 마이그레이션은 API 시작 시 PostgreSQL advisory lock을 사용하여 인스턴스 간 직렬 실행됩니다.
 
 `Makefile`은 인프라(PostgreSQL·Valkey)는 Docker Compose, API·웹·Expo 개발 서버는 checkout 전용 PM2(`PM2_HOME=.local/pm2`, `ecosystem.config.cjs`의 `app-skeleton-api`·`app-skeleton-web`·`app-skeleton-app`)로 관리합니다. Compose project와 포트는 인스턴스 설정에서 옵니다. `*-up`은 PM2 프로세스를 지우고 다시 시작해 현재 인스턴스 값을 받습니다. 세 서버 시작 대상은 `packages/shared`를 먼저 빌드합니다. 웹·앱의 `@app-skeleton/shared` import는 `packages/shared/package.json`의 `exports`/`main`이 가리키는 `dist/` 산출물을 사용합니다. `@app-skeleton/design-tokens`는 커밋된 `generated/` 생성물을 가리키므로 빌드 단계가 없으며, 토큰을 바꾼 뒤에는 `pnpm tokens:generate`를 실행합니다([사용법](../../packages/design-tokens/docs/usage.md)). PM2 표시는 프로세스가 응답 가능함을 보장하지 않으므로, `make status`에 `online`으로 보여도 실패 시 `pnpm logs <서비스>`로 로그를 확인하세요.
 
@@ -26,19 +26,21 @@ API는 시작 시 `apps/api/.env`가 있으면 읽고, 이미 프로세스 환�
 
 ## 인스턴스와 포트
 
-checkout마다 인스턴스 설정 `.local/instance.env`(Git 제외)가 Compose project, 포트, 연결 주소를 정합니다([ADR 0008](../adr/0008-worktree-local-instances.md), 구현 [`scripts/lib/instance.mjs`](../../scripts/lib/instance.mjs)). `pnpm instance`는 설정을 만들거나 읽어 서비스별 포트·주소를 표로, `pnpm instance --print-env`는 전체 `KEY=VALUE`를 출력합니다.
+checkout마다 인스턴스 설정 `.local/instance.env`(Git 제외)가 Compose project, 포트, 연결 주소를 정합니다([ADR 0008](../adr/0008-worktree-local-instances.md), 구현 [`scripts/lib/instance.mjs`](../../scripts/lib/instance.mjs)). `pnpm instance`는 설정을 만들거나 읽어 서비스별 포트·주소를 표로, `pnpm instance --print-env`는 전체 `KEY=VALUE`를, `pnpm instance --get <KEY>`(예: `--get WEB_PORT`)는 값 하나를 출력합니다. 이 문서와 다른 문서는 포트 숫자를 적지 않으므로 실제 값은 `pnpm instance`로 확인합니다.
 
-| 서비스 | 슬롯 0 포트 | 주소 |
+| 서비스 | 포트 키 | 주소 |
 | --- | --- | --- |
-| API | `13000` | `http://127.0.0.1:13000/api/health` (준비 상태 `/api/health/ready`) |
-| 웹 | `15173` | `http://127.0.0.1:15173` |
-| Expo Metro | `18081` | `http://127.0.0.1:18081` |
-| PostgreSQL | `15432` | `127.0.0.1:15432` |
-| Valkey | `16379` | `127.0.0.1:16379` |
+| API | `API_PORT`(API의 `PORT`) | `http://127.0.0.1:<API 포트>/api/health` (준비 상태 `/api/health/ready`) |
+| 웹 | `WEB_PORT` | `http://127.0.0.1:<웹 포트>` |
+| Expo Metro | `EXPO_PORT` | `http://127.0.0.1:<Expo 포트>` |
+| PostgreSQL | `POSTGRES_PORT` | `127.0.0.1:<PostgreSQL 포트>` |
+| Valkey | `VALKEY_PORT` | `127.0.0.1:<Valkey 포트>` |
 
-- 주 checkout은 슬롯 0으로 위 포트와 Compose project `app-skeleton`을 씁니다. 각 값은 기본 포트(API 3000, 웹 5173, Expo 8081, PostgreSQL 5432, Valkey 6379)에 같은 오프셋을 더한 것으로, 같은 PC의 다른 서비스와 겹치지 않게 정합니다.
+- 주 checkout은 슬롯 0 포트와 Compose project `app-skeleton`을 씁니다. 슬롯 0 포트의 유일한 원본은 추적 파일 [`infra/local/.env.example`](../../infra/local/.env.example)의 위 다섯 키입니다(개인 설정 `infra/local/.env`가 아님). 템플릿에서 새 서비스를 만들 때는 `scripts/init-project.mjs`가 이 값을 정합니다.
+- 슬롯 0 포트를 바꾸려면 `infra/local/.env.example`만 고친 뒤 `pnpm instance`를 실행합니다. 포트가 원본과 달라진 `.local/instance.env`를 새 값으로 다시 만듭니다(이름·Compose project는 유지). `make`는 이미 있는 `.local/instance.env`를 그대로 읽으므로 `pnpm instance`를 먼저 실행합니다. 이미 있는 로컬 `.env` 파일은 덮어쓰지 않으므로, 파일 값을 쓰는 직접 실행(`pnpm dev:api` 등)에 새 포트를 쓰려면 그 파일을 지우고 `pnpm instance`로 다시 만듭니다.
 - 연결된 git worktree는 다른 worktree가 쓰지 않는 가장 작은 슬롯 k(1~20)를 받아 모든 포트에 100×k를 더하고, Compose project `app-skeleton-<worktree 디렉터리 이름>`과 그 project의 별도 볼륨을 씁니다. 주 checkout에서 복사해 온 슬롯 0 설정은 버리고 새 슬롯을 받습니다. 슬롯은 `PORT_SLOT=<번호> pnpm instance`로 바꿀 수 있습니다(Compose project는 유지). 이미 있는 로컬 `.env` 파일의 포트는 바뀌지 않으며, `make`로 띄운 서버는 인스턴스 값을 프로세스 환경으로 받아 파일 값보다 우선합니다.
-- 웹 `start`는 `next dev --port ${WEB_PORT:-15173}`, 앱 `start`·`android`·`ios`는 `expo start --port ${EXPO_PORT:-18081}`이므로 변수 없이 직접 실행하면 슬롯 0 포트를 씁니다.
+- 웹 `start`는 `WEB_PORT`, 앱 `start`·`android`·`ios`는 `EXPO_PORT` 환경변수를 쓰고, 없으면 `pnpm instance --get`으로 이 checkout 인스턴스의 포트를 읽으므로 worktree에서 직접 실행해도 그 슬롯 포트를 씁니다.
+- Compose(`infra/local/compose.yaml`)는 포트 기본값이 없어 `POSTGRES_PORT`·`VALKEY_PORT`가 없으면 해결 안내와 함께 실패합니다. `make`는 인스턴스 값을 넘기고, Compose를 직접 실행할 때는 `--env-file infra/local/.env`를 넘깁니다.
 - worktree를 지우기 전에 `make instance-destroy CONFIRM=1`로 그 인스턴스의 컨테이너·데이터 볼륨·PM2 프로세스를 지웁니다. 주 checkout(슬롯 0, project `app-skeleton`)에서는 거부하며, 주 checkout은 `make down`으로 멈추고 볼륨을 보존합니다.
 
 Compose는 Valkey 서비스를 제공하지만 API 소스(`apps/api/src`)에는 Valkey/Redis 연결 소비 코드가 없어 현재 API는 이를 사용하지 않습니다([ADR 0005](../adr/0005-keep-valkey-local-infra.md)). Compose 기본 자격 증명은 로컬 전용이며 프로덕션에 복사하지 않습니다.

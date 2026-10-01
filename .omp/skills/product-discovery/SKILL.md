@@ -10,7 +10,8 @@ description: PRD를 확정하기 전 유사 서비스 벤치마킹과 라이브�
 ## 시작 전
 
 1. 맡은 work item에서 조사 질문과 끝낼 조건을 확인합니다. 없으면 티켓 `진행 기록`에 질문 3~5개와 끝낼 조건을 먼저 적습니다.
-2. 기존 문서를 먼저 찾습니다: `docs/product/`, `docs/product/research/`, `docs/references/`, 관련 ADR. 확인일이 90일보다 오래된 문서는 바뀔 수 있는 사실(가격·라이선스·유지보수 상태)을 다시 확인합니다.
+2. 기존 문서를 먼저 찾습니다: `docs/product/`, `docs/product/research/`, `docs/references/`, 관련 ADR, 그리고 `docs/product/README.md` 문서 위치 표가 연결한 기존 문서. 확인일이 90일보다 오래된 문서는 바뀔 수 있는 사실(가격·라이선스·유지보수 상태)을 다시 확인합니다.
+3. 저장소에 이 절차와 다른 위치의 조사 문서나 다른 이름의 PRD(예: `docs/product/requirements.md`)가 이미 있으면 옮기거나 이름을 바꾸지 않습니다. 그 문서를 고쳐 쓰고, `docs/product/README.md` 표에 연결되어 있지 않으면 연결합니다. 새 문서만 아래 위치를 따릅니다.
 
 ## 유사 서비스 벤치마킹 (`product`)
 

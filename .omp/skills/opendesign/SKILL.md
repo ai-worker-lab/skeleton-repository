@@ -51,7 +51,7 @@ description: 로컬 OpenDesign으로 화면 프로토타입·디자인 시스템
 ## 인계
 
 1. `design/<기능>/`(kebab-case)를 만들고 `get_artifact`(`include: "auto"`) 결과를 옮깁니다. 이미지 등 바이너리는 `pnpm od export ... --format image`로 받습니다.
-2. 붙여 넣어진 `:root { ... }` 토큰 블록을 `<link rel="stylesheet" href="../system/tokens.css">`로 바꾸고, 남은 색 리터럴을 `var(--ds-*)`로 바꿉니다. 필요한 색 토큰이 없으면 `packages/design-tokens/src/tokens.json`에 쓰임새 이름으로 추가하고 `pnpm tokens:generate`·`pnpm design:sync`를 실행합니다.
+2. 붙여 넣어진 `:root { ... }` 토큰 블록을 `<link rel="stylesheet" href="../system/tokens.css">`로 바꾸고, 남은 색 리터럴을 토큰 CSS 변수 `var(--<접두사>-*)`로 바꿉니다. 접두사는 `packages/design-tokens/src/tokens.json`의 `$cssPrefix`이고 쓸 수 있는 이름은 `design/system/tokens.css`에 있습니다. 필요한 색 토큰이 없으면 `packages/design-tokens/src/tokens.json`에 쓰임새 이름으로 추가하고 `pnpm tokens:generate`·`pnpm design:sync`를 실행합니다.
 3. `handoff.md`를 `design/docs/opendesign.md#인계-문서` 항목대로 씁니다. OpenDesign 프로젝트 id를 적고, 세션 한정인 미리보기 주소는 적지 않습니다.
 4. `pnpm design:check --require-lint`가 통과해야 인계합니다. 결과와 확인한 폭·상태를 work item `진행 기록`과 보고에 남깁니다.
 

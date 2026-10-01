@@ -1,4 +1,4 @@
-// 저장소 Markdown 문서의 링크·anchor·연결·ADR 형식·변경 기록 순서·AGENTS.md 크기를 검사합니다.
+// 저장소 Markdown 문서의 링크·anchor·연결·ADR 형식·변경 기록 순서·AGENTS.md 크기·조사 문서 확인일과 출처를 검사합니다.
 // 사용법: pnpm docs:check. 규칙의 기준은 루트 AGENTS.md입니다.
 import { execFileSync } from 'node:child_process';
 import { existsSync, readFileSync, statSync } from 'node:fs';
@@ -109,12 +109,20 @@ function resolveTarget(file, target) {
   return statSync(absolute).isDirectory() ? `${path.replace(/\/$/, '')}/` : path;
 }
 
-// (1)(2) 링크 대상과 anchor
+// (1)(2) 링크 대상과 anchor. ADR은 work item에 링크하지 않습니다(지속 기록이 진행 기록에 기대면 이식·정리 후 끊깁니다).
 const edges = new Map();
 for (const [file, doc] of docs) {
   const reached = [];
   for (const { line, target, anchor } of doc.links) {
     const resolved = resolveTarget(file, target);
+    if (resolved !== null && ADR_FILE.test(file) && WORK_ITEM.test(resolved)) {
+      report(
+        file,
+        line,
+        `ADR이 work item '${resolved}'에 링크합니다. ADR은 지속 기록이고 work item은 진행 기록이라, 하네스를 옮긴 저장소나 정리 후에는 끊긴 링크가 됩니다`,
+        '결정 내용은 그대로 두고 링크만 현재 기준 문서(docs/development/ 등 해당 결정을 설명하는 문서)로 바꾸세요',
+      );
+    }
     if (resolved === null) {
       report(
         file,
@@ -246,10 +254,14 @@ for (const file of docs.keys()) {
   }
 }
 
-// (7) 조사 문서의 확인일·출처
+// (7) 조사 문서의 확인일·출처. 확인일 뒤의 보충 설명(`- 확인일: 2026-10-01 (메모)`)과 링크 문법 없는 맨 URL 출처도 받습니다.
+const isCalendarDate = (value) => {
+  const time = Date.parse(`${value}T00:00:00Z`);
+  return !Number.isNaN(time) && new Date(time).toISOString().slice(0, 10) === value;
+};
 for (const [file, doc] of docs) {
   if (!RESEARCH_FILE.test(file)) continue;
-  const checked = doc.lines.findIndex((line) => /^- 확인일: \d{4}-\d{2}-\d{2}\s*$/.test(line));
+  const checked = doc.lines.findIndex((line) => line.startsWith('- 확인일:'));
   if (checked === -1) {
     report(
       file,
@@ -257,9 +269,24 @@ for (const [file, doc] of docs) {
       `조사 문서에 '- 확인일: YYYY-MM-DD' 줄이 없습니다`,
       '제목 아래 필드 목록에 외부 정보를 확인한 날짜를 적으세요(docs/product/README.md#조사-품질-기준)',
     );
+  } else {
+    const date = /^- 확인일: (\d{4}-\d{2}-\d{2})(?:\s|$)/.exec(doc.lines[checked])?.[1];
+    if (!date || !isCalendarDate(date)) {
+      report(
+        file,
+        checked + 1,
+        `확인일 값 '${doc.lines[checked].slice('- 확인일:'.length).trim()}'이 형식에 맞지 않습니다(실제 날짜 YYYY-MM-DD, 메모는 날짜 뒤 공백 다음)`,
+        `'- 확인일: 2026-10-01' 또는 날짜 뒤에 공백과 메모를 붙인 '- 확인일: 2026-10-01 (메모)'처럼 쓰세요`,
+      );
+    }
   }
-  if (!doc.lines.some((line) => /\]\(https?:\/\//.test(line))) {
-    report(file, 1, '조사 문서에 출처 링크가 없습니다', "'## 출처'에 확인한 외부 자료를 [이름](URL)로 적으세요");
+  if (!doc.lines.some((line) => /https?:\/\/[^\s)>]/.test(line))) {
+    report(
+      file,
+      1,
+      '조사 문서에 출처 URL이 없습니다',
+      "'## 출처'에 확인한 외부 자료를 [이름](URL) 또는 맨 URL(https://...)로 적으세요",
+    );
   }
 }
 

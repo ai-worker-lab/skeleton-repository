@@ -6,12 +6,13 @@ import { existsSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { parseArgs } from 'node:util';
+import { readBasePorts } from './lib/instance.mjs';
 
 const root = join(dirname(fileURLToPath(import.meta.url)), '..');
 const self = 'scripts/init-project.mjs';
 const PLACEHOLDER = { name: 'app-skeleton', snake: 'app_skeleton', repo: 'ai-worker-lab/skeleton-repository' };
-// 템플릿 포트 → 기본 포트. 새 포트는 기본 포트 + --port-offset입니다.
-const PORTS = { 13000: 3000, 15173: 5173, 18081: 8081, 15432: 5432, 16379: 6379 };
+// 키별 기본 포트. 새 포트는 기본 포트 + --port-offset이고, 템플릿 포트(infra/local/.env.example의 슬롯 0 포트)를 이 값으로 바꿉니다.
+const BASE_PORTS = { API_PORT: 3000, WEB_PORT: 5173, EXPO_PORT: 8081, POSTGRES_PORT: 5432, VALKEY_PORT: 6379 };
 const BINARY = /\.(woff2?|png|jpe?g|gif|ico|webp)$/i;
 
 function fail(message) {
@@ -35,9 +36,17 @@ if (name === PLACEHOLDER.name) fail('템플릿 이름과 다른 이름을 지정
 const repo = values.repo ?? `ai-worker-lab/${name}`;
 if (!/^[A-Za-z0-9_.-]+\/[A-Za-z0-9_.-]+$/.test(repo)) fail(`--repo "${repo}"는 owner/name 형식이어야 합니다.`);
 const offset = Number(values['port-offset']);
-if (!Number.isInteger(offset) || offset < 0 || Math.max(...Object.values(PORTS)) + offset > 65535) {
+if (!Number.isInteger(offset) || offset < 0 || Math.max(...Object.values(BASE_PORTS)) + offset > 65535) {
   fail('--port-offset은 0 이상의 정수이고 모든 포트가 65535 이하여야 합니다.');
 }
+let templatePorts;
+try {
+  templatePorts = readBasePorts(root);
+} catch (error) {
+  fail(error.message);
+}
+// 템플릿 포트 → 새 포트
+const PORTS = Object.fromEntries(Object.entries(BASE_PORTS).map(([key, base]) => [templatePorts[key], base + offset]));
 
 const packageJson = JSON.parse(readFileSync(join(root, 'package.json'), 'utf8'));
 if (packageJson.name !== PLACEHOLDER.name) fail(`이미 초기화된 저장소입니다(package.json name: ${packageJson.name}).`);
@@ -63,8 +72,8 @@ for (const file of files) {
       .replaceAll(PLACEHOLDER.repo, repo)
       .replaceAll(PLACEHOLDER.name, name)
       .replaceAll(PLACEHOLDER.snake, snake);
-    for (const [from, base] of Object.entries(PORTS)) {
-      text = text.replace(new RegExp(`(?<!\\d)${from}(?!\\d)`, 'g'), String(base + offset));
+    for (const [from, to] of Object.entries(PORTS)) {
+      text = text.replace(new RegExp(`(?<!\\d)${from}(?!\\d)`, 'g'), String(to));
     }
   }
   if (file === 'README.md') {
@@ -83,7 +92,7 @@ const today = new Date().toLocaleDateString('sv-SE');
 const changelogPath = join(root, 'CHANGELOGS.md');
 const changelog = readFileSync(changelogPath, 'utf8');
 const firstSection = changelog.indexOf('\n## ');
-const entry = `- \`${PLACEHOLDER.repo}\` 템플릿에서 \`${name}\`로 초기화: 패키지 범위 \`@${name}/*\`, 저장소 \`${repo}\`, 로컬 포트 API ${3000 + offset}·웹 ${5173 + offset}·Expo ${8081 + offset}·PostgreSQL ${5432 + offset}·Valkey ${6379 + offset}.\n`;
+const entry = `- \`${PLACEHOLDER.repo}\` 템플릿에서 \`${name}\`로 초기화: 패키지 범위 \`@${name}/*\`, 저장소 \`${repo}\`, 로컬 포트 API ${BASE_PORTS.API_PORT + offset}·웹 ${BASE_PORTS.WEB_PORT + offset}·Expo ${BASE_PORTS.EXPO_PORT + offset}·PostgreSQL ${BASE_PORTS.POSTGRES_PORT + offset}·Valkey ${BASE_PORTS.VALKEY_PORT + offset}.\n`;
 // 오늘 날짜 제목이 이미 맨 위에 있으면 그 아래에 넣고, 없으면 새 날짜 제목을 만듭니다(날짜 제목 중복 금지, docs:check).
 const todayHeading = `\n## ${today}\n`;
 const afterHeading = firstSection + todayHeading.length;

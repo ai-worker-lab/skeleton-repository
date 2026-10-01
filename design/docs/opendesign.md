@@ -26,11 +26,13 @@ od CLI는 `pnpm od <명령>`으로 실행합니다([scripts/od.mjs](../../script
 
 `design/system/`은 OpenDesign 디자인 시스템 패키지 형식(`manifest.json`, `DESIGN.md`, `tokens.css`)입니다. OpenDesign은 활성 디자인 시스템의 `DESIGN.md`와 `tokens.css`를 모든 생성 프롬프트에 넣으므로, 프로젝트에 이 패키지를 지정하면 OpenDesign이 만든 화면이 웹·앱과 같은 토큰을 씁니다.
 
-- `tokens.css`는 앱 토큰(`--ds-*`) 전체와 OpenDesign 공통 슬롯(`--bg`, `--fg`, `--accent`, `--text-*`, `--space-*` 등)을 한 `:root`에 둡니다. 슬롯 값은 `opendesign.json`에서 토큰을 참조(`"{color.action.primary}"`)하거나 색이 아닌 값(`1.65`, `150ms`)을 씁니다. 색 리터럴은 생성기가 거부합니다.
-- 생성기(`pnpm tokens:generate`)는 OpenDesign 공통 슬롯이 하나라도 빠지면 실패합니다. 슬롯 목록은 OpenDesign [token-schema.ts](https://github.com/nexu-io/open-design/blob/main/packages/contracts/src/design-systems/token-schema.ts)를 따릅니다. 빠진 슬롯은 산출물의 `var()`를 비워 규칙을 깨뜨립니다.
+- `tokens.css`는 앱 토큰 CSS 변수 전체와 OpenDesign 공통 슬롯(`--bg`, `--fg`, `--accent`, `--text-*`, `--space-*` 등)을 한 `:root`에 둡니다. 앱 토큰 변수 이름의 접두사는 `packages/design-tokens/src/tokens.json`의 `"$cssPrefix"`가 정하고, 지금의 `--ds-*`는 그 설정의 결과입니다([CSS 변수 접두사](../../packages/design-tokens/docs/usage.md#css-변수-접두사)). 슬롯 값은 `opendesign.json`에서 토큰을 참조(`"{color.action.primary}"`)하거나 색이 아닌 값(`1.65`, `150ms`)을 씁니다. 색 리터럴은 생성기가 거부합니다.
+- 생성기(`pnpm tokens:generate`)는 OpenDesign 공통 슬롯이 빠지면 실패하고, 빠진 슬롯 전체를 쓰임새·값 형식과 함께 한 번에 보여 줍니다. 슬롯 목록은 OpenDesign [token-schema.ts](https://github.com/nexu-io/open-design/blob/main/packages/contracts/src/design-systems/token-schema.ts)를 따릅니다. 빠진 슬롯은 산출물의 `var()`를 비워 규칙을 깨뜨립니다.
+- `DESIGN.md`는 OpenDesign 프롬프트에 들어가므로 실제 토큰 변수 이름을 씁니다. `pnpm design:check`가 이 문서의 인라인 코드 변수 이름(`--<접두사>-color-...`, `--<접두사>-space-*`)을 토큰 원본과 대조합니다.
 - `pnpm design:sync`([scripts/design.mjs](../../scripts/design.mjs))는 패키지를 OpenDesign 사용자 디자인 시스템 `user:<manifest.id>`(이 저장소는 `user:app-skeleton`)로 설치합니다.
   - 처음에는 데몬의 디자인 시스템 설치 API로 패키지를 그대로 설치하고 현재 Workspace에 묶습니다. Workspace에 묶이지 않은 사용자 디자인 시스템은 프로젝트가 찾지 못합니다(`DESIGN_SYSTEM_NOT_FOUND`). Workspace는 기존 OpenDesign 프로젝트에서 읽으므로, 프로젝트가 하나도 없으면 앱에서 하나 만든 뒤 실행하거나 `OD_WORKSPACE_ID`·`OD_WORKSPACE_MEMBER_ID`를 지정합니다.
   - 이미 설치되어 있으면 세 파일을 OpenDesign 데이터 폴더(`OD_DATA_DIR`, 없으면 데스크톱 앱 기본 위치)의 `design-systems/<manifest.id>/`에 덮어씁니다.
+  - 0.24.1의 local 설치는 설치 폴더를 임시 원본 폴더의 심볼릭 링크로 만들 수 있습니다. 설치 직후 링크면 실제 폴더 사본으로 바꾸고, 이전 설치가 지워진 임시 폴더를 가리키는 끊긴 링크로 남아 있으면 링크를 지우고 다시 설치합니다.
   - 사용자 디자인 시스템은 기본이 draft이고 draft는 프로젝트에 지정할 수 없으므로(`DESIGN_SYSTEM_NOT_PUBLISHED`) 설치 폴더의 `metadata.json`을 published로 둡니다. 끝에 프로젝트와 같은 Workspace 범위에서 published로 보이는지 확인합니다.
   - 데몬 주소는 `OD_DAEMON_URL`, 없으면 실행 중인 Open Design 프로세스의 로컬 포트에서 찾습니다(데스크톱 앱은 실행마다 포트가 바뀜).
   - `od design-systems import-local`은 폴더를 코드 프로젝트로 보고 `DESIGN.md`를 새로 추출해 이 문서를 버리므로 쓰지 않습니다.
@@ -67,8 +69,25 @@ design/<기능>/
 `pnpm design:check`([scripts/design.mjs](../../scripts/design.mjs))는 `pnpm verify`의 한 단계입니다.
 
 - `design/`의 HTML `<style>`·`style` 속성과 CSS에서 색 리터럴(hex, `rgb()`, `hsl()` 등)을 찾습니다. 생성물 `design/shared/tokens.css`, `design/system/tokens.css`는 제외합니다.
+- 산출물 CSS의 `var(--...)`와 `design/system/DESIGN.md`의 변수 이름을 토큰 원본과 대조합니다. 현재 접두사로 시작하는데 없는 토큰, 다른 접두사 뒤에 토큰 경로가 붙은 이름(접두사를 바꾼 뒤 남은 `--<이전>-color-...`)은 고칠 이름과 함께 실패입니다. 산출물이 직접 선언한 변수(`--card-gap: ...`)는 대조하지 않습니다.
 - 산출물 HTML이 있는 `design/<기능>/`에 `handoff.md`가 있는지 봅니다.
 - OpenDesign이 실행 중이면 산출물 HTML마다 `od lint`(anti-slop 검사: 보라 그라디언트, 자리표시 문구, `:root` 밖 raw hex 등)를 돌려 P1 이상을 실패로 봅니다. OpenDesign이 없거나 꺼져 있으면 건너뛰고, 디자인 인계 전에는 `pnpm design:check --require-lint`로 건너뛰기를 실패로 바꿉니다.
+
+### 이식 전 산출물 기준선
+
+기존 저장소에 이 하네스를 적용할 때, 이식 전에 만든 `design/<기능>/` 산출물이 위 규칙(색 리터럴, `handoff.md`, 토큰 이름, `od lint`)을 어기면 `design/.check-baseline.json`에 영역을 올려 그 영역의 실패를 알림으로 낮춥니다. 새 산출물을 위한 예외가 아니며, 이 템플릿에는 기준선 파일을 두지 않습니다.
+
+```json
+{
+  "areas": {
+    "mvp-timeline": { "reason": "하네스 이식 전 산출물. 임시 색을 리터럴로 정의하고 handoff.md가 없음", "workItem": "0021" }
+  }
+}
+```
+
+- 영역을 올리기 전에 정리 work item을 반드시 만들고 `workItem`에 번호를 적습니다. 알림은 `[기준선, 0021에서 정리]`처럼 번호를 붙여 출력합니다. 기준선에 없는 영역은 그대로 실패입니다.
+- 기준선 영역의 새 실패도 알림으로만 보이므로 정리 work item은 미루지 않습니다. 영역에 낮출 실패가 하나도 없으면 기준선에서 지우라는 알림이 나옵니다. 정리가 끝나면 항목을 지우고, 영역이 모두 없어지면 파일을 지웁니다.
+- 파일이 없으면 기준선 없이 검사합니다. JSON 문법 오류, `areas` 밖의 키, 없는 영역 폴더·예약 폴더(`shared`·`system`·`docs`), 빈 `reason`, 네 자리가 아니거나 `docs/work/`에 없는 `workItem`은 실패입니다.
 
 ## 제약
 

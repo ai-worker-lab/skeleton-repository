@@ -47,4 +47,4 @@ App Router의 page/layout은 Server Component를 기본값으로 사용한다. �
 
 ## 현재 저장소 상태
 
-`apps/web/src/app`은 초기 골격이다. root `layout.tsx`, `loading.tsx`, `error.tsx`, `not-found.tsx`와 `(public)/page.tsx` 시작 화면이 있다. 시작 화면은 서버에서 `GET /api/health/ready`를 호출해 제품 이름·컨셉과 API·DB 준비 상태만 표시한다. BFF allowlist에는 `GET api/health`만 있다. `features/`, `components/`는 아직 없으며 제품 기능은 구현되지 않았다. 웹 개발 서버는 `next dev --port ${WEB_PORT:-15173}`로 실행하며, `make web-up`은 checkout의 로컬 인스턴스 포트를 넘긴다([로컬 개발 환경](../development/local-environment.md)).
+`apps/web/src/app`은 초기 골격이다. root `layout.tsx`, `loading.tsx`, `error.tsx`, `not-found.tsx`와 `(public)/page.tsx` 시작 화면이 있다. 시작 화면은 서버에서 `GET /api/health/ready`를 호출해 제품 이름·컨셉과 API·DB 준비 상태만 표시한다. BFF allowlist에는 `GET api/health`만 있다. `features/`, `components/`는 아직 없으며 제품 기능은 구현되지 않았다. 웹 개발 서버는 `next dev --port <WEB_PORT>`로 실행한다. `WEB_PORT`가 없으면 `pnpm instance --get WEB_PORT`로 이 checkout 인스턴스 포트를 읽고, `make web-up`은 인스턴스 포트를 환경으로 넘긴다([로컬 개발 환경](../development/local-environment.md#인스턴스와-포트)).

@@ -2,7 +2,7 @@
 
 > Category: Product
 
-app-skeleton 웹·앱이 함께 쓰는 시각 규칙입니다. 이 패키지는 OpenDesign에 가져와(`pnpm design:sync`) 모든 OpenDesign 산출물의 디자인 시스템으로 씁니다. 값의 원본은 `packages/design-tokens/src/tokens.json`이고, 같은 폴더의 `tokens.css`·`manifest.json`은 `pnpm tokens:generate`가 만듭니다. 이 문서는 값 대신 쓰임새와 규칙을 설명합니다. 현재 값은 서비스 고유 색이 없는 중립 시작 팔레트이며, 서비스의 시각 디자인이 정해지면 `designer`가 값과 이 문서를 함께 바꿉니다.
+app-skeleton 웹·앱이 함께 쓰는 시각 규칙입니다. 이 패키지는 OpenDesign에 가져와(`pnpm design:sync`) 모든 OpenDesign 산출물의 디자인 시스템으로 씁니다. 값의 원본은 `packages/design-tokens/src/tokens.json`이고, 같은 폴더의 `tokens.css`·`manifest.json`은 `pnpm tokens:generate`가 만듭니다. 앱 토큰 CSS 변수 이름의 접두사는 `tokens.json`의 `$cssPrefix`가 정하며, `pnpm design:check`가 이 문서의 토큰 이름을 원본과 대조합니다. 이 문서는 값 대신 쓰임새와 규칙을 설명합니다. 현재 값은 서비스 고유 색이 없는 중립 시작 팔레트이며, 서비스의 시각 디자인이 정해지면 `designer`가 값과 이 문서를 함께 바꿉니다.
 
 ## 시각 테마와 분위기
 
@@ -12,7 +12,7 @@ app-skeleton 웹·앱이 함께 쓰는 시각 규칙입니다. 이 패키지는 
 
 ## 색 역할
 
-| 역할 | 앱 토큰(`--ds-*`) | OpenDesign 슬롯 |
+| 역할 | 앱 토큰 | OpenDesign 슬롯 |
 | --- | --- | --- |
 | 무대(페이지 바깥) | `--ds-color-background-stage` | — |
 | 화면 배경 | `--ds-color-background-screen` | `--bg` |

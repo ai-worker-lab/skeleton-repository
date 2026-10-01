@@ -4,7 +4,7 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "start": "next dev --port ${WEB_PORT:-15173}",
+    "start": "WEB_PORT=${WEB_PORT:-$(node ../../scripts/instance.mjs --get WEB_PORT)} && next dev --port $WEB_PORT",
     "build": "next build",
     "typecheck": "tsc --noEmit"
   },

@@ -1,7 +1,9 @@
 # app-skeleton
 
 <!-- template:start -->
-서비스를 시작하기 위한 에이전트 친화 모노레포 뼈대입니다. pnpm workspace에 NestJS API, Next.js App Router 웹, Expo + React Native 앱, 공유 TypeScript 계약, 디자인 토큰, PostgreSQL·Valkey 로컬 인프라와 개발·운영 규칙(work item, ADR, CI), 그리고 코딩 에이전트가 혼자 검증하고 일할 수 있는 하네스(worktree별 로컬 인스턴스, `pnpm verify`·`pnpm smoke`, 규칙 검사, work item 실행기)를 담고 있습니다. 제품 기능은 없습니다.
+서비스를 시작하기 위한 에이전트 친화 모노레포 뼈대입니다. pnpm workspace에 NestJS API, Next.js App Router 웹, Expo + React Native 앱, 공유 TypeScript 계약, 디자인 토큰, PostgreSQL·Valkey 로컬 인프라와 개발·운영 규칙(work item, ADR, CI), 그리고 코딩 에이전트가 혼자 검증하고 일할 수 있는 [에이전트 하네스](#에이전트-하네스)를 담고 있습니다. 제품 기능은 없습니다.
+
+이 블록(`template:start`~`template:end`)은 템플릿 사용 안내이며 `scripts/init-project.mjs`가 서비스 소개 자리로 바꿉니다. 이미 있는 저장소에 하네스만 들이려면 [기존 저장소에 하네스 적용](docs/development/adopting-harness.md)을 따릅니다.
 
 ## 이 템플릿으로 새 서비스 만들기
 
@@ -21,7 +23,7 @@
    node scripts/init-project.mjs --name my-service --repo ai-worker-lab/my-service --port-offset 0
    ```
 
-   `--port-offset`은 같은 PC에서 여러 서비스를 함께 실행할 때 겹치지 않도록 기본 포트(API 3000, 웹 5173, Expo 8081, PostgreSQL 5432, Valkey 6379)에 더할 값입니다. 스크립트는 이름·저장소·포트를 바꾸고, 템플릿 값으로 만든 로컬 설정(`.local/instance.env`, `.env` 파일)을 지운 뒤 `pnpm install`, `pnpm verify --fast`, `pnpm build`로 결과를 확인합니다. 이 안내 블록을 서비스 소개 자리로 바꾸고 `CHANGELOGS.md`에 시작 기록을 남긴 뒤 스스로를 지웁니다.
+   `--port-offset`은 같은 PC에서 여러 서비스를 함께 실행할 때 겹치지 않도록 기본 포트(API 3000, 웹 5173, Expo 8081, PostgreSQL 5432, Valkey 6379)에 더할 값입니다. 스크립트는 이름·저장소·포트(슬롯 0 포트 원본 `infra/local/.env.example`)를 바꾸고, 템플릿 값으로 만든 로컬 설정(`.local/instance.env`, `.env` 파일)을 지운 뒤 `pnpm install`, `pnpm verify --fast`, `pnpm build`로 결과를 확인합니다. 이 안내 블록을 서비스 소개 자리로 바꾸고 `CHANGELOGS.md`에 시작 기록을 남긴 뒤 스스로를 지웁니다.
 3. 실행과 검증을 확인하고 첫 커밋을 만듭니다.
 
    ```sh
@@ -68,13 +70,27 @@ make up            # 로컬 인스턴스 설정 생성 후 인프라·API·웹·
 make status        # 컨테이너 및 개발 서버 상태
 make down          # 전체 종료(데이터 볼륨 유지)
 make infra-restart # 인프라만 재시작 (api-·web-·app-restart도 같은 형식)
-pnpm instance      # 이 checkout의 포트·주소·Compose project 출력
+pnpm format        # Prettier 서식 적용 후 ESLint 자동 수정
+pnpm tokens:generate # 디자인 토큰 원본에서 CSS 변수·앱 객체·디자인 tokens.css·OpenDesign 디자인 시스템 생성
+```
+
+`make up`은 없는 로컬 설정 파일(`infra/local/.env`, `apps/api/.env`, `apps/web/.env.local`, `apps/app/.env`)을 예시에서 만듭니다. 이 checkout의 API·웹·Expo·PostgreSQL·Valkey 포트와 주소는 `pnpm instance`가 보여 줍니다. 주 checkout(슬롯 0)의 포트 원본은 [`infra/local/.env.example`](infra/local/.env.example)이고, git worktree는 슬롯마다 100씩 더한 포트와 별도 DB를 씁니다.
+
+자세한 내용은 [로컬 개발 환경](docs/development/local-environment.md), [환경과 비밀값 관리](docs/development/environment-secrets.md), [배포 대상 아키텍처](docs/architecture/deployment-target.md), [CHANGELOGS](CHANGELOGS.md)를 참고하세요. 디자인 산출물은 `design/`에 두고, 앱·API 소스는 이 폴더에 두지 않습니다.
+
+<!-- harness:start -->
+
+## 에이전트 하네스
+
+코딩 에이전트가 work item 하나를 혼자 맡아 실행·검증하고 인계할 수 있게 하는 도구와 규칙입니다. 에이전트는 [AGENTS.md](AGENTS.md)를 지도로 씁니다.
+
+```sh
+pnpm instance      # 이 checkout의 포트·주소·Compose project 출력(worktree마다 독립 인스턴스)
 pnpm logs api      # 서비스 최근 로그 (api|web|app|infra, --lines N, --follow)
 pnpm verify        # CI와 같은 전체 검증: 토큰·work item·문서·lint·타입·빌드·테스트
 pnpm verify --fast # 빌드·테스트를 뺀 빠른 검증
 pnpm smoke         # 실행 중인 API·웹에 Playwright smoke 테스트
-pnpm format        # Prettier 서식 적용 후 ESLint 자동 수정
-pnpm tokens:generate # 디자인 토큰 원본에서 CSS 변수·앱 객체·디자인 tokens.css·OpenDesign 디자인 시스템 생성
+pnpm docs:check    # 문서 링크·형식 검사
 pnpm design:sync   # design/system 디자인 시스템을 로컬 OpenDesign에 설치
 pnpm design:check  # design/ 산출물 색 리터럴·인계 문서 검사(OpenDesign 실행 중이면 od lint 포함)
 pnpm od <명령>     # 로컬 OpenDesign od CLI(예: pnpm od lint <html>, pnpm od design-systems list)
@@ -82,11 +98,11 @@ pnpm work          # work item 트리(에픽 → 티켓 → 하위 티켓)와 �
 pnpm work:next     # 지금 착수할 수 있는 work item
 pnpm work:scope    # 현재 티켓 브랜치의 변경이 역할 소유 경로 안인지 검사
 pnpm work:run      # WORKFLOW.md 정책으로 티켓마다 worktree와 코딩 에이전트 실행
+pnpm work:run --print-prompt [NNNN] # 에이전트를 실행하지 않고 렌더링된 프롬프트만 출력
 ```
 
-`make up`은 없는 로컬 설정 파일(`infra/local/.env`, `apps/api/.env`, `apps/web/.env.local`, `apps/app/.env`)을 예시에서 만듭니다. 주 checkout의 로컬 주소는 API `http://localhost:13000/api/health`(DB 포함 준비 상태는 `/api/health/ready`), 웹 `http://localhost:15173`, Expo Metro `http://localhost:18081`, PostgreSQL `15432`, Valkey `16379`이고, 각 포트는 기본 포트(API 3000, 웹 5173, Expo 8081, PostgreSQL 5432, Valkey 6379)에 같은 오프셋을 더한 값입니다. git worktree는 슬롯마다 100씩 더한 포트와 별도 DB를 씁니다.
+- 작업 흐름: [작업 관리](docs/work/README.md), [제품 탐색과 PRD](docs/product/README.md), [기술 설계와 티켓 분해](docs/specs/README.md), [영역별 병렬 개발](docs/development/parallel-work.md)(OMP 역할 위임, 격리 실행, 계약 기반 mock과 통합)
+- 실행과 검증: [로컬 개발 환경](docs/development/local-environment.md#인스턴스와-포트), [검증 루프](docs/development/verification.md), [work item 실행기](docs/development/agent-runner.md), [OpenDesign 사용 기준](design/docs/opendesign.md)
+- 다른 저장소로 옮기기: [기존 저장소에 하네스 적용](docs/development/adopting-harness.md)
 
-OMP의 역할 위임, 격리 실행, 계약 기반 mock 및 통합 절차는 [영역별 병렬 개발](docs/development/parallel-work.md)을 참고하세요.
-자세한 내용은 [로컬 개발 환경](docs/development/local-environment.md), [검증 루프](docs/development/verification.md), [work item 실행기](docs/development/agent-runner.md), [환경과 비밀값 관리](docs/development/environment-secrets.md), [배포 대상 아키텍처](docs/architecture/deployment-target.md), [CHANGELOGS](CHANGELOGS.md)를 참고하세요.
-
-디자인 산출물은 `design/`에 두고, 앱·API 소스는 이 폴더에 두지 않습니다.
+<!-- harness:end -->

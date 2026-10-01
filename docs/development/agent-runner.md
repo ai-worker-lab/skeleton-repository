@@ -26,8 +26,16 @@ pnpm work:next [--json] [--all]                       # 착수 가능한 work it
 pnpm work:run                                         # 계속 실행. Ctrl+C로 중단
 pnpm work:run --once                                  # 한 번 판단하고, 그때 시작한 작업과 재시도가 끝나면 종료
 pnpm work:run --dry-run                               # 재개·착수·주기 작업 결정만 출력. 파일·브랜치·worktree를 만들지 않음
+pnpm work:run --print-prompt [NNNN]                   # 에이전트를 실행하지 않고 렌더링한 프롬프트만 stdout으로 출력
 pnpm work:run --workflow <path>                       # 다른 WORKFLOW 파일 사용(시험·런타임 전환)
+pnpm work:run --help                                  # 사용법
 ```
+
+`--dry-run`은 무엇을 시작할지(결정)를, `--print-prompt`는 에이전트가 무엇을 받을지(프롬프트)를 보여 줍니다. 둘 다 훅·에이전트를 실행하지 않고 브랜치·worktree·`.local/runner/`를 만들지 않으며, `--print-prompt`는 `--once`·`--dry-run`과 함께 쓰지 않습니다(`--workflow`와는 함께 씀). `--print-prompt`의 렌더링 규칙은 실제 실행과 같습니다.
+
+- `NNNN`을 생략하면 새 착수와 같은 조건(아래 [동작](#동작) 4)으로 고른 첫 항목을 렌더링하고 그 번호를 stderr에 알립니다. 착수할 항목이 없거나 work item 규칙 위반이 있으면 이유를 stderr에 출력하고 종료 코드 1로 끝납니다.
+- `NNNN`을 주면 착수 조건과 관계없이 렌더링하고, 지금 착수 대상이 아니면 그 사유를 stderr에 적습니다.
+- 값은 실행 때와 같게 채웁니다: `attempt`는 1(새 착수와 재개 모두 1번째 시도부터), `branch`·`workspace`는 그 번호의 worktree가 있으면 그 브랜치·경로(재개), 없으면 만들 예정인 `work/NNNN-<slug>`와 `<workspace.root>/NNNN-<slug>`, `base`·`push`는 `WORKFLOW.md` 값입니다. 프롬프트 본문만 stdout에 나오므로 `pnpm -s work:run --print-prompt 0012 > prompt.md`로 저장할 수 있습니다.
 
 ## 동작
 
@@ -59,7 +67,7 @@ pnpm work:run --workflow <path>                       # 다른 WORKFLOW 파일 �
 | `tracker.stop_states` | `[보류/종료]` | 기준 checkout에서 이 상태가 되면 실행 중 에이전트를 멈춤 |
 | `polling.interval_seconds` | `60` | tick 간격 |
 | `workspace.root` | `../<저장소 디렉터리 이름>-worktrees` | worktree를 만들 디렉터리 |
-| `workspace.base` | `main` | 새 작업 브랜치의 시작점 |
+| `workspace.base` | `main` | 새 작업 브랜치의 시작점. `pnpm work:scope`의 기본 비교 기준이기도 함([작업 관리](../work/README.md#명령)) |
 | `workspace.push` | `false` | 프롬프트의 `{{ push }}`. `true`면 에이전트가 push 후 `gh pr create` |
 | `hooks.after_create` | 없음 | worktree를 새로 만든 뒤 한 번 실행. 저장소 설정은 `pnpm install --frozen-lockfile --prefer-offline && pnpm instance` |
 | `hooks.before_run` | 없음 | 매 시도 전에 실행. 실패하면 그 시도는 실패 |
@@ -111,7 +119,7 @@ OMP 명령은 실제로 실행해 응답을 확인했습니다. Codex와 Claude 
 
 ## 운영
 
-- **시작**: 기준 checkout(보통 `main`)에서 `pnpm work:run --dry-run`으로 결정을 확인한 뒤 `pnpm work:run`을 실행합니다. 한 checkout에서는 실행기를 하나만 띄울 수 있습니다(`.local/runner/runner.json`).
+- **시작**: 기준 checkout(보통 `main`)에서 `pnpm work:run --dry-run`으로 결정을, 필요하면 `pnpm work:run --print-prompt`로 첫 항목이 받을 프롬프트를 확인한 뒤 `pnpm work:run`을 실행합니다. 한 checkout에서는 실행기를 하나만 띄울 수 있습니다(`.local/runner/runner.json`).
 - **중단**: `Ctrl+C`(SIGINT) 또는 SIGTERM이면 실행 중인 에이전트 프로세스 그룹을 멈추고(`interrupted`) 종료합니다. worktree와 브랜치는 남고 다음 시작 때 재개됩니다. 실행기가 강제 종료되어 에이전트가 남아 있으면 다음 시작이 거부되며, 출력된 `kill -TERM -<pid>`로 멈춘 뒤 다시 시작합니다.
 - **한 항목만 멈춤**: 기준 checkout에서 그 work item을 `보류/종료`로 바꿉니다(커밋하지 않아도 다음 tick에 반영).
 - **관찰**: 콘솔에 이벤트가 한 줄씩 나오고, 같은 내용이 `.local/runner/events.jsonl`(`ts`, `event`, `item`, `attempt`, `detail`)에 쌓입니다. 에이전트 출력은 `.local/runner/logs/<NNNN>.log`, 실제로 넘긴 프롬프트는 `.local/runner/prompts/`에 있습니다. 진행 중 브랜치는 `pnpm work:next --all`의 점유 사유로 보입니다.

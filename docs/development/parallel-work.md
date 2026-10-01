@@ -29,7 +29,7 @@ git worktree add -b work/<NNNN>-<slug> ../app-skeleton-worktrees/<NNNN>-<slug> <
 
 `jev_route`는 사용자 요청을 접수·분류·라우팅하는 상위 진입점입니다. `product`는 제품·리서치, `designer`는 디자인 산출물, `orchestrator`는 복합 작업의 위임·통합을 맡는 동급 전문 역할입니다. 한 역할만 필요한 일은 해당 agent에 직접 보냅니다. 여러 역할 간 조정이 필요한 경우에만 `orchestrator`가 책임지고 분해합니다. 제품 방향·우선순위·요구 확정은 사용자가 맡고, PRD는 `product`가 근거와 결정 상태를 보존해 정리합니다.
 
-역할별 소유 경로의 기계 원본은 각 agent 정의(`.omp/agents/*.md`) frontmatter의 `owns`(쉼표로 구분한 glob)입니다. `pnpm work:scope [NNNN]`([scripts/work-scope.mjs](../../scripts/work-scope.mjs))가 티켓 `역할`의 `owns` 밖 변경을 실패로 보고하며, `docs/work/**`와 루트 `CHANGELOGS.md`(전용 로그가 없는 `packages/`·`design/` 변경 기록용)는 모든 역할에 허용됩니다. `orchestrator`의 `owns`는 전체(`**`)이지만 영역 구현은 해당 역할 티켓으로 나누는 것이 원칙입니다. 각 역할 정의는 같은 틀로 입력(티켓·설계 문서 절·디자인 인계·계약), 작업 방식, 설계 검토 요청에 대한 의견 범위, 끝내는 조건(검증 명령·변경 기록·`진행 기록`)을 적습니다.
+역할별 소유 경로의 기계 원본은 각 agent 정의(`.omp/agents/*.md`) frontmatter의 `owns`(쉼표로 구분한 glob)입니다. `pnpm work:scope [NNNN]`([scripts/work-scope.mjs](../../scripts/work-scope.mjs))가 티켓 브랜치의 변경(기준 브랜치와의 머지 베이스 이후 커밋과 작업 트리, 기준 선택은 [작업 관리](../work/README.md#명령)) 중 티켓 `역할`의 `owns` 밖 변경을 실패로 보고하며, `docs/work/**`와 루트 `CHANGELOGS.md`(전용 로그가 없는 `packages/`·`design/` 변경 기록용)는 모든 역할에 허용됩니다. `orchestrator`의 `owns`는 전체(`**`)이지만 영역 구현은 해당 역할 티켓으로 나누는 것이 원칙입니다. 각 역할 정의는 같은 틀로 입력(티켓·설계 문서 절·디자인 인계·계약), 작업 방식, 설계 검토 요청에 대한 의견 범위, 끝내는 조건(검증 명령·변경 기록·`진행 기록`)을 적습니다.
 
 | 에이전트 | 책임 |
 | --- | --- |
@@ -45,7 +45,7 @@ PRD가 저장소에서 추적 가능한 변경으로 수정될 때 `product`는 
 
 디자인 산출물만 필요한 요청은 `jev_route`가 `designer`에게 직접 라우팅합니다. 디자인과 웹·앱 구현이 함께 필요한 복합 작업은 `orchestrator`가 기술 구현 담당자와 Designer 사이의 산출물·핸드오프를 조정합니다. `designer`는 로컬 OpenDesign으로 산출물을 만들며, 새 산출물은 사용자 확인 브리프를 먼저 받고 확인된 브리프에 따라 OpenDesign Cloud 또는 Local Codex로 생성합니다. 승인된 산출물은 `design/<기능>/`의 화면과 `handoff.md`로 인계하고, 웹·앱은 이 인계를 기준으로 통합합니다([OpenDesign 사용 기준](../../design/docs/opendesign.md)). 수작업으로 만든 이미지나 임의 대체물을 제품 자산으로 넣지 않습니다.
 
-각 git worktree는 자기 로컬 인스턴스를 가집니다. `make up`이나 `pnpm instance`가 주 checkout은 슬롯 0(기본 포트, Compose project `app-skeleton`), 연결된 worktree는 빈 슬롯 k(각 포트 +100×k, 별도 Compose project·볼륨)를 할당해 `.local/instance.env`에 기록합니다([로컬 개발 환경](local-environment.md), [ADR 0008](../adr/0008-worktree-local-instances.md)). 따라서 격리 작업공간마다 인프라·API·웹을 띄워 `pnpm smoke`까지 병렬로 검증할 수 있습니다. 같은 인스턴스를 여러 작업이 공유하지 않으며, 작업을 마친 worktree는 `make instance-destroy CONFIRM=1`로 인스턴스를 지운 뒤 제거합니다. OMP `task` 격리 작업공간이 git worktree가 아닌 방식으로 만들어지면 슬롯 할당이 겹칠 수 있으므로 `PORT_SLOT`을 지정합니다.
+각 git worktree는 자기 로컬 인스턴스를 가집니다. `make up`이나 `pnpm instance`가 주 checkout은 슬롯 0(`infra/local/.env.example`의 포트, Compose project `app-skeleton`), 연결된 worktree는 빈 슬롯 k(각 포트 +100×k, 별도 Compose project·볼륨)를 할당해 `.local/instance.env`에 기록합니다([로컬 개발 환경](local-environment.md), [ADR 0008](../adr/0008-worktree-local-instances.md)). 따라서 격리 작업공간마다 인프라·API·웹을 띄워 `pnpm smoke`까지 병렬로 검증할 수 있습니다. 같은 인스턴스를 여러 작업이 공유하지 않으며, 작업을 마친 worktree는 `make instance-destroy CONFIRM=1`로 인스턴스를 지운 뒤 제거합니다. OMP `task` 격리 작업공간이 git worktree가 아닌 방식으로 만들어지면 슬롯 할당이 겹칠 수 있으므로 `PORT_SLOT`을 지정합니다.
 
 
 ## 계약과 병렬화 경계

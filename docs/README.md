@@ -13,6 +13,7 @@
 - [영역별 병렬 개발](development/parallel-work.md) — 자동 발견되는 OMP 역할, `jev_route` 직접 라우팅, 소유 경로(`owns`), 복합 작업의 `orchestrator` 통합
 - [work item 실행기](development/agent-runner.md) — [WORKFLOW.md](../WORKFLOW.md) 정책으로 착수 가능한 티켓마다 worktree와 코딩 에이전트를 실행하는 `pnpm work:run`
 - [문서 정리 작업](development/doc-gardening.md) — 실행기가 주기적으로 맡기는 문서·코드 불일치 정리 절차
+- [기존 저장소에 하네스 적용](development/adopting-harness.md) — 이미 운영 중인 저장소에 하네스를 들일 때의 파일 묶음, 치환 규칙(이름·패키지 범위·포트·토큰 접두사), ADR 재번호, 기존 디자인 산출물 기준선, 검증 순서
 - [디자인 토큰 사용법](../packages/design-tokens/docs/usage.md) — `@app-skeleton/design-tokens` 원본 수정·생성·검사와 웹·앱 사용 방법
 - [OpenDesign 사용 기준](../design/docs/opendesign.md) — 로컬 OpenDesign 준비, 디자인 시스템 패키지(`design/system/`)와 `pnpm design:sync`, 산출물 인계(`design/<기능>/handoff.md`), `pnpm design:check`
 - [디자인 ADR 0001 OpenDesign 연결 방식](../design/docs/adr/0001-opendesign-integration.md) — 토큰에서 디자인 시스템 패키지를 생성하고 저장소 스냅숏으로 인계하는 결정

@@ -6,8 +6,8 @@
 
 ## 배경
 
-- 에이전트는 work item마다 격리된 git worktree에서 작업합니다([work item 0001](../work/0001-worktree-local-instances.md)). 자기 변경을 실제 경로(DB 연결, API·웹 응답)에서 검증하려면 작업공간마다 인프라와 개발 서버를 띄울 수 있어야 합니다.
-- 기존 구성은 Compose project(`app-skeleton`)와 호스트 포트(API 13000·웹 15173·Expo 18081·PostgreSQL 15432·Valkey 16379)가 고정되어 두 checkout이 동시에 서비스를 띄우면 서로의 컨테이너·볼륨을 공유하거나 포트가 충돌했습니다.
+- 에이전트는 work item마다 격리된 git worktree에서 작업합니다([작업 실행기](../development/agent-runner.md)). 자기 변경을 실제 경로(DB 연결, API·웹 응답)에서 검증하려면 작업공간마다 인프라와 개발 서버를 띄울 수 있어야 합니다.
+- 기존 구성은 Compose project(`app-skeleton`)와 서비스별 호스트 포트(API·웹·Expo·PostgreSQL·Valkey)가 고정되어 두 checkout이 동시에 서비스를 띄우면 서로의 컨테이너·볼륨을 공유하거나 포트가 충돌했습니다.
 - 주 checkout의 기존 Compose project와 데이터 볼륨은 그대로 유지해야 합니다([인프라 작업 규칙](../../infra/AGENTS.md)).
 
 ## 결정

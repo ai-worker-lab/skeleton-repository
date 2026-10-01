@@ -66,15 +66,43 @@ const LABELS = {
   shutdown: '실행기 종료',
 };
 
+const USAGE = [
+  '사용법: pnpm work:run [--once] [--dry-run] [--workflow <path>]',
+  '        pnpm work:run --print-prompt [NNNN] [--workflow <path>]',
+  '  --once          한 번 판단하고, 그때 시작한 작업과 재시도가 끝나면 종료',
+  '  --dry-run       재개·착수·주기 작업 결정만 출력. 파일·브랜치·worktree를 만들지 않음',
+  '  --print-prompt  에이전트를 실행하지 않고 NNNN(생략하면 다음 착수 항목)의 프롬프트를 stdout으로 출력',
+  '  --workflow      다른 WORKFLOW 파일 사용(기본 WORKFLOW.md)',
+].join('\n');
 let options;
+let positionals;
 try {
-  ({ values: options } = parseArgs({
+  ({ values: options, positionals } = parseArgs({
     args: process.argv.slice(2).filter((arg) => arg !== '--'),
-    options: { once: { type: 'boolean' }, 'dry-run': { type: 'boolean' }, workflow: { type: 'string' } },
+    allowPositionals: true,
+    options: {
+      once: { type: 'boolean' },
+      'dry-run': { type: 'boolean' },
+      'print-prompt': { type: 'boolean' },
+      workflow: { type: 'string' },
+      help: { type: 'boolean', short: 'h' },
+    },
   }));
+  if (options['print-prompt']) {
+    if (options.once || options['dry-run'])
+      throw new Error('--print-prompt는 실행하지 않는 미리보기라 --once·--dry-run과 함께 쓰지 않습니다');
+    if (positionals.length > 1 || (positionals[0] && !/^\d{4}$/.test(positionals[0])))
+      throw new Error(`--print-prompt 뒤에는 work item 번호(NNNN) 하나만 받습니다: ${positionals.join(' ')}`);
+  } else if (positionals.length > 0) {
+    throw new Error(`알 수 없는 인자 '${positionals.join(' ')}'입니다. 번호는 --print-prompt와 함께 씁니다`);
+  }
 } catch (error) {
-  console.error(`인자 오류: ${error.message}\n사용법: pnpm work:run [--once] [--dry-run] [--workflow <path>]`);
+  console.error(`인자 오류: ${error.message}\n${USAGE}`);
   process.exit(2);
+}
+if (options.help) {
+  console.log(USAGE);
+  process.exit(0);
 }
 const dryRun = Boolean(options['dry-run']);
 const once = Boolean(options.once);
@@ -216,14 +244,31 @@ function childEnv(extra) {
   return { ...env, ...extra };
 }
 
-function prepareWorkspace(entry, config) {
+/** 시도가 쓸 worktree 경로. 작업 브랜치의 worktree가 있으면 그 경로, 없으면 새로 만들 경로입니다. */
+function workspaceFor(entry, config) {
   const existing = worktrees().get(entry.branch);
-  if (existing) return { path: existing, created: false };
-  const path = join(config.workspace.root, entry.dirName);
+  return { path: existing ?? join(config.workspace.root, entry.dirName), exists: Boolean(existing) };
+}
+
+function prepareWorkspace(entry, config) {
+  const { path, exists } = workspaceFor(entry, config);
+  if (exists) return { path, created: false };
   mkdirSync(config.workspace.root, { recursive: true });
   const hasBranch = gitSucceeds('show-ref', '--verify', '--quiet', `refs/heads/${entry.branch}`);
   git('worktree', 'add', ...(hasBranch ? [path, entry.branch] : ['-b', entry.branch, path, config.workspace.base]));
   return { path, created: true };
+}
+
+/** 시도의 프롬프트. work item은 WORKFLOW.md 본문, 주기 작업은 prompt_file을 렌더링합니다. */
+function renderJobPrompt(entry, workspacePath) {
+  const { config, template } = workflow;
+  const vars = { attempt: entry.attempt, branch: entry.branch, base: config.workspace.base, workspace: workspacePath };
+  return entry.item
+    ? renderPrompt(template, { ...vars, item: entry.item, push: config.workspace.push })
+    : renderPrompt(readFileSync(join(root, entry.schedule.prompt_file), 'utf8'), {
+        ...vars,
+        schedule: entry.schedule,
+      });
 }
 
 function runShell(entry, step, command, cwd, env, log, timeoutSeconds) {
@@ -252,7 +297,7 @@ function runShell(entry, step, command, cwd, env, log, timeoutSeconds) {
 }
 
 async function runAttempt(entry) {
-  const { config, template } = workflow;
+  const { config } = workflow;
   const { key, attempt } = entry;
   const log = openSync(join(stateDir, 'logs', `${key}.log`), 'a');
   const halted = () => entry.stopping || shuttingDown;
@@ -298,13 +343,7 @@ async function runAttempt(entry) {
 
     let prompt;
     try {
-      const vars = { attempt, branch: entry.branch, base: config.workspace.base, workspace: workspace.path };
-      prompt = entry.item
-        ? renderPrompt(template, { ...vars, item: entry.item, push: config.workspace.push })
-        : renderPrompt(readFileSync(join(root, entry.schedule.prompt_file), 'utf8'), {
-            ...vars,
-            schedule: entry.schedule,
-          });
+      prompt = renderJobPrompt(entry, workspace.path);
     } catch (error) {
       emit('failed', key, attempt, { reason: '프롬프트를 렌더링하지 못했습니다', message: error.message });
       return;
@@ -465,15 +504,15 @@ function tick(dispatchNew) {
     for (const { item, reasons } of rankWorkItems({ items, children }, claims)) {
       if (free() <= 0) break;
       if (reasons.length > 0 || running.has(item.id) || retries.has(item.id)) continue;
-      if (!gitSucceeds('cat-file', '-e', `${config.workspace.base}:${item.path}`)) {
-        const reason = `${config.workspace.base}에서 ${item.path}를 찾지 못했습니다. work item을 커밋하고 workspace.base를 확인하세요`;
+      const reason = baseSkipReason(item, config);
+      if (reason) {
         notice('skip', item.id, { reason });
         continue;
       }
-      const dirName = basename(item.path, '.md');
-      const branch = `${WORK_BRANCH_PREFIX}${dirName}`;
-      emit('dispatch', item.id, 1, { branch, workspace: join(config.workspace.root, dirName), role: item.role });
-      start({ key: item.id, item, attempt: 1, branch, dirName });
+      const job = dispatchJob(item);
+      const workspace = join(config.workspace.root, job.dirName);
+      emit('dispatch', item.id, 1, { branch: job.branch, workspace, role: item.role });
+      start(job);
     }
   }
   runSchedules(config, free);
@@ -503,11 +542,83 @@ function shutdown(signal) {
   wakeUp();
 }
 
+/** 새 착수의 시도 정보. 작업 브랜치·worktree 디렉터리 이름은 work item 파일 이름입니다. */
+function dispatchJob(item) {
+  const dirName = basename(item.path, '.md');
+  return { key: item.id, item, attempt: 1, branch: `${WORK_BRANCH_PREFIX}${dirName}`, dirName };
+}
+
+/** worktree는 workspace.base에서 만들므로 work item이 그 ref에 커밋되어 있어야 합니다. 아니면 건너뛸 사유입니다. */
+function baseSkipReason(item, config) {
+  if (gitSucceeds('cat-file', '-e', `${config.workspace.base}:${item.path}`)) return undefined;
+  return `${config.workspace.base}에서 ${item.path}를 찾지 못했습니다. work item을 커밋하고 workspace.base를 확인하세요`;
+}
+
+// --print-prompt: 착수·재개 때와 같은 규칙으로 프롬프트만 렌더링합니다. 훅·에이전트를 실행하지 않고
+// 브랜치·worktree·.local/runner/를 만들지 않습니다. 번호가 없으면 tick이 새로 착수할 첫 항목을 고릅니다.
+function previewPrompt(id) {
+  const { config } = workflow;
+  const { items, children, errors } = loadWorkItems({ root, workDir: join(root, config.tracker.dir) });
+  const ranked = rankWorkItems({ items, children }, readClaims(root));
+  let job;
+  if (id) {
+    const item = items.get(id);
+    if (!item) {
+      throw new Error(
+        `work item ${id}이 ${config.tracker.dir}에 없습니다. 번호를 확인하거나 pnpm work:next --all로 목록을 보세요.`,
+      );
+    }
+    // 재개(recover)와 같이 이 번호의 작업 브랜치 worktree가 있으면 그 브랜치·경로를 씁니다.
+    const resumed = [...worktrees()].find(([branch]) => branchItemId(branch) === id);
+    if (resumed) {
+      job = { key: id, item, attempt: 1, branch: resumed[0], dirName: basename(resumed[1]) };
+      console.error(`참고: ${id}의 worktree ${resumed[1]}(브랜치 ${resumed[0]})가 있어 재개 때의 값으로 렌더링합니다.`);
+    } else {
+      job = dispatchJob(item);
+      const reasons = [...ranked.find((row) => row.item.id === id).reasons, baseSkipReason(item, config)].filter(
+        Boolean,
+      );
+      if (reasons.length > 0) console.error(`참고: 지금은 실행기가 착수하지 않는 항목입니다(${reasons.join('; ')}).`);
+    }
+  } else {
+    if (errors.length > 0) {
+      throw new Error(
+        `work item 규칙 위반 ${errors.length}건이 있어 실행기가 새 착수를 보류합니다. pnpm work:check로 확인해 고치세요.`,
+      );
+    }
+    const next = ranked.find(({ item, reasons }) => reasons.length === 0 && !baseSkipReason(item, config));
+    if (!next) {
+      throw new Error(
+        '착수 가능한 work item이 없습니다. pnpm work:next --all로 제외 사유를 보거나, pnpm work:run --print-prompt NNNN으로 특정 항목의 프롬프트를 보세요.',
+      );
+    }
+    job = dispatchJob(next.item);
+    console.error(`다음 착수 항목: ${next.item.id} ${next.item.title ?? ''}`.trimEnd());
+  }
+  try {
+    return `${renderJobPrompt(job, workspaceFor(job, config).path)}\n`;
+  } catch (error) {
+    throw new Error(`프롬프트를 렌더링하지 못했습니다: ${error.message}. ${job.item.path}의 제목·필드를 확인하세요.`);
+  }
+}
+
 try {
   workflow = loadWorkflow(workflowPath, root);
 } catch (error) {
   console.error(error.message);
   process.exit(1);
+}
+if (options['print-prompt']) {
+  let text;
+  try {
+    text = previewPrompt(positionals[0]);
+  } catch (error) {
+    console.error(error.message);
+    process.exit(1);
+  }
+  // 파이프로 넘길 때 출력이 잘리지 않도록 쓰기가 끝난 뒤 종료합니다.
+  await new Promise((done) => process.stdout.write(text, done));
+  process.exit(0);
 }
 if (!dryRun) {
   for (const dir of ['logs', 'prompts']) mkdirSync(join(stateDir, dir), { recursive: true });

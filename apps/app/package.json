@@ -4,9 +4,9 @@
   "private": true,
   "main": "expo-router/entry",
   "scripts": {
-    "start": "expo start --port ${EXPO_PORT:-18081}",
-    "android": "expo start --android --port ${EXPO_PORT:-18081}",
-    "ios": "expo start --ios --port ${EXPO_PORT:-18081}",
+    "start": "EXPO_PORT=${EXPO_PORT:-$(node ../../scripts/instance.mjs --get EXPO_PORT)} && expo start --port $EXPO_PORT",
+    "android": "EXPO_PORT=${EXPO_PORT:-$(node ../../scripts/instance.mjs --get EXPO_PORT)} && expo start --android --port $EXPO_PORT",
+    "ios": "EXPO_PORT=${EXPO_PORT:-$(node ../../scripts/instance.mjs --get EXPO_PORT)} && expo start --ios --port $EXPO_PORT",
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {

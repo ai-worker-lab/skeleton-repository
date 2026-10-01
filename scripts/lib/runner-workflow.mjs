@@ -22,11 +22,11 @@ const PROMPT_VARS = [
   'push',
 ];
 
-/**
- * @param {string} path WORKFLOW.md 경로
- * @param {string} root 실행기를 띄운 checkout 루트
- */
-export function loadWorkflow(path, root) {
+/** `workspace.base`를 생략했을 때의 기준 브랜치. `pnpm work:scope`의 기본 기준도 같은 값을 씁니다. */
+const DEFAULT_BASE = 'main';
+
+/** WORKFLOW.md를 front matter 객체와 프롬프트 본문으로 나눕니다. */
+function readWorkflowFile(path) {
   if (!existsSync(path))
     throw new Error(`${path}가 없습니다. 루트 WORKFLOW.md를 만들거나 --workflow <path>로 지정하세요.`);
   const match = /^---\r?\n([\s\S]*?)\r?\n---\r?\n?([\s\S]*)$/.exec(readFileSync(path, 'utf8'));
@@ -38,6 +38,29 @@ export function loadWorkflow(path, root) {
     throw new Error(`${path}: YAML front matter를 해석할 수 없습니다. ${error.message.split('\n')[0]}`);
   }
   if (typeof raw !== 'object' || Array.isArray(raw)) throw new Error(`${path}: front matter는 키-값 객체여야 합니다.`);
+  return { raw, body: match[2] };
+}
+
+/**
+ * 작업 브랜치의 기준 브랜치(`workspace.base`)만 읽습니다. WORKFLOW.md가 없으면 기본값입니다.
+ * 실행기 설정 전체를 검증하지 않으므로 실행기 밖의 도구(`pnpm work:scope`)가 씁니다.
+ * @param {string} root checkout 루트
+ */
+export function readWorkspaceBase(root) {
+  const path = join(root, 'WORKFLOW.md');
+  if (!existsSync(path)) return DEFAULT_BASE;
+  const base = readWorkflowFile(path).raw.workspace?.base ?? DEFAULT_BASE;
+  if (typeof base !== 'string' || base.trim() === '')
+    throw new Error(`${path}: workspace.base는 비어 있지 않은 문자열이어야 합니다. 예: base: main`);
+  return base;
+}
+
+/**
+ * @param {string} path WORKFLOW.md 경로
+ * @param {string} root 실행기를 띄운 checkout 루트
+ */
+export function loadWorkflow(path, root) {
+  const { raw, body } = readWorkflowFile(path);
 
   const problems = [];
   const section = (name) => {
@@ -78,7 +101,7 @@ export function loadWorkflow(path, root) {
     polling: { interval_seconds: integer(polling, 'polling.interval_seconds', 60) },
     workspace: {
       root: text(workspace, 'workspace.root', join('..', `${basename(root)}-worktrees`)),
-      base: text(workspace, 'workspace.base', 'main'),
+      base: text(workspace, 'workspace.base', DEFAULT_BASE),
       push: workspace.push ?? false,
     },
     hooks: {
@@ -124,7 +147,7 @@ export function loadWorkflow(path, root) {
     config.schedules[name] = schedule;
   }
 
-  const template = match[2].trim();
+  const template = body.trim();
   if (!template) problems.push('front matter 아래에 프롬프트 본문이 필요합니다');
   for (const [, name] of template.matchAll(/\{\{\s*([^}]*?)\s*\}\}/g)) {
     if (!PROMPT_VARS.includes(name))
