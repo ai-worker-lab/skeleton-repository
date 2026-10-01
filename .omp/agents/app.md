@@ -1,6 +1,7 @@
 ---
 name: app
 description: Implement or review Expo mobile work owned by apps/app/.
+owns: apps/app/**
 tools: read,grep,glob,bash,edit,write
 ---
 

@@ -89,6 +89,8 @@ writeFileSync(
 );
 
 console.log(`init-project: ${changed}개 파일을 바꿨습니다. 이름 ${name}, 저장소 ${repo}, 포트 오프셋 ${offset}.`);
+// 템플릿 이름·포트로 만든 인스턴스 설정은 낡았으므로 지웁니다. 다음 make·pnpm instance가 새 값으로 다시 만듭니다.
+rmSync(join(root, '.local/instance.env'), { force: true });
 
 if (!values['no-verify']) {
   const run = (args) => {

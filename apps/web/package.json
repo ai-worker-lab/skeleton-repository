@@ -4,7 +4,7 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "start": "next dev --port 15173",
+    "start": "next dev --port ${WEB_PORT:-15173}",
     "build": "next build",
     "typecheck": "tsc --noEmit"
   },

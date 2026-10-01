@@ -1,6 +1,7 @@
 ---
 name: web
 description: Implement or review browser web work owned by apps/web/.
+owns: apps/web/**
 tools: read,grep,glob,bash,edit,write
 ---
 

@@ -1,4 +1,5 @@
 // docs/work/의 work item을 읽고 규칙을 검사합니다. 규칙의 기준은 docs/work/README.md입니다.
+import { execFileSync } from 'node:child_process';
 import { readdirSync, readFileSync } from 'node:fs';
 import { join, relative } from 'node:path';
 import { loadAgents } from './agents.mjs';
@@ -139,4 +140,70 @@ export function loadWorkItems({ root, workDir = join(root, 'docs/work'), agentsD
   }
 
   return { items, children, errors };
+}
+
+/** work item 작업 브랜치 접두. `work/NNNN-<slug>` 브랜치의 존재가 착수 점유입니다(docs/work/README.md). */
+export const WORK_BRANCH_PREFIX = 'work/';
+
+/**
+ * `work/NNNN-*` 브랜치 이름(원격이면 `remotes/<remote>/` 접두 허용)에서 work item 번호를 꺼냅니다.
+ * @param {string} branch
+ * @returns {string | undefined}
+ */
+export function branchItemId(branch) {
+  return /^(?:remotes\/[^/]+\/)?work\/(\d{4})-/.exec(branch)?.[1];
+}
+
+/**
+ * 로컬·원격의 `work/NNNN-*` 브랜치를 읽어 점유된 work item 번호와 브랜치 이름을 돌려줍니다.
+ * @param {string} root
+ * @returns {Map<string, string[]>}
+ */
+export function readClaims(root) {
+  const output = execFileSync('git', ['branch', '-a', '--list', `${WORK_BRANCH_PREFIX}*`, `*/${WORK_BRANCH_PREFIX}*`], {
+    cwd: root,
+    encoding: 'utf8',
+  });
+  const claims = new Map();
+  for (const line of output.split('\n')) {
+    const branch = line.slice(2).trim();
+    const id = branchItemId(branch);
+    if (id) claims.set(id, [...(claims.get(id) ?? []), branch]);
+  }
+  return claims;
+}
+
+const priorityRank = (priority) => Number(/^P(\d)/.exec(priority ?? '')?.[1] ?? 9);
+
+/**
+ * 착수 가능 여부를 계산해 우선순위(`(AI 제안)` 무시) → 번호 순으로 돌려줍니다. 제외 사유가 없으면 착수 가능입니다.
+ * @param {{ items: Map<string, WorkItem>, children: Map<string, WorkItem[]> }} workItems
+ * @param {Map<string, string[]>} claims readClaims의 결과
+ * @returns {{ item: WorkItem, reasons: string[] }[]}
+ */
+export function rankWorkItems({ items, children }, claims) {
+  const rows = [];
+  for (const item of items.values()) {
+    const reasons = [];
+    if (item.level === '에픽') reasons.push('에픽 (하위 티켓으로 착수)');
+    const kids = children.get(item.id) ?? [];
+    if (kids.length > 0) reasons.push(`하위 항목 있음 (${kids.map((kid) => kid.id).join(', ')})`);
+    if (item.state !== '준비') reasons.push(`상태 ${item.state ?? '없음'} (준비만 착수)`);
+    const seen = new Set();
+    for (let owner = item; owner && !seen.has(owner.id); owner = items.get(owner.parent)) {
+      seen.add(owner.id);
+      for (const ref of owner.after) {
+        const state = items.get(ref)?.state;
+        if (state === '완료') continue;
+        const whose = owner === item ? '' : `상위 ${owner.id}의 `;
+        reasons.push(`${whose}선행 ${ref} 미완료 (${state ?? '없음'})`);
+      }
+    }
+    const branches = claims.get(item.id);
+    if (branches) reasons.push(`점유 브랜치 ${branches.join(', ')}`);
+    rows.push({ item, reasons });
+  }
+  return rows.sort(
+    (a, b) => priorityRank(a.item.priority) - priorityRank(b.item.priority) || a.item.id.localeCompare(b.item.id),
+  );
 }

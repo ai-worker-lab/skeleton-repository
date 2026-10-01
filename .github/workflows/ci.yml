@@ -1,4 +1,4 @@
-# PR과 main push에서 저장소 검사를 실행합니다. 기준: docs/development/local-environment.md#ci
+# PR과 main push에서 저장소 검사와 smoke 테스트를 실행합니다. 기준: docs/development/verification.md#ci
 name: CI
 
 on:
@@ -49,9 +49,87 @@ jobs:
           node-version: ${{ matrix.node }}
           cache: pnpm
       - run: pnpm install --frozen-lockfile
-      - run: pnpm tokens:check
-      - run: pnpm work:check
-      - run: pnpm lint
-      - run: pnpm typecheck
-      - run: pnpm build
-      - run: pnpm test
+      # 로컬과 같은 단계(scripts/verify.mjs)를 실행합니다. 실패해도 남은 단계 결과까지 보고합니다.
+      - run: pnpm verify --keep-going
+
+  smoke:
+    name: smoke
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    services:
+      postgres:
+        image: postgres:17-alpine
+        env:
+          POSTGRES_DB: app_skeleton
+          POSTGRES_USER: app_skeleton
+          POSTGRES_PASSWORD: app-skeleton-ci-only
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U app_skeleton -d app_skeleton"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 10
+    env:
+      API_URL: http://127.0.0.1:13000
+      WEB_URL: http://127.0.0.1:15173
+    steps:
+      - uses: actions/checkout@v7
+      - uses: pnpm/action-setup@v6
+      - uses: actions/setup-node@v7
+        with:
+          node-version-file: .nvmrc
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm --filter @app-skeleton/shared build
+      - run: pnpm --filter @app-skeleton/api build
+      - run: pnpm --filter @app-skeleton/web build
+      - name: API·웹 시작
+        env:
+          DATABASE_URL: postgresql://app_skeleton:app-skeleton-ci-only@127.0.0.1:5432/app_skeleton
+          PORT: 13000
+          API_INTERNAL_URL: http://127.0.0.1:13000
+        run: |
+          mkdir -p .local/ci
+          nohup node apps/api/dist/main.js > .local/ci/api.log 2>&1 &
+          nohup pnpm --filter @app-skeleton/web exec next start --port 15173 > .local/ci/web.log 2>&1 &
+      - name: 서비스 준비 대기
+        run: |
+          for _ in $(seq 60); do
+            if curl -fsS "$API_URL/api/health/ready" > /dev/null && curl -fsS "$WEB_URL" > /dev/null; then exit 0; fi
+            sleep 2
+          done
+          echo "API·웹이 2분 안에 준비되지 않았습니다. 아래 'API·웹 로그' 단계를 확인하세요."
+          exit 1
+      - run: pnpm exec playwright install --with-deps chromium
+      - run: pnpm smoke
+      - name: API·웹 로그
+        if: failure()
+        run: |
+          echo '::group::API 로그'; cat .local/ci/api.log || true; echo '::endgroup::'
+          echo '::group::웹 로그'; cat .local/ci/web.log || true; echo '::endgroup::'
+
+  # work item 브랜치(work/NNNN-*) PR은 변경 파일이 티켓 역할의 소유 경로 안에 있는지 검사합니다.
+  work-scope:
+    name: work scope
+    if: github.event_name == 'pull_request' && startsWith(github.head_ref, 'work/')
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          fetch-depth: 0
+      - uses: pnpm/action-setup@v6
+      - uses: actions/setup-node@v7
+        with:
+          node-version-file: .nvmrc
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      # 브랜치 이름은 PR 작성자가 정하므로 표현식에 직접 넣지 않고 환경변수로 읽습니다.
+      - name: pnpm work:scope
+        run: |
+          if [[ ! "$GITHUB_HEAD_REF" =~ ^work/[0-9]{4} ]]; then
+            echo "work item 브랜치(work/NNNN-*)가 아니므로 소유 경로 검사를 건너뜁니다: $GITHUB_HEAD_REF"
+            exit 0
+          fi
+          pnpm work:scope --base "origin/$GITHUB_BASE_REF"

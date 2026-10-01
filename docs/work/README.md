@@ -5,11 +5,14 @@ app-skeleton의 work item은 이 폴더의 Markdown 파일로 관리합니다. G
 ## 명령
 
 ```sh
-pnpm work        # 에픽 → 티켓 → 하위 티켓 트리와 진행률
-pnpm work:check  # 아래 규칙 검사. 위반이 있으면 실패
+pnpm work                             # 에픽 → 티켓 → 하위 티켓 트리와 진행률
+pnpm work:check                       # 아래 규칙 검사. 위반이 있으면 실패
+pnpm work:next [--all] [--json]       # 착수 가능한 work item. --all은 제외 사유까지
+pnpm work:scope [NNNN] [--base <ref>] # 티켓 역할의 소유 경로 밖 변경 검사
+pnpm work:run [--once] [--dry-run]   # 착수 가능한 work item마다 worktree와 코딩 에이전트 실행
 ```
 
-두 명령은 [scripts/work.mjs](../../scripts/work.mjs)가 실행합니다. work item을 추가·수정하면 커밋 전에 `pnpm work:check`를 실행합니다.
+`work`, `work:check`, `work:next`는 [scripts/work.mjs](../../scripts/work.mjs), `work:scope`는 [scripts/work-scope.mjs](../../scripts/work-scope.mjs)(소유 경로 원본은 `.omp/agents/*.md`의 `owns`, [영역별 병렬 개발](../development/parallel-work.md#역할과-에이전트별-소유-경계)), `work:run`은 [작업 실행기](../development/agent-runner.md)가 실행합니다. work item을 추가·수정하면 커밋 전에 `pnpm work:check`를 실행합니다.
 
 ## 단계
 
@@ -67,6 +70,14 @@ pnpm work:check  # 아래 규칙 검사. 위반이 있으면 실패
 5. 커밋 메시지와 PR 설명에는 관련 파일 경로(예: `docs/work/0001-…md`)를 적습니다. 변경 기록(`CHANGELOGS.md`)의 근거에도 같은 경로를 씁니다.
 6. 에이전트에 위임할 때는 티켓 하나를 해당 `역할` agent에 맡기고, 에픽 단위 복합 작업은 `orchestrator`가 티켓 사이의 선행 관계와 통합 검증을 조정합니다.
 
+## 착수와 점유
+
+- **착수 가능**: 에픽이 아니고, 하위 항목이 없고, `상태: 준비`이며, 자신과 모든 상위의 `선행`이 `완료`이고, 아래 브랜치로 점유되지 않은 항목입니다. `pnpm work:next`가 우선순위(`(AI 제안)` 표시는 무시) → 번호 순으로 보여 줍니다.
+- **점유는 브랜치입니다**: `work/NNNN-<파일 이름의 slug>` 브랜치(로컬 또는 원격)가 있으면 누군가 착수한 것입니다. 사람이든 에이전트든 착수할 때 먼저 이 브랜치를 만들고 그 브랜치에서 상태를 `진행`으로 커밋합니다. 점유를 기록하는 별도 파일은 없습니다. 병합하거나 버린 뒤 브랜치를 지우면 점유가 풀립니다.
+- **실행기**: `pnpm work:run`은 이 규칙대로 브랜치와 worktree를 만들고 루트 `WORKFLOW.md`의 프롬프트로 에이전트를 실행합니다. 에이전트가 상태를 `검증`(또는 `분류 대기`)으로 바꾸면 인계로 끝나고, `준비`·`진행`으로 남으면 재시도합니다. 자세한 동작은 [작업 실행기](../development/agent-runner.md)입니다.
+- **에이전트가 발견한 일**: 에이전트는 맡은 범위 밖의 개선점이나 하네스에 빠진 능력(검사, 명령, 문서, 로그 등)을 직접 고치지 않고 새 work item으로 등록합니다. [TEMPLATE.md](TEMPLATE.md) 형식으로 다음 빈 번호를 쓰고 `상태: 분류 대기`, 우선순위 뒤에 `(AI 제안)`을 붙여 작업 브랜치에서 함께 커밋합니다. 사람이 분류할 때 우선순위를 확정하고 `(AI 제안)`을 지웁니다.
+- **번호 충돌**: 병렬 브랜치에서 같은 번호를 쓰면 병합 후 `pnpm work:check`가 번호 중복으로 실패합니다. 나중에 병합하는 쪽이 다음 빈 번호로 파일 이름·제목 줄과 그 번호를 가리키는 `상위`·`선행`·링크를 고칩니다.
+
 ## GitHub Issues 개념과의 대응
 
 | GitHub | 이 저장소 |
@@ -76,6 +87,7 @@ pnpm work:check  # 아래 규칙 검사. 위반이 있으면 실패
 | Sub-issue | `단계: 하위 티켓` + `상위` |
 | 진행률·트리 | `pnpm work` |
 | Blocked by | `선행` |
+| Assignee(착수 표시) | `work/NNNN-<slug>` 브랜치 |
 | 라벨 | `종류`, `우선순위`, `역할` |
 | Issue 양식 검증 | `pnpm work:check` |
 | PR의 `Closes #N` | 같은 PR에서 work item 상태를 `완료`로 변경 |

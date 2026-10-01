@@ -33,4 +33,4 @@ Expo Router route 파일은 화면 전환과 URL/Deep Link 경계만 담당한�
 
 ## 현재 저장소와의 차이
 
-`apps/app`은 초기 골격이다. `app/_layout.tsx`는 토큰 배경색의 root stack, `app/index.tsx`는 앱 이름·컨셉과 `GET /api/health/ready`(API·DB 준비 상태) 결과(로딩·정상·오류와 다시 시도)를 보여 주는 시작 화면이다. `src/components/ui`에 공통 UI primitive, `src/lib/api/client.ts`에 API client가 있고 `src/features/`는 아직 없다. 제품 기능, 스토어 빌드·서명 설정은 구성하지 않았다. Expo 개발 서버는 `expo start --port 18081`로 실행한다.
+`apps/app`은 초기 골격이다. `app/_layout.tsx`는 토큰 배경색의 root stack, `app/index.tsx`는 앱 이름·컨셉과 `GET /api/health/ready`(API·DB 준비 상태) 결과(로딩·정상·오류와 다시 시도)를 보여 주는 시작 화면이다. `src/components/ui`에 공통 UI primitive, `src/lib/api/client.ts`에 API client가 있고 `src/features/`는 아직 없다. 제품 기능, 스토어 빌드·서명 설정은 구성하지 않았다. Expo 개발 서버는 `expo start --port ${EXPO_PORT:-18081}`로 실행하며, `make app-up`은 checkout의 로컬 인스턴스 포트를 넘긴다([로컬 개발 환경](../development/local-environment.md)).

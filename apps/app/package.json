@@ -4,9 +4,9 @@
   "private": true,
   "main": "expo-router/entry",
   "scripts": {
-    "start": "expo start --port 18081",
-    "android": "expo start --android --port 18081",
-    "ios": "expo start --ios --port 18081",
+    "start": "expo start --port ${EXPO_PORT:-18081}",
+    "android": "expo start --android --port ${EXPO_PORT:-18081}",
+    "ios": "expo start --ios --port ${EXPO_PORT:-18081}",
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {

@@ -1,21 +1,28 @@
 # 문서 인덱스
 
-언어·문서 배치·동기화 등 공통 정책은 [루트 AGENTS.md](../AGENTS.md)가 기준입니다. 해당 영역 작업 시 루트에서 연결한 하위 `AGENTS.md`의 추가 규칙도 함께 확인합니다.
+이 문서는 탐색용 색인입니다. 공통 정책 원문은 [저장소 공통 정책](development/repository-policy.md)이고, 루트 [AGENTS.md](../AGENTS.md)는 에이전트용 지도입니다. 해당 영역 작업 시 루트에서 연결한 하위 `AGENTS.md`의 추가 규칙도 함께 확인합니다.
 
 ## 주요 문서
 
-- [로컬 개발 환경](development/local-environment.md) — PostgreSQL/Valkey Compose와 로컬 웹·모바일 앱·API 실행
+- [저장소 공통 정책](development/repository-policy.md) — 언어·기준 정보·문서 배치·ADR·진입점·변경 기록
+- [로컬 개발 환경](development/local-environment.md) — PostgreSQL/Valkey Compose와 로컬 웹·모바일 앱·API 실행, worktree별 로컬 인스턴스, 로그 조회
+- [검증 루프](development/verification.md) — `pnpm verify`·`pnpm smoke`·CI와 완료 보고 전 확인 범위
 - [환경과 비밀값 관리](development/environment-secrets.md) — local/dev/prod 격리와 서비스별 설정 소유권
-- [영역별 병렬 개발](development/parallel-work.md) — 자동 발견되는 OMP 역할, `jev_route` 직접 라우팅, 복합 작업의 `orchestrator` 통합
+- [영역별 병렬 개발](development/parallel-work.md) — 자동 발견되는 OMP 역할, `jev_route` 직접 라우팅, 소유 경로(`owns`), 복합 작업의 `orchestrator` 통합
+- [work item 실행기](development/agent-runner.md) — [WORKFLOW.md](../WORKFLOW.md) 정책으로 착수 가능한 티켓마다 worktree와 코딩 에이전트를 실행하는 `pnpm work:run`
+- [문서 정리 작업](development/doc-gardening.md) — 실행기가 주기적으로 맡기는 문서·코드 불일치 정리 절차
 - [디자인 토큰 사용법](../packages/design-tokens/docs/usage.md) — `@app-skeleton/design-tokens` 원본 수정·생성·검사와 웹·앱 사용 방법
 - [ADR 0001 디자인 토큰 단일 원본](adr/0001-design-tokens.md) — 디자인·웹·앱이 한 토큰 원본과 컴포넌트 규칙을 쓰는 결정
 - [인프라 관리](../infra/README.md) — 환경별 설정 위치와 원격 구성 상태
 - [ALM 운영 기준](alm/workflow.md) — 요구사항·work item·검증·배포·운영 피드백을 연결하는 도구 중립 절차
-- [작업 관리](work/README.md) — 에픽·티켓·하위 티켓 work item의 형식·필드·검사 규칙과 `pnpm work` 명령
+- [작업 관리](work/README.md) — 에픽·티켓·하위 티켓 work item의 형식·필드·검사 규칙과 `pnpm work`·`work:next`·`work:scope` 명령
 - [ADR 0002 work item을 저장소 문서로 관리](adr/0002-work-items-in-repository.md) — GitHub Issues 대신 `docs/work/`를 쓰는 결정
 - [ADR 0003 work item 3단계](adr/0003-work-item-hierarchy.md) — 에픽·티켓·하위 티켓 구조와 "티켓" 용어를 정한 결정
 - [ADR 0004 lint·format](adr/0004-lint-format.md) — ESLint + Prettier 선택과 ESLint 9 사용 이유
 - [ADR 0005 로컬 인프라에 Valkey 유지](adr/0005-keep-valkey-local-infra.md) — API 연결은 용도가 생길 때 추가
+- [ADR 0006 AGENTS.md를 지도로](adr/0006-agents-md-as-map.md) — 공통 정책 원문을 `docs/`로 옮기고 루트 `AGENTS.md`를 크기 예산 안의 지도로 두는 결정
+- [ADR 0007 저장소 work item 실행기](adr/0007-repository-work-item-runner.md) — 저장소 work item을 제어 평면으로, 브랜치를 착수 점유로, 에이전트 명령을 설정으로 두는 결정
+- [ADR 0008 worktree별 로컬 인스턴스](adr/0008-worktree-local-instances.md) — worktree마다 포트 슬롯·Compose project·볼륨을 나누는 결정
 - [외부 서비스·도구 의존](architecture/external-dependencies.md) — 현재 사용 중이거나 계획된 외부 SaaS·도구와 기준 위치
 - [자주 묻는 질문](faq.md) — 저장소 구조, 개발 도구, 로컬 실행, 배포 목표, 언어 정책
 - [배포 대상 아키텍처](architecture/deployment-target.md) — Vercel, Supabase, Oracle ARM 목표 구성 및 미구현 범위

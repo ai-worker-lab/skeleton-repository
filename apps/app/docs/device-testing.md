@@ -4,7 +4,7 @@
 
 개발 중 앱 동작 검증은 **Android 에뮬레이터를 우선**합니다. 화면·흐름·API 호출은 iOS와 같은 코드이므로 Android에서 확인한 기능 동작은 iOS에도 적용됩니다. iOS에서만 달라질 수 있는 안전 영역, 키보드, 폰트·렌더링은 iOS 관련 변경이 있을 때와 **TestFlight 제출 전**에 아래 iOS 시뮬레이터 절차 또는 실기기로 확인합니다.
 
-API는 `13000`, Expo Metro는 `18081` 포트를 씁니다(`apps/app`의 `start` 스크립트가 `expo start --port 18081`를 실행합니다).
+주 checkout에서 API는 `13000`, Expo Metro는 `18081` 포트를 씁니다(`apps/app`의 `start` 스크립트가 `expo start --port ${EXPO_PORT:-18081}`를 실행합니다). git worktree에서는 슬롯마다 포트가 달라지므로 아래 절차의 포트 대신 `pnpm instance`가 출력하는 API·Expo 포트를 씁니다.
 
 ## Android 에뮬레이터 절차
 

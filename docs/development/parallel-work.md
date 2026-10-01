@@ -10,33 +10,42 @@ OMP task는 프로젝트의 `.omp/agents/*.md`를 포함한 설정 경로에서 
 
 상위 `jev_route`가 요청을 분류합니다. 한 역할만 필요하고 영역 간 통합이 없으면 현재 사용 가능한 전문 agent에 직접 라우팅합니다. 둘 이상의 역할이 필요하거나 영역 간 계약·의존성·통합 검증이 필요한 요청은 `orchestrator`에 위임합니다. 제품 방향·우선순위는 사용자가 확정하고, `product`는 사용자 문제·근거·PRD 초안을 정리합니다. `orchestrator`는 복합 요청의 작업 경계·선행 관계·통합 검증을 담당합니다. 미정 제품 결정을 임의로 확정하지 않습니다.
 
-work item이 있는 작업은 티켓 단위로 위임합니다. 티켓의 `역할` agent가 그 티켓을 맡고, 에픽 단위 복합 작업은 `orchestrator`가 티켓 사이의 `선행` 관계와 에픽의 통합 수용 기준을 조정합니다. 단계·필드 규칙은 [작업 관리](../work/README.md)를 따릅니다.
+work item이 있는 작업은 티켓 단위로 위임합니다. 티켓의 `역할` agent가 그 티켓을 맡고, 에픽 단위 복합 작업은 `orchestrator`가 티켓 사이의 `선행` 관계와 에픽의 통합 수용 기준을 조정합니다. 단계·필드 규칙은 [작업 관리](../work/README.md)를 따릅니다. 착수 가능한 티켓은 `pnpm work:next`로 확인하고, 사람 대신 실행기가 티켓을 맡기는 방법은 [work item 실행기](agent-runner.md)를 참고합니다.
+
+위임 원칙:
+
+- 위임 전에 수용 기준, 소유 경로, 계약/API 경계, mock 범위, 각자 검증할 경로를 정합니다.
+- 독립 작업은 한 번의 `task` batch로 동시에 위임하고, 진정한 선행 관계(예: 미확정 공유 API 계약)가 있을 때만 계약 작업 후 구현 작업을 나눕니다.
+- `.omp/config.yml`의 `task.isolation.enabled`가 켜져 있으면 서로 다른 영역 작업은 `isolated: true`로 분리합니다. 격리가 불가능하면 서로 겹치지 않는 파일 경로만 병렬 위임하고 충돌 가능성이 있는 작업은 순차화합니다.
+- 각 agent는 담당 영역의 하위 규칙을 직접 읽고 따릅니다. 복합 작업의 `orchestrator`는 결과를 실제 저장소 상태와 대조하고 mock을 실제 의존성으로 바꾼 통합 경로를 확인한 뒤에만 완료로 보고합니다.
 
 ```sh
-git worktree add -b work/<영역>/<작업명> ../app-skeleton-worktrees/<영역>-<작업명> <통합 기준 브랜치>
+git worktree add -b work/<NNNN>-<slug> ../app-skeleton-worktrees/<NNNN>-<slug> <통합 기준 브랜치>
 ```
 
-`<영역>`은 `infra`, `api`, `web`, `app`, `design` 중 하나입니다. 수동 worktree에서는 모든 작업을 같은 기준 커밋에서 시작하고, 담당 영역 파일만 변경합니다. 영역별 `AGENTS.md`와 루트 규칙을 읽고 따르며, 공용 계약·Makefile은 담당자를 합의하지 않고 동시에 수정하지 않습니다. 디자인 산출물은 `design/**` 소유 경계에 두고, 웹·앱 연결은 확정된 에셋 핸드오프 이후 각 담당자가 수행합니다.
+브랜치 이름 `work/NNNN-<slug>`의 `NNNN`은 work item 번호이며, 이 브랜치가 있으면 그 티켓은 착수된 것으로 봅니다(`pnpm work:next`가 제외). 수동 worktree에서는 모든 작업을 같은 기준 커밋에서 시작하고, 담당 역할의 소유 경로만 변경합니다(`pnpm work:scope`로 확인). 영역별 `AGENTS.md`와 루트 규칙을 읽고 따르며, 공용 계약·Makefile은 담당자를 합의하지 않고 동시에 수정하지 않습니다. 디자인 산출물은 `design/**` 소유 경계에 두고, 웹·앱 연결은 확정된 에셋 핸드오프 이후 각 담당자가 수행합니다.
 
 ## 역할과 에이전트별 소유 경계
 
 `jev_route`는 사용자 요청을 접수·분류·라우팅하는 상위 진입점입니다. `product`는 제품·리서치, `designer`는 디자인 산출물, `orchestrator`는 복합 작업의 위임·통합을 맡는 동급 전문 역할입니다. 한 역할만 필요한 일은 해당 agent에 직접 보냅니다. 여러 역할 간 조정이 필요한 경우에만 `orchestrator`가 책임지고 분해합니다. 제품 방향·우선순위·요구 확정은 사용자가 맡고, PRD는 `product`가 근거와 결정 상태를 보존해 정리합니다.
 
-| 에이전트 | 기본 소유 경로 | 책임 |
-| --- | --- | --- |
-| `product` | `docs/product/`의 제품 요구 문서 초안 | 사용자·시장 조사, 근거 정리, 시나리오·수용 기준을 포함한 PRD 초안. 제품 확정 결정은 사용자에게 요청 |
-| `orchestrator` | 전역 소유 경로 없음 | 둘 이상의 역할이 필요한 작업의 분해·위임·의존성 조정·통합 검증. 영역 구현은 소유하지 않음 |
-| `infra` | `infra/**` | PostgreSQL·Valkey 서비스, Compose, 네트워크와 환경별 인프라 설정 |
-| `api` | `apps/api/**`, DB schema/migrations, 합의된 `packages/shared/` API 계약 | 인증·권한·도메인 규칙·트랜잭션·HTTP 요청/응답/오류 |
-| `web` | `apps/web/**` | Next.js 화면·SSR·브라우저 상호작용·웹 전용 API 소비 |
-| `app` | `apps/app/**` | Expo·React Native 화면·네이티브 동작·모바일 API 소비 |
-| `designer` | `design/**`, `packages/design-tokens/src/tokens.json`의 토큰 이름·값 | 시각 시스템·디자인 토큰·사용자 흐름·화면 상태와 구현에 필요한 디자인 산출물 |
+역할별 소유 경로의 기계 원본은 각 agent 정의(`.omp/agents/*.md`) frontmatter의 `owns`(쉼표로 구분한 glob)입니다. `pnpm work:scope [NNNN]`([scripts/work-scope.mjs](../../scripts/work-scope.mjs))가 티켓 `역할`의 `owns` 밖 변경을 실패로 보고하며, `docs/work/**`는 모든 역할에 허용됩니다. `orchestrator`의 `owns`는 전체(`**`)이지만 영역 구현은 해당 역할 티켓으로 나누는 것이 원칙입니다.
 
-PRD가 저장소에서 추적 가능한 변경으로 수정될 때 `product`는 확정/제안/미정 상태를 지키며 초안을 제안하고, 사용자가 확정한 요구만 승인된 기준으로 취급합니다. 단일 영역 변경은 해당 agent가 맡고, 여러 영역에 걸치는 변경은 `orchestrator`가 역할과 통합 순서를 정합니다. 각 영역 agent는 소유 경로 밖을 직접 수정하지 않습니다. `packages/shared/` 계약과 root `Makefile`처럼 공용 변경의 소유자를 명확히 정하고, 하위 `AGENTS.md`의 적용 규칙을 따릅니다.
+| 에이전트 | 책임 |
+| --- | --- |
+| `product` | 사용자·시장 조사, 근거 정리, 시나리오·수용 기준을 포함한 PRD 초안. 제품 확정 결정은 사용자에게 요청 |
+| `orchestrator` | 둘 이상의 역할이 필요한 작업과 루트 설정·CI·workspace 연결의 분해·위임·의존성 조정·통합 검증 |
+| `infra` | PostgreSQL·Valkey 서비스, Compose, 네트워크와 환경별 인프라 설정 |
+| `api` | 인증·권한·도메인 규칙·트랜잭션·DB schema/migration·HTTP 요청/응답/오류, 합의된 `packages/shared/` API 계약 |
+| `web` | Next.js 화면·SSR·브라우저 상호작용·웹 전용 API 소비 |
+| `app` | Expo·React Native 화면·네이티브 동작·모바일 API 소비 |
+| `designer` | 시각 시스템·디자인 토큰 이름·값과 생성물·사용자 흐름·화면 상태와 구현에 필요한 디자인 산출물 |
+
+PRD가 저장소에서 추적 가능한 변경으로 수정될 때 `product`는 확정/제안/미정 상태를 지키며 초안을 제안하고, 사용자가 확정한 요구만 승인된 기준으로 취급합니다. 단일 영역 변경은 해당 agent가 맡고, 여러 영역에 걸치는 변경은 `orchestrator`가 역할과 통합 순서를 정합니다. 각 영역 agent는 소유 경로 밖을 직접 수정하지 않습니다. `packages/shared/` 계약과 root `Makefile`처럼 공용 변경의 소유자를 명확히 정하고, 하위 `AGENTS.md`의 적용 규칙을 따릅니다. 앱 사이 직접 import와 영역에 맞지 않는 의존성은 ESLint `no-restricted-imports`(루트 `eslint.config.mjs`)가 막습니다.
 
 디자인 산출물만 필요한 요청은 `jev_route`가 `designer`에게 직접 라우팅합니다. 디자인과 웹·앱 구현이 함께 필요한 복합 작업은 `orchestrator`가 기술 구현 담당자와 Designer 사이의 산출물·핸드오프를 조정합니다. 새 이미지 산출물은 사용자 확인 브리프를 먼저 받고, 확인된 브리프에 따라 OpenDesign Cloud 또는 Local Codex로 생성합니다. 웹·앱은 생성된 에셋 핸드오프를 기준으로 통합하며, 수작업으로 만든 이미지나 임의 대체물을 제품 자산으로 넣지 않습니다.
 
-병렬 실행은 코드 변경의 격리를 뜻하며 동일한 호스트 서비스의 병렬 기동을 뜻하지 않습니다. 현재 `Makefile`의 Compose project는 `app-skeleton`으로 고정되고, 로컬 API·웹·Metro와 DB는 공용 포트를 사용합니다. 따라서 각 격리 작업공간의 타입 검사·빌드는 병렬로 수행할 수 있지만, 공용 포트·DB를 쓰는 `make up/down`, 상태 변경형 smoke와 통합 검증은 지정된 통합 환경에서만 실행합니다. 인프라 에이전트가 공용 서비스 상태를 바꿀 때 다른 에이전트와 실행 시간을 조율합니다.
+각 git worktree는 자기 로컬 인스턴스를 가집니다. `make up`이나 `pnpm instance`가 주 checkout은 슬롯 0(기본 포트, Compose project `app-skeleton`), 연결된 worktree는 빈 슬롯 k(각 포트 +100×k, 별도 Compose project·볼륨)를 할당해 `.local/instance.env`에 기록합니다([로컬 개발 환경](local-environment.md), [ADR 0008](../adr/0008-worktree-local-instances.md)). 따라서 격리 작업공간마다 인프라·API·웹을 띄워 `pnpm smoke`까지 병렬로 검증할 수 있습니다. 같은 인스턴스를 여러 작업이 공유하지 않으며, 작업을 마친 worktree는 `make instance-destroy CONFIRM=1`로 인스턴스를 지운 뒤 제거합니다. OMP `task` 격리 작업공간이 git worktree가 아닌 방식으로 만들어지면 슬롯 할당이 겹칠 수 있으므로 `PORT_SLOT`을 지정합니다.
 
 
 ## 계약과 병렬화 경계
@@ -56,7 +65,7 @@ PRD가 저장소에서 추적 가능한 변경으로 수정될 때 `product`는 
 2. 복합 작업의 `orchestrator`는 계약 및 기반 변경(API/shared, 필요한 infra)을 먼저 통합합니다. 웹·앱의 mock을 실제 API로 바꾸고 mock과 중복된 경로를 제거합니다. mock 모드를 유지한다면 실제 사용자 실행 경로와 혼동되지 않도록 개발 전용으로 격리합니다.
 3. 통합된 환경에서 실제 API 요청·응답, DB·인프라 연결, 웹·앱의 로딩·성공·오류 상태를 검증합니다. mock 테스트는 통합 검증을 대체하지 않습니다.
 4. 충돌은 의미를 확인해 해결합니다. 한쪽 변경을 임의로 덮어쓰지 않습니다. work item의 수용 기준·검증 결과와 PR을 연결합니다.
-5. OMP 격리 작업은 완료 시 patch 반영 및 격리 환경 정리를 처리합니다. 수동 worktree는 병합 후 미커밋 변경 여부를 확인하고 제거하며, 작업자의 확인 없이 `git worktree remove`를 실행하지 않습니다.
+5. OMP 격리 작업은 완료 시 patch 반영 및 격리 환경 정리를 처리합니다. 수동 worktree와 실행기(`pnpm work:run`)가 만든 worktree는 병합 후 미커밋 변경 여부를 확인하고, worktree 안에서 `make instance-destroy CONFIRM=1` → `git worktree remove <경로>` → `git branch -d <브랜치>` 순서로 정리합니다. 브랜치가 남아 있으면 그 티켓은 계속 점유된 것으로 봅니다. 작업자의 확인 없이 `git worktree remove`를 실행하지 않습니다.
 
 ## 검증 범위
 

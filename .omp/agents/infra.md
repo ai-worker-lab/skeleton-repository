@@ -1,6 +1,7 @@
 ---
 name: infra
 description: Implement or review infrastructure work owned by infra/.
+owns: infra/**
 tools: read,grep,glob,bash,edit,write
 ---
 

@@ -1,9 +1,9 @@
 #!/usr/bin/env node
-// docs/work/의 work item을 검사(--check)하거나 에픽 → 티켓 → 하위 티켓 트리와 진행률을 출력합니다.
-// 규칙의 기준은 docs/work/README.md입니다.
+// docs/work/의 work item을 검사(--check)하거나, 착수 가능한 항목을 계산(--next [--json] [--all])하거나,
+// 에픽 → 티켓 → 하위 티켓 트리와 진행률을 출력합니다. 규칙의 기준은 docs/work/README.md입니다.
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { loadWorkItems } from './lib/work-items.mjs';
+import { loadWorkItems, rankWorkItems, readClaims } from './lib/work-items.mjs';
 
 const root = join(dirname(fileURLToPath(import.meta.url)), '..');
 const { items, children, errors } = loadWorkItems({
@@ -19,6 +19,39 @@ if (process.argv.includes('--check')) {
     process.exit(1);
   }
   console.log(`work item ${items.size}개가 규칙을 통과했습니다.`);
+  process.exit(0);
+}
+
+if (process.argv.includes('--next')) {
+  const all = process.argv.includes('--all');
+  const rows = rankWorkItems({ items, children }, readClaims(root)).filter((row) => all || row.reasons.length === 0);
+  if (errors.length > 0) console.error(`규칙 위반 ${errors.length}건이 있습니다. pnpm work:check로 확인하세요.\n`);
+  if (process.argv.includes('--json')) {
+    const json = rows.map(({ item, reasons }) => ({
+      ...item,
+      eligible: reasons.length === 0,
+      reasons,
+    }));
+    console.log(JSON.stringify(json, null, 2));
+    process.exit(0);
+  }
+  const line = ({ item, reasons }) => {
+    const role = item.role ? `${item.role} · ` : '';
+    const why = reasons.length > 0 ? `\n    - ${reasons.join('\n    - ')}` : '';
+    return `  ${item.id} [${item.priority}] ${role}${item.title} (${item.path})${why}`;
+  };
+  const eligible = rows.filter((row) => row.reasons.length === 0);
+  console.log('착수 가능 (우선순위 → 번호 순)');
+  if (eligible.length === 0) console.log('  (없음)');
+  for (const row of eligible) console.log(line(row));
+  if (all) {
+    const excluded = rows.filter((row) => row.reasons.length > 0);
+    console.log('\n제외');
+    if (excluded.length === 0) console.log('  (없음)');
+    for (const row of excluded) console.log(line(row));
+  } else if (eligible.length === 0) {
+    console.log('\n제외 사유는 pnpm work:next --all로 확인합니다.');
+  }
   process.exit(0);
 }
 

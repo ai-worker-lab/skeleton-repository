@@ -1,6 +1,7 @@
 ---
 name: product
 description: Research user and product needs, maintain evidence-backed requirements, and draft PRD updates.
+owns: docs/product/**
 tools: read,grep,glob,bash,edit,write,web_search
 ---
 

@@ -31,9 +31,11 @@
 - `infra/` — [local·dev·prod 인프라 관리](infra/README.md). 현재 실행 가능한 구성은 local입니다.
 - `packages/shared/` — 클라이언트와 API가 공유하는 TypeScript 계약.
 - `packages/design-tokens/` — 디자인·웹·앱이 함께 쓰는 디자인 토큰 원본과 생성물. [사용법](packages/design-tokens/docs/usage.md)
-- `scripts/` — work item 검사(`work.mjs`).
+- `scripts/` — 저장소 도구: work item 검사·착수 목록·소유 범위·실행기(`work.mjs`, `work-scope.mjs`, `runner.mjs`), 검증(`verify.mjs`, `smoke.mjs`, `docs-check.mjs`), 로컬 인스턴스·로그(`instance.mjs`, `logs.mjs`).
+- `tests/smoke/` — 실행 중인 API·웹을 확인하는 Playwright smoke 테스트.
+- [WORKFLOW.md](WORKFLOW.md) — work item 실행기의 정책과 에이전트 프롬프트.
 
-문서 배치와 공통 작업 정책은 [루트 AGENTS.md](AGENTS.md), 영역별 추가 규칙은 해당 파일에서 연결한 하위 `AGENTS.md`가 기준입니다.
+에이전트용 지도는 [루트 AGENTS.md](AGENTS.md), 공통 정책 원문은 [저장소 공통 정책](docs/development/repository-policy.md), 영역별 추가 규칙은 각 하위 `AGENTS.md`가 기준입니다.
 
 ## 요구사항
 
@@ -46,30 +48,26 @@
 
 ```sh
 pnpm install
-cp -n infra/local/.env.example infra/local/.env
-chmod 600 infra/local/.env
-cp -n apps/api/.env.example apps/api/.env
-chmod 600 apps/api/.env
-make up            # 인프라·API·웹·Expo 실행
+make up            # 로컬 인스턴스 설정 생성 후 인프라·API·웹·Expo 실행
 make status        # 컨테이너 및 개발 서버 상태
 make down          # 전체 종료(데이터 볼륨 유지)
-make infra-restart # 인프라만 재시작
-make api-restart   # API만 재시작
-make web-restart   # 웹만 재시작
-make app-restart   # Expo만 재시작
-pnpm build         # 토큰 생성물 검사, 공용 패키지, API, 웹 빌드
-pnpm typecheck     # 토큰 생성물 검사, 공용 패키지 빌드 후 전체 타입 검사
-pnpm lint          # ESLint와 Prettier 검사
+make infra-restart # 인프라만 재시작 (api-·web-·app-restart도 같은 형식)
+pnpm instance      # 이 checkout의 포트·주소·Compose project 출력
+pnpm logs api      # 서비스 최근 로그 (api|web|app|infra, --lines N, --follow)
+pnpm verify        # CI와 같은 전체 검증: 토큰·work item·문서·lint·타입·빌드·테스트
+pnpm verify --fast # 빌드·테스트를 뺀 빠른 검증
+pnpm smoke         # 실행 중인 API·웹에 Playwright smoke 테스트
 pnpm format        # Prettier 서식 적용 후 ESLint 자동 수정
-pnpm test          # 통합 테스트(먼저 make infra-up)
 pnpm tokens:generate # 디자인 토큰 원본에서 CSS 변수·앱 객체·디자인 tokens.css 생성
 pnpm work          # work item 트리(에픽 → 티켓 → 하위 티켓)와 진행률
-pnpm work:check    # work item 규칙 검사
+pnpm work:next     # 지금 착수할 수 있는 work item
+pnpm work:scope    # 현재 티켓 브랜치의 변경이 역할 소유 경로 안인지 검사
+pnpm work:run      # WORKFLOW.md 정책으로 티켓마다 worktree와 코딩 에이전트 실행
 ```
 
-로컬 주소는 API `http://localhost:13000/api/health`(DB 포함 준비 상태는 `/api/health/ready`), 웹 `http://localhost:15173`, Expo Metro `http://localhost:18081`이고, PostgreSQL은 호스트 포트 `15432`, Valkey는 `16379`를 사용합니다. 각 포트는 기본 포트(API 3000, 웹 5173, Expo 8081, PostgreSQL 5432, Valkey 6379)에 같은 오프셋을 더한 값입니다.
+`make up`은 없는 로컬 설정 파일(`infra/local/.env`, `apps/api/.env`, `apps/web/.env.local`, `apps/app/.env`)을 예시에서 만듭니다. 주 checkout의 로컬 주소는 API `http://localhost:13000/api/health`(DB 포함 준비 상태는 `/api/health/ready`), 웹 `http://localhost:15173`, Expo Metro `http://localhost:18081`, PostgreSQL `15432`, Valkey `16379`이고, 각 포트는 기본 포트(API 3000, 웹 5173, Expo 8081, PostgreSQL 5432, Valkey 6379)에 같은 오프셋을 더한 값입니다. git worktree는 슬롯마다 100씩 더한 포트와 별도 DB를 씁니다.
 
-OMP의 infra·api·web·app·designer 역할 위임, 격리 실행, 계약 기반 mock 및 통합 절차는 [영역별 병렬 개발](docs/development/parallel-work.md)을 참고하세요.
-자세한 내용은 [로컬 개발 환경](docs/development/local-environment.md), [환경과 비밀값 관리](docs/development/environment-secrets.md), [배포 대상 아키텍처](docs/architecture/deployment-target.md), [CHANGELOGS](CHANGELOGS.md)를 참고하세요.
+OMP의 역할 위임, 격리 실행, 계약 기반 mock 및 통합 절차는 [영역별 병렬 개발](docs/development/parallel-work.md)을 참고하세요.
+자세한 내용은 [로컬 개발 환경](docs/development/local-environment.md), [검증 루프](docs/development/verification.md), [work item 실행기](docs/development/agent-runner.md), [환경과 비밀값 관리](docs/development/environment-secrets.md), [배포 대상 아키텍처](docs/architecture/deployment-target.md), [CHANGELOGS](CHANGELOGS.md)를 참고하세요.
 
 디자인 산출물은 `design/`에 두고, 앱·API 소스는 이 폴더에 두지 않습니다.

@@ -1,6 +1,7 @@
 ---
 name: orchestrator
 description: Decompose and coordinate requests that require multiple specialist agents; integrate results and verify cross-domain acceptance criteria.
+owns: "**"
 tools: read,grep,glob,bash,edit,write,task
 spawns: "*"
 ---

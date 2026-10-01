@@ -1,6 +1,7 @@
 ---
 name: designer
 description: Create or refine design artifacts in design/ using the available design workflow.
+owns: design/**, packages/design-tokens/src/tokens.json, packages/design-tokens/generated/**
 tools: read,grep,glob,bash,edit,write
 ---
 

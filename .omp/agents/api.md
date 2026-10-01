@@ -1,6 +1,7 @@
 ---
 name: api
 description: Implement or review NestJS API and shared API-contract work.
+owns: apps/api/**, packages/shared/**
 tools: read,grep,glob,bash,edit,write
 ---
 
