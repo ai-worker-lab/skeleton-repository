@@ -86,8 +86,9 @@ const firstSection = changelog.indexOf('\n## ');
 const entry = `- \`${PLACEHOLDER.repo}\` 템플릿에서 \`${name}\`로 초기화: 패키지 범위 \`@${name}/*\`, 저장소 \`${repo}\`, 로컬 포트 API ${3000 + offset}·웹 ${5173 + offset}·Expo ${8081 + offset}·PostgreSQL ${5432 + offset}·Valkey ${6379 + offset}.\n`;
 // 오늘 날짜 제목이 이미 맨 위에 있으면 그 아래에 넣고, 없으면 새 날짜 제목을 만듭니다(날짜 제목 중복 금지, docs:check).
 const todayHeading = `\n## ${today}\n`;
+const afterHeading = firstSection + todayHeading.length;
 const updated = changelog.startsWith(todayHeading, firstSection)
-  ? `${changelog.slice(0, firstSection + todayHeading.length)}\n${entry}${changelog.slice(firstSection + todayHeading.length)}`
+  ? `${changelog.slice(0, afterHeading)}\n${entry}${changelog.slice(afterHeading).replace(/^\n/, '')}`
   : `${changelog.slice(0, firstSection)}\n\n## ${today}\n\n${entry}${changelog.slice(firstSection)}`;
 writeFileSync(changelogPath, updated.replace(/\n{3,}/g, '\n\n'));
 
