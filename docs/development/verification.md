@@ -8,12 +8,13 @@
 
 | 명령 | 단계 |
 | --- | --- |
-| `pnpm verify` | `tokens:check → work:check → docs:check → lint → typecheck → build → test` |
-| `pnpm verify --fast` | `tokens:check → work:check → docs:check → lint → typecheck` |
+| `pnpm verify` | `tokens:check → work:check → docs:check → design:check → lint → typecheck → build → test` |
+| `pnpm verify --fast` | `tokens:check → work:check → docs:check → design:check → lint → typecheck` |
 
 - 기본은 첫 실패에서 멈추고 남은 단계를 `건너뜀`으로 표시합니다. 모든 단계 결과를 보려면 `--keep-going`을 붙입니다.
 - `.local/instance.env`([인스턴스 설정](local-environment.md))가 있으면 그 값을 환경변수로 보충합니다. 이미 설정된 환경변수가 우선합니다. `test` 단계의 API 통합 테스트는 이 값의 `TEST_DATABASE_URL`로 현재 작업공간의 PostgreSQL에 연결합니다.
 - `test`는 실제 PostgreSQL이 필요합니다. 먼저 `make infra-up`으로 DB를 띄웁니다.
+- `design:check`는 `design/` 산출물의 색 리터럴과 인계 문서를 검사하고, 로컬 OpenDesign이 실행 중일 때만 `od lint`를 함께 돌립니다([OpenDesign 사용 기준](../../design/docs/opendesign.md#검사)). CI에는 OpenDesign이 없으므로 `od lint`는 건너뜁니다.
 
 ## `pnpm smoke`
 
@@ -51,6 +52,7 @@ work item을 `검증` 상태로 올리거나 완료를 보고하기 전에 변�
 | 변경 영역 | 실행 |
 | --- | --- |
 | 문서·work item만 | `pnpm verify --fast` |
+| 디자인(`design/`, 토큰 원본) | `pnpm tokens:generate`, `pnpm design:sync`, `pnpm design:check --require-lint`, `pnpm verify --fast`. 미리보기는 1280px·390px에서 직접 확인합니다([OpenDesign 사용 기준](../../design/docs/opendesign.md)). |
 | 스크립트·설정·`packages/*` | `pnpm verify` |
 | API(`apps/api/`) | `make infra-up` 후 `pnpm verify`, `make up` 후 `pnpm smoke` |
 | 웹(`apps/web/`) | `pnpm verify`, `make up` 후 `pnpm smoke`. 바꾼 화면은 브라우저로 직접 확인합니다([웹 규칙](../../apps/web/AGENTS.md)). |

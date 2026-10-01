@@ -23,6 +23,8 @@
   --ds-color-status-positive-subtle: rgba(143, 217, 92, 0.14);
   --ds-color-status-danger: #f79ab0;
   --ds-color-status-danger-subtle: rgba(247, 154, 176, 0.14);
+  --ds-color-status-warning: #f2c46d;
+  --ds-color-status-warning-subtle: rgba(242, 196, 109, 0.14);
   --ds-color-overlay-scrim: rgba(8, 9, 11, 0.62);
   --ds-color-overlay-shadow: rgba(0, 0, 0, 0.55);
   --ds-space-2: 2px;

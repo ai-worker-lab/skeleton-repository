@@ -24,7 +24,8 @@ pnpm 모노레포 스켈레톤입니다: NestJS API(`apps/api`), Next.js 웹(`ap
 | 실행 중 API·웹 브라우저 검증 | `pnpm smoke` |
 | work item 트리·검사·착수 가능 목록 | `pnpm work` · `pnpm work:check` · `pnpm work:next` |
 | 티켓 소유 범위 검사 | `pnpm work:scope [NNNN]` |
-| 문서 링크·형식 검사 | `pnpm docs:check` |
+| 문서 링크·형식 / 디자인 산출물 검사 | `pnpm docs:check` · `pnpm design:check` |
+| OpenDesign(디자인 시스템 설치·CLI) | `pnpm design:sync` · `pnpm od <명령>` |
 | work item 자동 실행기 | `pnpm work:run` |
 
 ## 작업 흐름
@@ -43,4 +44,5 @@ pnpm 모노레포 스켈레톤입니다: NestJS API(`apps/api`), Next.js 웹(`ap
 - [작업 관리](docs/work/README.md) · [ALM 운영 기준](docs/alm/workflow.md) · [실행기 정책 WORKFLOW.md](WORKFLOW.md)
 - [영역별 병렬 개발](docs/development/parallel-work.md) — 역할·소유 경계·계약·통합 순서
 - [환경과 비밀값 관리](docs/development/environment-secrets.md)
+- [OpenDesign 사용 기준](design/docs/opendesign.md) — 디자인 작업·인계 (`designer`는 `opendesign` 스킬을 자동으로 읽음)
 - 결정 기록: [docs/adr/](docs/README.md#주요-문서)

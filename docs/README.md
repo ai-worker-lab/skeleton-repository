@@ -12,6 +12,8 @@
 - [work item 실행기](development/agent-runner.md) — [WORKFLOW.md](../WORKFLOW.md) 정책으로 착수 가능한 티켓마다 worktree와 코딩 에이전트를 실행하는 `pnpm work:run`
 - [문서 정리 작업](development/doc-gardening.md) — 실행기가 주기적으로 맡기는 문서·코드 불일치 정리 절차
 - [디자인 토큰 사용법](../packages/design-tokens/docs/usage.md) — `@app-skeleton/design-tokens` 원본 수정·생성·검사와 웹·앱 사용 방법
+- [OpenDesign 사용 기준](../design/docs/opendesign.md) — 로컬 OpenDesign 준비, 디자인 시스템 패키지(`design/system/`)와 `pnpm design:sync`, 산출물 인계(`design/<기능>/handoff.md`), `pnpm design:check`
+- [디자인 ADR 0001 OpenDesign 연결 방식](../design/docs/adr/0001-opendesign-integration.md) — 토큰에서 디자인 시스템 패키지를 생성하고 저장소 스냅숏으로 인계하는 결정
 - [ADR 0001 디자인 토큰 단일 원본](adr/0001-design-tokens.md) — 디자인·웹·앱이 한 토큰 원본과 컴포넌트 규칙을 쓰는 결정
 - [인프라 관리](../infra/README.md) — 환경별 설정 위치와 원격 구성 상태
 - [ALM 운영 기준](alm/workflow.md) — 요구사항·work item·검증·배포·운영 피드백을 연결하는 도구 중립 절차

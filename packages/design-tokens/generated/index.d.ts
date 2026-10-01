@@ -36,6 +36,8 @@ export declare const color: {
     readonly positiveSubtle: "rgba(143, 217, 92, 0.14)";
     readonly danger: "#f79ab0";
     readonly dangerSubtle: "rgba(247, 154, 176, 0.14)";
+    readonly warning: "#f2c46d";
+    readonly warningSubtle: "rgba(242, 196, 109, 0.14)";
   };
   readonly overlay: {
     readonly scrim: "rgba(8, 9, 11, 0.62)";

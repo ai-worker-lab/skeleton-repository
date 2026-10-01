@@ -65,7 +65,7 @@ pnpm test       # 공용 패키지 빌드 후 test 스크립트가 있는 모든
 
 ## 코드 검사
 
-커밋 전에 `pnpm verify --fast`(토큰·work item·문서·lint·타입 검사)를 실행하고, 서식 오류는 `pnpm format`으로 고칩니다. 규칙은 루트 `eslint.config.mjs`(영역 경계 `no-restricted-imports` 포함)와 `.prettierrc.json`에 있으며 도구 선택 배경은 [ADR 0004](../adr/0004-lint-format.md)입니다. Markdown 문서는 Prettier 대상이 아니며 `pnpm docs:check`가 링크·형식을 검사합니다.
+커밋 전에 `pnpm verify --fast`(토큰·work item·문서·디자인 산출물·lint·타입 검사)를 실행하고, 서식 오류는 `pnpm format`으로 고칩니다. 규칙은 루트 `eslint.config.mjs`(영역 경계 `no-restricted-imports` 포함)와 `.prettierrc.json`에 있으며 도구 선택 배경은 [ADR 0004](../adr/0004-lint-format.md)입니다. Markdown 문서는 Prettier 대상이 아니며 `pnpm docs:check`가 링크·형식을 검사합니다.
 
 ## CI
 

@@ -40,7 +40,7 @@
 
 - `docs/` — 여러 영역에 걸친 개발 문서. [문서 인덱스](docs/README.md)를 참고하세요.
 - [CHANGELOGS](CHANGELOGS.md) — 내부 전체 변경 기록. 영역별 기록은 각 구성요소 디렉터리에 있음 / [RELEASES](RELEASES.md) — 공개 릴리스 노트
-- `design/` — OpenDesign 프로젝트 파일과 디자인 산출물.
+- `design/` — 디자인 시스템 패키지(`system/`), 인계된 디자인 산출물(`<기능>/`), 디자인 문서. 로컬 OpenDesign 사용법은 [OpenDesign 사용 기준](design/docs/opendesign.md).
 - `apps/app/` — Expo + React Native 모바일 앱.
 - `apps/web/` — 앱 설치 없이 이용하기 위한 Next.js App Router 웹 클라이언트.
 - `apps/api/` — NestJS + TypeScript API.
@@ -74,7 +74,10 @@ pnpm verify        # CI와 같은 전체 검증: 토큰·work item·문서·lint
 pnpm verify --fast # 빌드·테스트를 뺀 빠른 검증
 pnpm smoke         # 실행 중인 API·웹에 Playwright smoke 테스트
 pnpm format        # Prettier 서식 적용 후 ESLint 자동 수정
-pnpm tokens:generate # 디자인 토큰 원본에서 CSS 변수·앱 객체·디자인 tokens.css 생성
+pnpm tokens:generate # 디자인 토큰 원본에서 CSS 변수·앱 객체·디자인 tokens.css·OpenDesign 디자인 시스템 생성
+pnpm design:sync   # design/system 디자인 시스템을 로컬 OpenDesign에 설치
+pnpm design:check  # design/ 산출물 색 리터럴·인계 문서 검사(OpenDesign 실행 중이면 od lint 포함)
+pnpm od <명령>     # 로컬 OpenDesign od CLI(예: pnpm od lint <html>, pnpm od design-systems list)
 pnpm work          # work item 트리(에픽 → 티켓 → 하위 티켓)와 진행률
 pnpm work:next     # 지금 착수할 수 있는 work item
 pnpm work:scope    # 현재 티켓 브랜치의 변경이 역할 소유 경로 안인지 검사

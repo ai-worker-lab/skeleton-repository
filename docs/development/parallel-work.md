@@ -43,7 +43,7 @@ git worktree add -b work/<NNNN>-<slug> ../app-skeleton-worktrees/<NNNN>-<slug> <
 
 PRD가 저장소에서 추적 가능한 변경으로 수정될 때 `product`는 확정/제안/미정 상태를 지키며 초안을 제안하고, 사용자가 확정한 요구만 승인된 기준으로 취급합니다. 단일 영역 변경은 해당 agent가 맡고, 여러 영역에 걸치는 변경은 `orchestrator`가 역할과 통합 순서를 정합니다. 각 영역 agent는 소유 경로 밖을 직접 수정하지 않습니다. `packages/shared/` 계약과 root `Makefile`처럼 공용 변경의 소유자를 명확히 정하고, 하위 `AGENTS.md`의 적용 규칙을 따릅니다. 앱 사이 직접 import와 영역에 맞지 않는 의존성은 ESLint `no-restricted-imports`(루트 `eslint.config.mjs`)가 막습니다.
 
-디자인 산출물만 필요한 요청은 `jev_route`가 `designer`에게 직접 라우팅합니다. 디자인과 웹·앱 구현이 함께 필요한 복합 작업은 `orchestrator`가 기술 구현 담당자와 Designer 사이의 산출물·핸드오프를 조정합니다. 새 이미지 산출물은 사용자 확인 브리프를 먼저 받고, 확인된 브리프에 따라 OpenDesign Cloud 또는 Local Codex로 생성합니다. 웹·앱은 생성된 에셋 핸드오프를 기준으로 통합하며, 수작업으로 만든 이미지나 임의 대체물을 제품 자산으로 넣지 않습니다.
+디자인 산출물만 필요한 요청은 `jev_route`가 `designer`에게 직접 라우팅합니다. 디자인과 웹·앱 구현이 함께 필요한 복합 작업은 `orchestrator`가 기술 구현 담당자와 Designer 사이의 산출물·핸드오프를 조정합니다. `designer`는 로컬 OpenDesign으로 산출물을 만들며, 새 산출물은 사용자 확인 브리프를 먼저 받고 확인된 브리프에 따라 OpenDesign Cloud 또는 Local Codex로 생성합니다. 승인된 산출물은 `design/<기능>/`의 화면과 `handoff.md`로 인계하고, 웹·앱은 이 인계를 기준으로 통합합니다([OpenDesign 사용 기준](../../design/docs/opendesign.md)). 수작업으로 만든 이미지나 임의 대체물을 제품 자산으로 넣지 않습니다.
 
 각 git worktree는 자기 로컬 인스턴스를 가집니다. `make up`이나 `pnpm instance`가 주 checkout은 슬롯 0(기본 포트, Compose project `app-skeleton`), 연결된 worktree는 빈 슬롯 k(각 포트 +100×k, 별도 Compose project·볼륨)를 할당해 `.local/instance.env`에 기록합니다([로컬 개발 환경](local-environment.md), [ADR 0008](../adr/0008-worktree-local-instances.md)). 따라서 격리 작업공간마다 인프라·API·웹을 띄워 `pnpm smoke`까지 병렬로 검증할 수 있습니다. 같은 인스턴스를 여러 작업이 공유하지 않으며, 작업을 마친 worktree는 `make instance-destroy CONFIRM=1`로 인스턴스를 지운 뒤 제거합니다. OMP `task` 격리 작업공간이 git worktree가 아닌 방식으로 만들어지면 슬롯 할당이 겹칠 수 있으므로 `PORT_SLOT`을 지정합니다.
 
@@ -51,7 +51,7 @@ PRD가 저장소에서 추적 가능한 변경으로 수정될 때 `product`는 
 ## 계약과 병렬화 경계
 
 - API의 HTTP 경로·메서드·요청·응답·오류와 직렬화 가능한 공통 타입의 기준은 API 구현 및 `packages/shared/`입니다. 데이터베이스 접근, 비밀값, UI 상태는 공유 계약에 넣지 않습니다.
-- 웹·앱의 화면 구조·시각 스타일·상태 표현은 사용자가 승인한 `design/` 산출물과 에셋 핸드오프를 기준으로 한다. 색·간격·모서리·글자 크기 토큰은 `@app-skeleton/design-tokens`가 단일 원본이며 웹·앱·디자인은 그 생성물만 사용한다([ADR 0001](../adr/0001-design-tokens.md)). 토큰 생성기와 workspace 연결은 복합 작업의 통합 담당이 맡는다. 각 플랫폼은 디자인의 화면·에셋을 앱 소유 코드로 옮기며 디자인 도구 내부 파일을 런타임에서 불러오지 않는다. 구현에 필요한 화면 상태가 디자인에 없으면 가장 가까운 승인 화면을 따른다.
+- 웹·앱의 화면 구조·시각 스타일·상태 표현은 사용자가 승인한 `design/<기능>/` 산출물과 `handoff.md`를 기준으로 한다. 색·간격·모서리·글자 크기 토큰은 `@app-skeleton/design-tokens`가 단일 원본이며 웹·앱·디자인은 그 생성물만 사용한다([ADR 0001](../adr/0001-design-tokens.md)). 토큰 생성기와 workspace 연결은 복합 작업의 통합 담당이 맡는다. 각 플랫폼은 디자인의 화면·에셋을 앱 소유 코드로 옮기며 디자인 도구 내부 파일을 런타임에서 불러오지 않는다. 구현에 필요한 화면 상태가 디자인에 없으면 가장 가까운 승인 화면을 따른다.
 - 화면 데이터·인증·권한·업무 규칙은 실제 API와 `packages/shared/` 계약을 기준으로 한다. 웹·앱은 표현과 상호작용을 담당하며 서버 업무 규칙을 복제하거나 독자 API 계약을 만들지 않는다. 개발용 mock은 확정된 API 계약에 한정하고 실제 사용자 경로에서는 실제 API를 호출한다.
 - API 계약을 바꾸는 기능도 병렬화할 수 있습니다. 먼저 계약 담당자가 경로·메서드·인증 조건·요청/응답 DTO·오류 동작을 정하고 `packages/shared/`에 반영해 기준 커밋으로 통합합니다. 이 짧은 계약 단계가 끝나면 API·웹·앱 담당자가 각 격리 작업공간에서 같은 계약을 기준으로 병렬 구현합니다.
 - 웹·앱 담당자는 API가 아직 준비되지 않은 동안 계약과 일치하는 HTTP mock/fixture로 화면과 상태 전이를 구현·검증할 수 있습니다. mock은 소비자 테스트 또는 개발 실행에만 두고, API 계약의 대체 원본이나 별도 가정으로 만들지 않습니다. 응답 예시는 공유 DTO 타입에 대입해 타입 검사를 통과시킵니다.

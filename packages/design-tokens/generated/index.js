@@ -36,6 +36,8 @@ export const color = {
     positiveSubtle: "rgba(143, 217, 92, 0.14)",
     danger: "#f79ab0",
     dangerSubtle: "rgba(247, 154, 176, 0.14)",
+    warning: "#f2c46d",
+    warningSubtle: "rgba(242, 196, 109, 0.14)",
   },
   overlay: {
     scrim: "rgba(8, 9, 11, 0.62)",

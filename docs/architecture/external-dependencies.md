@@ -41,7 +41,7 @@ app-skeleton이 의존하는 외부 SaaS와 개발 도구를 한곳에서 찾기
 | --- | --- | --- | --- | --- |
 | OMP | 도구 | 선택 | agent 위임과 격리 작업 | `.omp/`, [영역별 병렬 개발](../development/parallel-work.md) |
 | jev_route · TypeSafe Jev API | 도구·SaaS | 선택 | OMP 요청 분류·라우팅. 요청 문장을 TypeSafe API로 전송 | `.jev.config.json`, [영역별 병렬 개발](../development/parallel-work.md) |
-| OpenDesign (OpenDesign Cloud 또는 Local Codex) | 도구·SaaS | 선택 | `design/` 산출물 생성. 아직 연결된 프로젝트 없음 | `.jev.config.json`, `.omp/agents/designer.md` |
+| OpenDesign 데스크톱 앱(OpenDesign Cloud 또는 Local Codex 실행) | 도구·SaaS | 선택 | `designer`의 산출물 생성·검토. MCP `mcp__open_design_*`, `pnpm od`·`pnpm design:sync`·`pnpm design:check`(실행 중일 때 `od lint`)로 연결. 없어도 `design:check`의 나머지 검사는 동작 | [OpenDesign 사용 기준](../../design/docs/opendesign.md), `.omp/agents/designer.md`, `.omp/skills/opendesign/SKILL.md`, `.jev.config.json` |
 
 이 도구들이 없어도 저장소의 빌드·실행·검증은 동작해야 합니다. 문서·코드의 원본은 저장소에 두고 도구 내부 상태에 의존하지 않습니다.
 

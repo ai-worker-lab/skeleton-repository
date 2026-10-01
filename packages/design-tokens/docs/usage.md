@@ -9,17 +9,19 @@
 | 경로 | 역할 | 편집 |
 | --- | --- | --- |
 | `src/tokens.json` | 토큰 이름과 값의 원본 | 직접 수정 (값·의미는 `designer` 소유) |
+| `src/opendesign.json` | OpenDesign 디자인 시스템 공통 슬롯(`--bg`, `--accent`, `--text-*` 등)과 토큰의 대응, 패키지 이름·설명 | 직접 수정 (`designer` 소유) |
 | `scripts/generate.mjs` | 원본 검증과 생성물 작성, `--check` 검사 | 통합 담당 |
 | `generated/tokens.css` | 웹용 CSS 변수 (`@app-skeleton/design-tokens/tokens.css`) | 생성물, 수정 금지 |
 | `generated/index.js`, `generated/index.d.ts` | 앱(React Native)·TS용 객체와 리터럴 타입 (`@app-skeleton/design-tokens`) | 생성물, 수정 금지 |
-| `../../design/shared/tokens.css` | OpenDesign 디자인 산출물용 CSS 변수 (`generated/tokens.css`와 같은 내용) | 생성물, 수정 금지 |
+| `../../design/shared/tokens.css` | 디자인 산출물용 CSS 변수 (`generated/tokens.css`와 같은 내용) | 생성물, 수정 금지 |
+| `../../design/system/tokens.css`, `manifest.json` | OpenDesign 디자인 시스템 패키지. `--ds-*`와 공통 슬롯을 함께 담음([OpenDesign 사용 기준](../../../design/docs/opendesign.md#디자인-시스템-패키지)) | 생성물, 수정 금지 |
 
 생성물은 저장소에 커밋하므로 웹·앱은 별도 빌드 단계 없이 import합니다.
 
 ## 토큰 값 바꾸기
 
-1. `src/tokens.json`을 수정합니다.
-2. 루트에서 `pnpm tokens:generate`를 실행해 네 생성물을 갱신합니다.
+1. `src/tokens.json`(필요하면 `src/opendesign.json`)을 수정합니다.
+2. 루트에서 `pnpm tokens:generate`를 실행해 생성물을 갱신합니다. 로컬 OpenDesign을 쓰면 `pnpm design:sync`로 디자인 시스템도 갱신합니다.
 3. 원본과 생성물을 함께 커밋합니다. `pnpm tokens:check`는 생성물이 원본과 다르면 실패하며, 루트 `pnpm typecheck`·`pnpm build`가 가장 먼저 실행합니다.
 
 ## 원본 규칙
@@ -29,6 +31,7 @@
 - 키는 소문자·숫자·하이픈(kebab-case)만 씁니다. 숫자 키(`space.16`, `font.size.14`)는 스케일 값 자체를 이름으로 씁니다.
 - `color` 값은 소문자 6자리 hex(`#ff8a3d`) 또는 `rgba(r, g, b, a)`입니다.
 - 다른 토큰을 `"{color.action.primary}"`처럼 참조할 수 있습니다. 생성물에는 해석된 값이 들어갑니다. 없는 대상·순환 참조는 오류입니다.
+- `src/opendesign.json`의 `tokens`는 OpenDesign 공통 슬롯을 하나도 빠짐없이 담아야 하고(목록: `scripts/generate.mjs`의 `OPENDESIGN_SLOTS`), 값은 `"{color.text.primary}"` 같은 토큰 참조나 색이 아닌 CSS 값만 씁니다. 색 리터럴은 오류입니다.
 - 숫자 중 `space`, `corner`, `font.size`는 CSS에서 `px`를 붙이고, `font.weight`는 단위 없이 씁니다. 앱 객체에는 숫자 그대로 들어갑니다.
 
 ## 이름 규칙
