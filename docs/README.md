@@ -5,6 +5,7 @@
 ## 주요 문서
 
 - [저장소 공통 정책](development/repository-policy.md) — 언어·기준 정보·문서 배치·ADR·진입점·변경 기록
+- [제품 탐색과 PRD](product/README.md) — PRD 확정 전 유사 서비스 벤치마킹과 라이브러리·오픈소스·SaaS 기술 조사, [PRD 템플릿](product/TEMPLATE.md)·[벤치마킹 템플릿](product/research/TEMPLATE.md)·[기술 조사 템플릿](references/TEMPLATE.md)
 - [로컬 개발 환경](development/local-environment.md) — PostgreSQL/Valkey Compose와 로컬 웹·모바일 앱·API 실행, worktree별 로컬 인스턴스, 로그 조회
 - [검증 루프](development/verification.md) — `pnpm verify`·`pnpm smoke`·CI와 완료 보고 전 확인 범위
 - [환경과 비밀값 관리](development/environment-secrets.md) — local/dev/prod 격리와 서비스별 설정 소유권
@@ -33,7 +34,7 @@
 - [CHANGELOGS](../CHANGELOGS.md) — 공개 여부와 무관한 내부 전체 변경 기록. 영역별 로그는 `infra/` 및 `apps/` 아래에 있음
 - [RELEASES](../RELEASES.md) — 사용자에게 공개한 릴리스 노트
 
-제품 요구 문서는 아직 없습니다. 서비스를 시작하면 `product`가 `docs/product/`에 초안을 만들고, 제품 소개는 [루트 README](../README.md)에 둡니다.
+제품 요구 문서는 아직 없습니다. 서비스를 시작하면 [제품 탐색과 PRD](product/README.md) 절차로 조사한 뒤 `product`가 `docs/product/`에 초안을 만들고, 제품 소개는 [루트 README](../README.md)에 둡니다. PRD·벤치마킹 문서를 만들면 이 색인에 링크합니다.
 
 ## 문서 위치
 

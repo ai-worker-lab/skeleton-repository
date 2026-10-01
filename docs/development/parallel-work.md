@@ -33,8 +33,8 @@ git worktree add -b work/<NNNN>-<slug> ../app-skeleton-worktrees/<NNNN>-<slug> <
 
 | 에이전트 | 책임 |
 | --- | --- |
-| `product` | 사용자·시장 조사, 근거 정리, 시나리오·수용 기준을 포함한 PRD 초안. 제품 확정 결정은 사용자에게 요청 |
-| `orchestrator` | 둘 이상의 역할이 필요한 작업과 루트 설정·CI·workspace 연결의 분해·위임·의존성 조정·통합 검증 |
+| `product` | 사용자·시장 조사, 유사 서비스 벤치마킹, 근거 정리, 시나리오·수용 기준을 포함한 PRD 초안([제품 탐색과 PRD](../product/README.md)). 제품 확정 결정은 사용자에게 요청 |
+| `orchestrator` | 둘 이상의 역할이 필요한 작업과 루트 설정·CI·workspace 연결의 분해·위임·의존성 조정·통합 검증, 라이브러리·오픈소스·SaaS 기술 조사(`docs/references/`) |
 | `infra` | PostgreSQL·Valkey 서비스, Compose, 네트워크와 환경별 인프라 설정 |
 | `api` | 인증·권한·도메인 규칙·트랜잭션·DB schema/migration·HTTP 요청/응답/오류, 합의된 `packages/shared/` API 계약 |
 | `web` | Next.js 화면·SSR·브라우저 상호작용·웹 전용 API 소비 |

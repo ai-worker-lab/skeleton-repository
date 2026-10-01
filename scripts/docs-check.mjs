@@ -14,6 +14,8 @@ const EXCLUDED = /(^|\/)node_modules\/|^design\/\.od-skills\//;
 const ORPHAN_SCOPE = /^(docs|apps\/[^/]+\/docs|packages\/[^/]+\/docs|infra\/docs|design\/docs)\//;
 const WORK_ITEM = /^docs\/work\/\d{4}-[^/]+\.md$/;
 const ADR_FILE = /(^|\/)adr\/(\d{4})-[^/]+\.md$/;
+/** 외부 정보를 다루는 조사 문서. 확인일과 출처가 없으면 사실이 언제 기준인지 알 수 없습니다(docs/product/README.md). */
+const RESEARCH_FILE = /^docs\/(references|product\/research)\/(?!TEMPLATE\.md$|README\.md$)[^/]+\.md$/;
 
 const root = resolve(dirname(new URL(import.meta.url).pathname), '..');
 const errors = [];
@@ -241,6 +243,23 @@ for (const file of docs.keys()) {
   if (lineCount > maxLines) report(file, maxLines + 1, `${lineCount}줄로 예산 ${maxLines}줄을 넘습니다(${why})`, fix);
   if (file === 'AGENTS.md' && text.length > ROOT_AGENTS_MAX_CHARS) {
     report(file, 1, `${text.length}자로 예산 ${ROOT_AGENTS_MAX_CHARS}자를 넘습니다(${why})`, fix);
+  }
+}
+
+// (7) 조사 문서의 확인일·출처
+for (const [file, doc] of docs) {
+  if (!RESEARCH_FILE.test(file)) continue;
+  const checked = doc.lines.findIndex((line) => /^- 확인일: \d{4}-\d{2}-\d{2}\s*$/.test(line));
+  if (checked === -1) {
+    report(
+      file,
+      1,
+      `조사 문서에 '- 확인일: YYYY-MM-DD' 줄이 없습니다`,
+      '제목 아래 필드 목록에 외부 정보를 확인한 날짜를 적으세요(docs/product/README.md#조사-품질-기준)',
+    );
+  }
+  if (!doc.lines.some((line) => /\]\(https?:\/\//.test(line))) {
+    report(file, 1, '조사 문서에 출처 링크가 없습니다', "'## 출처'에 확인한 외부 자료를 [이름](URL)로 적으세요");
   }
 }
 
