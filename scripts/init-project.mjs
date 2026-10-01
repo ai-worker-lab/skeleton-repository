@@ -84,13 +84,12 @@ const changelogPath = join(root, 'CHANGELOGS.md');
 const changelog = readFileSync(changelogPath, 'utf8');
 const firstSection = changelog.indexOf('\n## ');
 const entry = `- \`${PLACEHOLDER.repo}\` 템플릿에서 \`${name}\`로 초기화: 패키지 범위 \`@${name}/*\`, 저장소 \`${repo}\`, 로컬 포트 API ${3000 + offset}·웹 ${5173 + offset}·Expo ${8081 + offset}·PostgreSQL ${5432 + offset}·Valkey ${6379 + offset}.\n`;
-writeFileSync(
-  changelogPath,
-  `${changelog.slice(0, firstSection)}\n\n## ${today}\n\n${entry}${changelog.slice(firstSection)}`.replace(
-    /\n{3,}/g,
-    '\n\n',
-  ),
-);
+// 오늘 날짜 제목이 이미 맨 위에 있으면 그 아래에 넣고, 없으면 새 날짜 제목을 만듭니다(날짜 제목 중복 금지, docs:check).
+const todayHeading = `\n## ${today}\n`;
+const updated = changelog.startsWith(todayHeading, firstSection)
+  ? `${changelog.slice(0, firstSection + todayHeading.length)}\n${entry}${changelog.slice(firstSection + todayHeading.length)}`
+  : `${changelog.slice(0, firstSection)}\n\n## ${today}\n\n${entry}${changelog.slice(firstSection)}`;
+writeFileSync(changelogPath, updated.replace(/\n{3,}/g, '\n\n'));
 
 console.log(`init-project: ${changed}개 파일을 바꿨습니다. 이름 ${name}, 저장소 ${repo}, 포트 오프셋 ${offset}.`);
 // 템플릿 이름·포트로 만든 인스턴스 설정과 로컬 설정 파일은 낡았으므로 지웁니다. 다음 make·pnpm instance가 새 값으로 다시 만듭니다.
