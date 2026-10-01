@@ -22,7 +22,8 @@ description: 로컬 OpenDesign으로 화면 프로토타입·디자인 시스템
 5. `start_run`: `project`, `prompt`(brief 요약 + 화면 상태·반응형 요구 + `design/system/DESIGN.md` 규칙 준수), `skill`/`skills` 또는 `plugin`+`inputs`, `requestId`(UUID를 한 번 만들어 재시도에도 그대로). 같은 run이 진행 중이면 다시 시작하지 않습니다.
 6. `get_run`을 끝날 때까지(`succeeded`·`failed`·`canceled`) 확인합니다. `failureAction: "recharge"`면 `rechargeUrl`을 사용자에게 보여 주고, 충전 확인 후 같은 `requestId`와 `resume: true`로 한 번만 다시 호출합니다.
 7. 검토: 미리보기 주소(`get_project`의 `previewUrl`)를 브라우저 도구로 1280px·390px에서 확인하고, 필요하면 `critique` template이나 `plan-design-review` skill로 검토 run을 돌립니다. 고칠 점은 같은 프로젝트에 `start_run`(또는 `od-design-refine` plugin)으로 반영합니다.
-8. 인계: 아래 [인계](#인계)를 따릅니다.
+8. 기술 검토: 여러 역할이 구현하는 기능(새 API·데이터가 필요한 화면)은 사용자 승인 전에 `orchestrator`에게 구현 가능성 검토를 요청합니다(`docs/specs/README.md`). 돌아온 `디자인 검토 의견`을 반영하고, 반영 결과를 `handoff.md`의 기술 검토 항목에 적습니다.
+9. 인계: 아래 [인계](#인계)를 따릅니다.
 
 ## 기존 산출물 고치기
 

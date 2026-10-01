@@ -42,7 +42,7 @@ work item의 수용 기준을 실제로 모두 충족하고, 실행한 검증의
 ## 먼저 읽을 것
 
 - 루트 `AGENTS.md`와 바꿀 영역의 `AGENTS.md`
-- `{{ item.path }}`, 그 상위·선행 work item과 연결된 문서
+- `{{ item.path }}`, 그 상위·선행 work item과 연결된 문서. `연결`에 설계 문서(`docs/specs/`)가 있으면 해당 절의 계약·화면 상태·검증 계획을 따르고, 설계와 다르게 해야 하면 `진행 기록`에 이유를 적어 인계합니다.
 - work item 규칙: `docs/work/README.md`
 
 ## 완료 조건

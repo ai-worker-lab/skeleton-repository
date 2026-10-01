@@ -34,7 +34,7 @@ pnpm 모노레포 스켈레톤입니다: NestJS API(`apps/api`), Next.js 웹(`ap
 2. 티켓 브랜치는 `work/NNNN-<slug>`이며 브랜치 존재가 착수 점유입니다.
 3. 구현 후 [검증 루프](docs/development/verification.md)를 실행하고 근거를 티켓 `진행 기록`에 남긴 뒤 `검증`으로 넘깁니다.
 4. 범위 밖 개선점이나 빠진 도구·가드레일을 발견하면 `분류 대기` work item으로 등록합니다.
-5. 여러 역할이 필요한 작업은 [영역별 병렬 개발](docs/development/parallel-work.md)에 따라 `orchestrator`가 나눕니다.
+5. 여러 역할이 필요한 작업은 `orchestrator`가 [기술 설계와 티켓 분해](docs/specs/README.md)를 거쳐 [영역별 병렬 개발](docs/development/parallel-work.md)에 따라 나눕니다.
 
 ## 문서 지도
 

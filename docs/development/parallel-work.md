@@ -10,7 +10,7 @@ OMP task는 프로젝트의 `.omp/agents/*.md`를 포함한 설정 경로에서 
 
 상위 `jev_route`가 요청을 분류합니다. 한 역할만 필요하고 영역 간 통합이 없으면 현재 사용 가능한 전문 agent에 직접 라우팅합니다. 둘 이상의 역할이 필요하거나 영역 간 계약·의존성·통합 검증이 필요한 요청은 `orchestrator`에 위임합니다. 제품 방향·우선순위는 사용자가 확정하고, `product`는 사용자 문제·근거·PRD 초안을 정리합니다. `orchestrator`는 복합 요청의 작업 경계·선행 관계·통합 검증을 담당합니다. 미정 제품 결정을 임의로 확정하지 않습니다.
 
-work item이 있는 작업은 티켓 단위로 위임합니다. 티켓의 `역할` agent가 그 티켓을 맡고, 에픽 단위 복합 작업은 `orchestrator`가 티켓 사이의 `선행` 관계와 에픽의 통합 수용 기준을 조정합니다. 단계·필드 규칙은 [작업 관리](../work/README.md)를 따릅니다. 착수 가능한 티켓은 `pnpm work:next`로 확인하고, 사람 대신 실행기가 티켓을 맡기는 방법은 [work item 실행기](agent-runner.md)를 참고합니다.
+work item이 있는 작업은 티켓 단위로 위임합니다. 티켓의 `역할` agent가 그 티켓을 맡고, 에픽 단위 복합 작업은 `orchestrator`가 티켓 사이의 `선행` 관계와 에픽의 통합 수용 기준을 조정합니다. 여러 역할이 구현하거나 새 API 계약·데이터 모델이 필요한 기능은 `orchestrator`가 먼저 [기술 설계와 티켓 분해](../specs/README.md)로 설계 문서를 승인받고 그 분해안(계약 → 병렬 구현 → 통합)으로 티켓을 만듭니다. 단계·필드 규칙은 [작업 관리](../work/README.md)를 따릅니다. 착수 가능한 티켓은 `pnpm work:next`로 확인하고, 사람 대신 실행기가 티켓을 맡기는 방법은 [work item 실행기](agent-runner.md)를 참고합니다.
 
 위임 원칙:
 
@@ -34,7 +34,7 @@ git worktree add -b work/<NNNN>-<slug> ../app-skeleton-worktrees/<NNNN>-<slug> <
 | 에이전트 | 책임 |
 | --- | --- |
 | `product` | 사용자·시장 조사, 유사 서비스 벤치마킹, 근거 정리, 시나리오·수용 기준을 포함한 PRD 초안([제품 탐색과 PRD](../product/README.md)). 제품 확정 결정은 사용자에게 요청 |
-| `orchestrator` | 둘 이상의 역할이 필요한 작업과 루트 설정·CI·workspace 연결의 분해·위임·의존성 조정·통합 검증, 라이브러리·오픈소스·SaaS 기술 조사(`docs/references/`) |
+| `orchestrator` | 둘 이상의 역할이 필요한 작업과 루트 설정·CI·workspace 연결의 분해·위임·의존성 조정·통합 검증, 디자인 기술 검토와 기술 설계·티켓 분해(`docs/specs/`), 라이브러리·오픈소스·SaaS 기술 조사(`docs/references/`) |
 | `infra` | PostgreSQL·Valkey 서비스, Compose, 네트워크와 환경별 인프라 설정 |
 | `api` | 인증·권한·도메인 규칙·트랜잭션·DB schema/migration·HTTP 요청/응답/오류, 합의된 `packages/shared/` API 계약 |
 | `web` | Next.js 화면·SSR·브라우저 상호작용·웹 전용 API 소비 |
