@@ -1,16 +1,79 @@
 #!/usr/bin/env node
 // docs/work/의 work item을 검사(--check)하거나, 착수 가능한 항목을 계산(--next [--json] [--all])하거나,
-// 에픽 → 티켓 → 하위 티켓 트리와 진행률을 출력합니다. 규칙의 기준은 docs/work/README.md입니다.
-import { dirname, join } from 'node:path';
+// 단계·역할에 맞는 폴더로 옮기거나(--place [NNNN ...] [--dry-run]), 에픽 → 티켓 → 하위 티켓 트리와 진행률을
+// 출력합니다. 규칙의 기준은 docs/work/README.md입니다.
+import { existsSync } from 'node:fs';
+import { dirname, join, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { loadWorkItems, rankWorkItems, readClaims } from './lib/work-items.mjs';
+import { applyMoves, planLinkUpdates } from './lib/work-place.mjs';
 
 const root = join(dirname(fileURLToPath(import.meta.url)), '..');
-const { items, children, errors } = loadWorkItems({
+const workDir = resolve(process.env.WORK_DIR ?? join(root, 'docs/work'));
+const { items, children, errors, placements } = loadWorkItems({
   root,
-  workDir: process.env.WORK_DIR,
+  workDir,
   agentsDir: process.env.AGENTS_DIR,
 });
+
+if (process.argv.includes('--place')) {
+  const USAGE = '사용법: pnpm work:place [NNNN ...] [--dry-run]';
+  const args = process.argv.slice(2).filter((arg) => arg !== '--place');
+  const dryRun = args.includes('--dry-run');
+  const ids = args.filter((arg) => arg !== '--dry-run');
+  const invalid = ids.filter((arg) => !/^\d{4}$/.test(arg) || !items.has(arg));
+  if (invalid.length > 0) {
+    console.error(`알 수 없는 인자 또는 없는 work item 번호: ${invalid.join(' ')}\n${USAGE}`);
+    process.exit(2);
+  }
+  const selected = placements.filter((placement) => ids.length === 0 || ids.includes(placement.id));
+  for (const id of ids) {
+    if (!selected.some((placement) => placement.id === id))
+      console.log(`${id}: 이미 맞는 폴더에 있습니다 (${items.get(id).path})`);
+  }
+  const blocked = selected.filter((placement) => !placement.to);
+  const moves = new Map(selected.filter((placement) => placement.to).map(({ path, to }) => [path, to]));
+  const problems = blocked.map(
+    ({ path }) => `${path}: 단계·역할이 잘못돼 옮길 폴더를 정할 수 없습니다. pnpm work:check로 확인하세요`,
+  );
+  const destinations = new Set();
+  for (const [from, to] of moves) {
+    if (existsSync(join(root, to)) || destinations.has(to))
+      problems.push(`${from}: 옮길 위치 ${to}에 이미 파일이 있습니다`);
+    destinations.add(to);
+  }
+  if (problems.length > 0) {
+    console.error(`옮기지 못하는 work item ${problems.length}건(아무것도 바꾸지 않았습니다):`);
+    for (const problem of problems) console.error(`- ${problem}`);
+    process.exit(1);
+  }
+  if (moves.size === 0) {
+    console.log('옮길 work item이 없습니다. 모두 단계·역할에 맞는 폴더에 있습니다.');
+    process.exit(0);
+  }
+
+  const { edits, changes, mentions } = planLinkUpdates(root, moves);
+  console.log(`${dryRun ? '옮길' : '옮긴'} work item ${moves.size}개:`);
+  for (const [from, to] of moves) console.log(`  ${from} → ${to}`);
+  console.log(`\n${dryRun ? '고칠' : '고친'} 상대 링크 ${changes.length}곳:`);
+  if (changes.length === 0) console.log('  (없음)');
+  for (const change of changes) console.log(`  ${change.file}:${change.line}  ${change.from} → ${change.to}`);
+  if (mentions.length > 0) {
+    const byFile = new Map();
+    for (const { file, line } of mentions) byFile.set(file, [...new Set([...(byFile.get(file) ?? []), line])]);
+    console.log(
+      '\n링크가 아닌 옛 경로 언급(코드 표기·문장)은 그대로 둡니다. 현재 위치를 안내하는 문장이면 직접 고치세요:',
+    );
+    for (const [file, lines] of byFile) console.log(`  ${file}:${lines.join(',')}`);
+  }
+  if (dryRun) {
+    console.log('\n--dry-run이라 아무것도 바꾸지 않았습니다.');
+    process.exit(0);
+  }
+  applyMoves(root, workDir, moves, edits);
+  console.log('\n이동은 git mv로 스테이징했습니다. pnpm work:check와 pnpm docs:check로 확인하고 함께 커밋하세요.');
+  process.exit(0);
+}
 
 if (process.argv.includes('--check')) {
   if (errors.length > 0) {

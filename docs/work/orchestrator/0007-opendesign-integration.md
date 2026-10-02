@@ -31,7 +31,7 @@
 
 ## 연결
 
-- [OpenDesign 사용 기준](../../design/docs/opendesign.md), [디자인 ADR 0001](../../design/docs/adr/0001-opendesign-integration.md), [ADR 0001 디자인 토큰](../adr/0001-design-tokens.md)
+- [OpenDesign 사용 기준](../../../design/docs/opendesign.md), [디자인 ADR 0001](../../../design/docs/adr/0001-opendesign-integration.md), [ADR 0001 디자인 토큰](../../adr/0001-design-tokens.md)
 
 ## 진행 기록
 

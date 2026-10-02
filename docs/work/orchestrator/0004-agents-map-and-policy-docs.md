@@ -17,13 +17,13 @@
 - [x] 루트 `AGENTS.md`가 `docs:check` 예산(100줄·3500자) 안에서 저장소 소개, 핵심 명령, 반드시 지킬 규칙, 문서 지도를 담는다.
 - [x] 언어·기준 정보·문서 배치·ADR·진입점·변경 기록 정책 원문이 `docs/` 아래 정책 문서로 옮겨지고, 모든 참조(영역 `AGENTS.md`, `docs/README.md`, `CHANGELOGS.md`, `docs/alm/workflow.md` 등)가 새 위치를 가리킨다.
 - [x] ADR 0006이 정책 원본 위치 변경과 트레이드오프를 기록한다.
-- [x] `docs/README.md`, 루트 `README.md`, [영역별 병렬 개발](../development/parallel-work.md), [로컬 개발 환경](../development/local-environment.md)이 0001~0003·0005 결과(인스턴스, 검증 명령, `owns`, 실행기, 브랜치 규칙)와 일치한다.
+- [x] `docs/README.md`, 루트 `README.md`, [영역별 병렬 개발](../../development/parallel-work.md), [로컬 개발 환경](../../development/local-environment.md)이 0001~0003·0005 결과(인스턴스, 검증 명령, `owns`, 실행기, 브랜치 규칙)와 일치한다.
 - [x] `pnpm docs:check`와 `pnpm verify --fast`가 통과한다.
 
 ## 범위
 
 - 포함: 루트·영역 `AGENTS.md`, `docs/` 정책·색인, 루트 `README.md`, 변경 기록.
-- 제외: 기존 정책 내용의 변경. 위치와 표현만 바꾸고, 지도화 원칙과 반복 규칙을 검사로 옮기는 원칙만 [ADR 0006](../adr/0006-agents-md-as-map.md) 결정으로 추가합니다.
+- 제외: 기존 정책 내용의 변경. 위치와 표현만 바꾸고, 지도화 원칙과 반복 규칙을 검사로 옮기는 원칙만 [ADR 0006](../../adr/0006-agents-md-as-map.md) 결정으로 추가합니다.
 
 ## 위험·복구
 

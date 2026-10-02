@@ -16,7 +16,7 @@
 | --- | --- | --- |
 | 새 파일 | `scripts/`의 `verify.mjs`·`smoke.mjs`·`docs-check.mjs`·`design.mjs`·`instance.mjs`·`logs.mjs`·`od.mjs`·`runner.mjs`·`work-scope.mjs`와 `scripts/lib/`, `tests/smoke/`, `WORKFLOW.md`, `.omp/skills/`, `docs/development/`의 `repository-policy.md`·`verification.md`·`agent-runner.md`·`doc-gardening.md`·이 문서, `docs/specs/`, `docs/product/README.md`·`TEMPLATE.md`·`research/TEMPLATE.md`, `docs/references/TEMPLATE.md`, `design/system/`, `design/docs/opendesign.md`, `packages/design-tokens/src/opendesign.json`·`scripts/source.mjs`, 하네스 ADR(아래) | 템플릿 최신본을 복사한 뒤 [치환 규칙](#치환-규칙)을 적용합니다 |
 | 병합 파일 | 루트·영역 `AGENTS.md`, `README.md`, `Makefile`, `ecosystem.config.cjs`, 루트 `package.json`(scripts·devDependencies), `.github/workflows/ci.yml`, `.github/pull_request_template.md`, `.gitignore`(`.local/`), `.omp/agents/*.md`, `eslint.config.mjs`, `scripts/work.mjs`, `docs/README.md`, `docs/work/README.md`, `docs/alm/workflow.md`, `docs/development/`의 `local-environment.md`·`environment-secrets.md`·`parallel-work.md`, `docs/faq.md`, `docs/architecture/*.md`, `packages/design-tokens/`의 `scripts/generate.mjs`·`src/tokens.json`·`docs/usage.md`, 앱 `package.json`의 개발 서버 스크립트, `apps/api/src/main.ts`의 포트 읽기, 각 `.env.example`, `infra/local/compose.yaml`, 각 `CHANGELOGS.md`·`RELEASES.md`의 머리말 | 대상 저장소가 이미 바꾼 파일이므로 3-way 병합합니다. 대상 저장소 고유 문장(제품 설명, 보류 결정, 고유 ADR 색인)은 보존하고 하네스 규칙만 들입니다. 루트 `README.md`는 `harness:start`~`harness:end` 블록을 그대로 옮깁니다. `pnpm-lock.yaml`은 손으로 병합하지 않고 `pnpm install`로 다시 만듭니다 |
-| 제외 | 템플릿의 work item(`docs/work/0001-*` 등)과 변경 기록 본문, `scripts/init-project.mjs`, 루트 `README.md`의 `template:start`~`template:end` 블록, 디자인 토큰 값·이름, 제품 코드(`apps/*/src`의 화면·기능) | 옮기지 않습니다. 템플릿 work item이 필요한 맥락은 이식 티켓의 `진행 기록`에 템플릿 커밋으로 남깁니다 |
+| 제외 | 템플릿의 work item(`docs/work/orchestrator/0001-*` 등)과 변경 기록 본문, `scripts/init-project.mjs`, 루트 `README.md`의 `template:start`~`template:end` 블록, 디자인 토큰 값·이름, 제품 코드(`apps/*/src`의 화면·기능) | 옮기지 않습니다. 템플릿 work item이 필요한 맥락은 이식 티켓의 `진행 기록`에 템플릿 커밋으로 남깁니다 |
 
 ## 치환 규칙
 
@@ -34,7 +34,7 @@
 
 ## 하네스 ADR 번호
 
-하네스가 들여오는 결정은 [ADR 0006 AGENTS.md를 지도로](../adr/0006-agents-md-as-map.md), [ADR 0007 저장소 work item 실행기](../adr/0007-repository-work-item-runner.md), [ADR 0008 worktree별 로컬 인스턴스](../adr/0008-worktree-local-instances.md), [디자인 ADR 0001 OpenDesign 연결 방식](../../design/docs/adr/0001-opendesign-integration.md)입니다.
+하네스가 들여오는 결정은 [ADR 0006 AGENTS.md를 지도로](../adr/0006-agents-md-as-map.md), [ADR 0007 저장소 work item 실행기](../adr/0007-repository-work-item-runner.md), [ADR 0008 worktree별 로컬 인스턴스](../adr/0008-worktree-local-instances.md), [ADR 0009 work item을 역할별 폴더에 둠](../adr/0009-work-item-role-folders.md), [디자인 ADR 0001 OpenDesign 연결 방식](../../design/docs/adr/0001-opendesign-integration.md)입니다. ADR 0009를 들일 때는 ADR 0003 상태 줄에 일부 대체 표시를 함께 옮깁니다.
 
 - 대상 저장소의 같은 폴더(`docs/adr/`, `design/docs/adr/`)에 이미 그 번호가 있으면 다음 빈 번호로 파일 이름과 첫 줄 제목을 바꿉니다. 번호가 겹치면 `pnpm docs:check`가 실패합니다.
 - 바꾼 ADR의 `배경` 끝에 출처를 한 줄 적습니다. 예: "이 결정은 템플릿 skeleton-repository의 에이전트 하네스를 옮기며 들여왔습니다(원래 번호 ADR 0006, 이식 work item 0020)." ADR은 work item에 링크하지 않으므로(`pnpm docs:check`) work item은 번호만 적습니다.
@@ -61,12 +61,27 @@ ADR 0006에 따라 공통 정책 원문은 루트 `AGENTS.md`가 아니라 [저�
 - `.local/instance.env`: 이 checkout의 슬롯, Compose project, 포트, 연결 주소. `.local/`은 Git에서 제외합니다. 주 checkout은 슬롯 0으로 `infra/local/.env.example`의 포트와 Compose project `<서비스 이름>`(`scripts/lib/instance.mjs`의 `BASE_NAME`)을 씁니다. 대상 저장소가 쓰던 Compose project 이름(`docker compose ls`, `docker volume ls`로 확인)과 다르면 새 빈 볼륨이 생기므로, 첫 `make up` 전에 이름을 맞춥니다. `make`는 이미 있는 `.local/instance.env`를 그대로 읽으므로 포트 원본을 바꾼 뒤에는 `pnpm instance`를 먼저 실행해 다시 만듭니다(이름과 Compose project는 유지).
 - 없는 로컬 설정 파일: `infra/local/.env`, `apps/api/.env`, `apps/web/.env.local`, `apps/app/.env`. 추적 예시에서 만들고 포트·연결 값은 인스턴스 값으로 채웁니다. 이미 있는 파일은 덮어쓰지 않으며, `make` 대상이 넘기는 인스턴스 값이 파일 값보다 우선합니다([로컬 개발 환경](local-environment.md)). 대상 저장소의 기존 파일에 옛 포트가 남아 있고 `pnpm dev:*`처럼 직접 실행할 때도 새 값이 필요하면, 파일을 지우고 `pnpm instance`로 다시 만듭니다. 값 하나는 `pnpm instance --get <KEY>`(예: `--get WEB_PORT`)로 확인합니다.
 
+## 이미 하네스를 쓰는 저장소: 역할별 work item 폴더
+
+하네스를 먼저 들인 저장소(예: who-when)가 work item 역할별 폴더([ADR 0009](../adr/0009-work-item-role-folders.md))를 들이는 절차입니다. 처음 이식하는 저장소도 [파일 묶음](#파일-묶음)을 복사한 뒤 아래 3~5단계로 기존 work item을 옮깁니다.
+
+1. `orchestrator` 독립 티켓을 만들고 그 브랜치에서 진행합니다. 다른 `work/NNNN-*` 브랜치가 루트의 work item 파일을 고치는 중이면 먼저 병합하거나, 옮긴 뒤 그 브랜치를 rebase합니다(Git이 이름 변경을 따라갑니다). 실행기(`pnpm work:run`)는 멈춰 둡니다.
+2. 템플릿에서 이 변경을 가져옵니다. 변경 커밋은 `git -C <템플릿> log --oneline -- scripts/lib/work-place.mjs`로 찾습니다.
+   - 그대로 복사: `scripts/lib/work-items.mjs`, `scripts/lib/markdown-links.mjs`(새 파일), `scripts/lib/work-place.mjs`(새 파일), `scripts/work.mjs`. 네 파일은 `scripts/lib/agents.mjs` 외의 하네스 파일에 기대지 않습니다.
+   - 변경분만 적용: `scripts/docs-check.mjs`, `scripts/runner.mjs`, `scripts/work-scope.mjs`, `scripts/design.mjs`, `scripts/verify.mjs`, `scripts/init-project.mjs`(있으면). 대상 저장소가 템플릿의 이전 버전이면 최신본을 통째로 복사하지 말고 `git -C <템플릿> format-patch -1 <커밋> --stdout -- <파일…> | git apply -3`처럼 이 커밋의 변경만 적용합니다. 대상 저장소에 없는 코드(예: 디자인 검사 기준선이 없으면 `design.mjs`의 work item 확인)에 걸린 부분은 건너뜁니다. 적용 뒤 [치환 규칙](#치환-규칙)과 [하네스 ADR 번호](#하네스-adr-번호)로 바뀐 값이 그대로인지 확인합니다.
+   - 루트 `package.json` scripts에 `"work:place": "node scripts/work.mjs --place"`
+   - ADR 0009(대상 저장소의 다음 빈 번호로)와 ADR 0003 상태 줄, `docs/README.md` 색인
+   - 문서 병합: `docs/work/README.md`, `docs/work/TEMPLATE.md`, `WORKFLOW.md`(`tracker.dir` 주석, 프롬프트의 work item 규칙·새 항목 두 줄), 루트 `AGENTS.md` 작업 흐름 1번, `README.md` 하네스 명령, `docs/alm/workflow.md`, `docs/development/`의 `agent-runner.md`·`parallel-work.md`·`doc-gardening.md`·`repository-policy.md`·이 문서, `docs/specs/TEMPLATE.md`, `docs/product/TEMPLATE.md`, `.github/pull_request_template.md`, `.omp/skills/technical-design/SKILL.md`
+3. `pnpm work:check`가 기존 work item마다 옮길 위치와 `pnpm work:place NNNN`을 알려 주며 실패합니다. 단계·역할이 잘못돼 옮길 곳을 정할 수 없다고 나오면 그 필드를 먼저 고칩니다.
+4. `pnpm work:place --dry-run`으로 옮길 파일과 고칠 링크, 고치지 않는 옛 경로 언급(변경 기록의 코드 표기 근거 등)을 확인한 뒤 `pnpm work:place`로 옮깁니다. 파일은 `git mv`로 스테이징되고 링크 수정은 작업 트리에 남습니다. 지난 기록의 언급은 그대로 두고, 현재 위치를 안내하는 문장만 직접 고칩니다.
+5. `pnpm work:check`, `pnpm docs:check`, `pnpm work`, `pnpm work:next`, `pnpm work:scope <이 티켓 번호>`, `pnpm verify --fast`가 통과하는지 확인하고, 이동과 링크 수정을 한 커밋에 넣습니다.
+
 ## 검증 순서
 
 이식 티켓의 수용 기준으로 다음을 차례로 확인하고 결과를 `진행 기록`에 남깁니다.
 
 1. `pnpm install` 후 `pnpm verify` 전체가 통과합니다(API 테스트는 `make infra-up`으로 DB가 떠 있어야 합니다).
-2. `pnpm docs:check`, `pnpm work:check`, `pnpm work:next`, `pnpm work:scope <이식 티켓 번호>`가 통과합니다. 기존 work item은 내용을 바꾸지 않고 새 검사를 통과해야 합니다. 통과하지 못하면 검사 규칙과 기존 형식 중 무엇을 맞출지 정하고 근거를 남깁니다.
+2. `pnpm docs:check`, `pnpm work:check`, `pnpm work:next`, `pnpm work:scope <이식 티켓 번호>`가 통과합니다. 기존 work item은 `pnpm work:place`로 역할 폴더에 옮기는 것 외에는 내용을 바꾸지 않고 새 검사를 통과해야 합니다. 통과하지 못하면 검사 규칙과 기존 형식 중 무엇을 맞출지 정하고 근거를 남깁니다.
 3. `pnpm instance`가 슬롯 0에 대상 저장소의 포트와 Compose project를 보여 줍니다. `make up` 후 `pnpm smoke`가 통과하고, `make down`으로 멈춥니다(볼륨 유지). smoke는 첫 화면 문구를 보지 않으므로 대상 저장소의 화면 그대로 통과해야 합니다.
 4. `pnpm design:check`가 통과합니다(기준선 영역은 알림). OpenDesign 앱이 실행 중이면 `pnpm design:sync`로 `user:<서비스 이름>` 디자인 시스템을 설치합니다.
 5. `pnpm work:run --dry-run`이 다음 착수 티켓을 고르고, `pnpm work:run --print-prompt <번호>`가 같은 티켓의 프롬프트를 `WORKFLOW.md`로 렌더링합니다(에이전트는 실행하지 않음).

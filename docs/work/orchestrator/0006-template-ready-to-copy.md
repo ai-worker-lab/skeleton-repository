@@ -29,7 +29,7 @@
 
 ## 연결
 
-- [작업 관리](README.md), [로컬 개발 환경](../development/local-environment.md), [검증 루프](../development/verification.md)
+- [작업 관리](../README.md), [로컬 개발 환경](../../development/local-environment.md), [검증 루프](../../development/verification.md)
 
 ## 진행 기록
 

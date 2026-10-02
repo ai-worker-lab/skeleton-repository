@@ -12,7 +12,6 @@ import {
   lstatSync,
   mkdirSync,
   mkdtempSync,
-  readdirSync,
   readFileSync,
   rmSync,
   statSync,
@@ -29,6 +28,7 @@ import {
   openDesignWorkspace,
   runOpenDesign,
 } from './lib/opendesign.mjs';
+import { findWorkItemFile } from './lib/work-items.mjs';
 import {
   OPENDESIGN_FILE,
   TOKENS_FILE,
@@ -118,7 +118,6 @@ function loadBaseline() {
     );
     return { areas, errors };
   }
-  const workItems = readdirSync(join(root, 'docs/work'));
   for (const [area, entry] of Object.entries(data.areas)) {
     const problems = [];
     const dir = join(root, 'design', area);
@@ -133,8 +132,8 @@ function loadBaseline() {
         problems.push('"reason"(기준선에 둔 이유)이 없습니다');
       if (typeof entry.workItem !== 'string' || !/^\d{4}$/.test(entry.workItem))
         problems.push('"workItem"(정리 work item 번호, 예: "0021")이 없거나 네 자리 숫자 문자열이 아닙니다');
-      else if (!workItems.some((name) => name.startsWith(`${entry.workItem}-`) && name.endsWith('.md')))
-        problems.push(`정리 work item docs/work/${entry.workItem}-*.md가 없습니다`);
+      else if (!findWorkItemFile(join(root, 'docs/work'), entry.workItem))
+        problems.push(`정리 work item docs/work/<역할 또는 epics>/${entry.workItem}-*.md가 없습니다`);
     }
     if (problems.length > 0)
       errors.push(

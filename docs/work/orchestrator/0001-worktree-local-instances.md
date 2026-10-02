@@ -34,12 +34,12 @@
 
 ## 연결
 
-- [영역별 병렬 개발](../development/parallel-work.md), [로컬 개발 환경](../development/local-environment.md)
+- [영역별 병렬 개발](../../development/parallel-work.md), [로컬 개발 환경](../../development/local-environment.md)
 
 ## 진행 기록
 
 - 2026-10-01: 생성. 에이전트 친화 하네스 구성(0001~0005)의 검증 루프 기반.
-- 2026-10-01: 구현([ADR 0008](../adr/0008-worktree-local-instances.md)). `/tmp` 임시 clone(주 checkout 역할, 사용자 Compose project와 겹치지 않게 `PORT_SLOT=31`과 project `app-skeleton-tmpmain0001`로 덮어씀)과 그 연결 worktree에서 확인했다.
+- 2026-10-01: 구현([ADR 0008](../../adr/0008-worktree-local-instances.md)). `/tmp` 임시 clone(주 checkout 역할, 사용자 Compose project와 겹치지 않게 `PORT_SLOT=31`과 project `app-skeleton-tmpmain0001`로 덮어씀)과 그 연결 worktree에서 확인했다.
   - `pnpm instance`: 임시 주 checkout `PORT_SLOT=31` → 슬롯 31(API 16100·웹 18273·Expo 21181·PG 18532·Valkey 19479). 연결 worktree 두 개는 자동으로 슬롯 1(`app-skeleton-wt0001`, API 13100), 슬롯 2(`app-skeleton-wt0001b`)를 받음. `--print-env`가 15개 키를 출력. 없는 로컬 설정 4개를 권한 600으로 만들고 인스턴스 포트를 채움, 미리 만든 `apps/web/.env.local`은 그대로 유지. `PORT_SLOT=-1`·`600`은 오류와 사용법 출력(종료 코드 1).
   - 두 인스턴스(슬롯 31, 연결 worktree `PORT_SLOT=32`) 동시 `make up` 후 `curl /api/health/ready` 둘 다 200 `{"status":"ready"}`, 웹 `/` 둘 다 200, BFF `/api/backend/api/health` 둘 다 `{"status":"ok"}`(`.env.local`의 다른 `API_INTERNAL_URL`보다 PM2 값 우선 확인), Expo `/status` 둘 다 `packager-status:running`. 컨테이너·볼륨이 project별로 분리됨.
   - 연결 worktree에서 `PORT_SLOT=33` 후 `make api-up` → API 로그에 새 DB 포트 `ECONNREFUSED 127.0.0.1:18732`(이전 env가 남지 않음), `PORT_SLOT=32` 복귀 후 ready 200.

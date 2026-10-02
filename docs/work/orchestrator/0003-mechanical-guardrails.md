@@ -28,7 +28,7 @@
 
 ## 연결
 
-- [영역별 병렬 개발](../development/parallel-work.md#역할과-에이전트별-소유-경계), [ADR 0004](../adr/0004-lint-format.md)
+- [영역별 병렬 개발](../../development/parallel-work.md#역할과-에이전트별-소유-경계), [ADR 0004](../../adr/0004-lint-format.md)
 
 ## 진행 기록
 

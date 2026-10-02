@@ -24,7 +24,7 @@
 ## 범위
 
 - 포함: `scripts/work.mjs`(`--next`), `scripts/runner.mjs`, `WORKFLOW.md`, `docs/work/README.md`, 실행기·문서 정리 문서, ADR 0007.
-- 제외: 외부 이슈 트래커 연동([ADR 0002](../adr/0002-work-items-in-repository.md) 유지), 웹 대시보드.
+- 제외: 외부 이슈 트래커 연동([ADR 0002](../../adr/0002-work-items-in-repository.md) 유지), 웹 대시보드.
 
 ## 위험·복구
 
@@ -32,7 +32,7 @@
 
 ## 연결
 
-- [작업 관리](README.md), [작업 실행기](../development/agent-runner.md), [문서 정리](../development/doc-gardening.md), [ADR 0002](../adr/0002-work-items-in-repository.md), [ADR 0007](../adr/0007-repository-work-item-runner.md), [Symphony SPEC](https://github.com/openai/symphony)
+- [작업 관리](../README.md), [작업 실행기](../../development/agent-runner.md), [문서 정리](../../development/doc-gardening.md), [ADR 0002](../../adr/0002-work-items-in-repository.md), [ADR 0007](../../adr/0007-repository-work-item-runner.md), [Symphony SPEC](https://github.com/openai/symphony)
 
 ## 진행 기록
 

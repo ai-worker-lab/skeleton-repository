@@ -30,7 +30,7 @@ pnpm 모노레포 스켈레톤입니다: NestJS API(`apps/api`), Next.js 웹(`ap
 
 ## 작업 흐름
 
-1. 의미 있는 변경은 [work item](docs/work/README.md)으로 시작합니다. 상태 원본은 각 파일의 `상태` 줄입니다. 새 서비스·큰 기능은 먼저 [제품 탐색과 PRD](docs/product/README.md)(유사 서비스·기술 조사)를 거칩니다.
+1. 의미 있는 변경은 [work item](docs/work/README.md)으로 시작합니다. 티켓은 `docs/work/<역할>/`, 에픽은 `docs/work/epics/`에 두며 번호는 폴더와 관계없이 하나입니다. 상태 원본은 각 파일의 `상태` 줄입니다. 새 서비스·큰 기능은 먼저 [제품 탐색과 PRD](docs/product/README.md)(유사 서비스·기술 조사)를 거칩니다.
 2. 티켓 브랜치는 `work/NNNN-<slug>`이며 브랜치 존재가 착수 점유입니다.
 3. 구현 후 [검증 루프](docs/development/verification.md)를 실행하고 근거를 티켓 `진행 기록`에 남긴 뒤 `검증`으로 넘깁니다.
 4. 범위 밖 개선점이나 빠진 도구·가드레일을 발견하면 `분류 대기` work item으로 등록합니다.

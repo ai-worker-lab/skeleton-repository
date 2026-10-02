@@ -12,7 +12,8 @@ const root = join(dirname(fileURLToPath(import.meta.url)), '..');
 const HINTS = {
   'tokens:check':
     '디자인 토큰 생성물이 원본과 다릅니다. pnpm tokens:generate를 실행하고 packages/design-tokens/generated/ 변경을 함께 커밋하세요.',
-  'work:check': 'work item 규칙 위반입니다. 출력된 파일·필드를 docs/work/README.md 규칙에 맞게 고치세요.',
+  'work:check':
+    'work item 규칙 위반입니다. 출력된 파일·필드를 docs/work/README.md 규칙에 맞게 고치세요. 폴더 위치 오류는 pnpm work:place로 옮깁니다(링크도 함께 고침).',
   'docs:check': '문서 규칙 위반입니다. 출력의 각 오류에 적힌 파일·위치와 해결 방법을 따르세요.',
   'design:check': '디자인 산출물 규칙 위반입니다. 출력의 해결 안내와 design/docs/opendesign.md를 따르세요.',
   lint: '서식 오류(Prettier)는 pnpm format으로 고칩니다. 남은 ESLint 오류는 출력된 파일:줄과 규칙 메시지를 보고 코드를 고치세요.',

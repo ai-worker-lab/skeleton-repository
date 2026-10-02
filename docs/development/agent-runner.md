@@ -8,7 +8,7 @@
 
 | Symphony | 이 저장소 |
 | --- | --- |
-| 이슈 트래커 | `docs/work/*.md` (기준 checkout의 작업 트리에서 읽음) |
+| 이슈 트래커 | `docs/work/epics/*.md`·`docs/work/<역할>/*.md` (기준 checkout의 작업 트리에서 읽음) |
 | 착수 후보·정렬 | `pnpm work:next`와 같은 계산: 우선순위(`(AI 제안)` 무시) → 번호 |
 | claim | `work/NNNN-<slug>` 브랜치의 존재(로컬 또는 원격) |
 | 이슈별 workspace | `workspace.root/NNNN-<slug>` git worktree, 브랜치 `work/NNNN-<slug>` |
@@ -52,7 +52,7 @@ pnpm work:run --help                                  # 사용법
 1. `git worktree add -b work/NNNN-<slug> <workspace.root>/NNNN-<slug> <workspace.base>`. 브랜치·worktree가 이미 있으면 그대로 씁니다.
 2. worktree를 새로 만든 경우에만 `hooks.after_create`, 매 시도 전에 `hooks.before_run`을 실행합니다. 실패하면 그 시도는 `failed`입니다.
 3. 프롬프트를 `.local/runner/prompts/<NNNN>-<시도>.md`에 렌더링하고, `sh -c "<agent.command>"`를 worktree에서 별도 프로세스 그룹으로 실행합니다. 훅과 에이전트 출력은 `.local/runner/logs/<NNNN>.log`에 이어 씁니다. `agent.timeout_minutes`를 넘기면 그룹을 멈춥니다(`timeout`).
-4. 끝나면 `hooks.after_run`을 실행하고(실패는 `hook_failed`로만 기록), **worktree 안** work item의 상태를 읽습니다. `tracker.active_states`(기본 `준비`·`진행`)면 `backoff_seconds × 2^(시도-1)`초 뒤 재시도(`retry`)하고, `max_attempts`회를 넘으면 `failed`입니다. 그 밖의 상태(`검증`, `분류 대기` 등)면 `handoff`로 끝냅니다. 에이전트의 종료 코드는 기록만 하고 판단에 쓰지 않습니다.
+4. 끝나면 `hooks.after_run`을 실행하고(실패는 `hook_failed`로만 기록), **worktree 안** work item의 상태를 읽습니다(에이전트가 역할·단계를 바꿔 `pnpm work:place`로 옮겼으면 번호로 찾음). `tracker.active_states`(기본 `준비`·`진행`)면 `backoff_seconds × 2^(시도-1)`초 뒤 재시도(`retry`)하고, `max_attempts`회를 넘으면 `failed`입니다. 그 밖의 상태(`검증`, `분류 대기` 등)면 `handoff`로 끝냅니다. 에이전트의 종료 코드는 기록만 하고 판단에 쓰지 않습니다.
 
 재시작 복구: 시작할 때 `work/NNNN-*` 브랜치의 worktree가 있고 그 안의 상태가 active이며 기준 checkout에서 멈춤 상태가 아닌 항목을 재개 후보(`resume`)로 대기열에 넣습니다. 재시도 횟수는 메모리에만 있으므로 재개는 1번째 시도부터 셉니다. 따라서 `failed`로 끝나 active 상태로 남은 항목도 다시 시작하면 재개됩니다.
 
@@ -62,7 +62,7 @@ pnpm work:run --help                                  # 사용법
 
 | 키 | 기본값 | 설명 |
 | --- | --- | --- |
-| `tracker.dir` | `docs/work` | work item 폴더 |
+| `tracker.dir` | `docs/work` | work item 폴더. 하위의 `epics/`와 역할 폴더까지 읽음([작업 관리](../work/README.md#파일과-필드)) |
 | `tracker.active_states` | `[준비, 진행]` | 에이전트 종료 후 이 상태면 재시도, 재시작 시 재개 |
 | `tracker.stop_states` | `[보류/종료]` | 기준 checkout에서 이 상태가 되면 실행 중 에이전트를 멈춤 |
 | `polling.interval_seconds` | `60` | tick 간격 |

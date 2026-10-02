@@ -29,7 +29,7 @@
 
 ## 연결
 
-- [영역별 병렬 개발](../development/parallel-work.md#역할과-에이전트별-소유-경계), [기술 설계와 티켓 분해](../specs/README.md)
+- [영역별 병렬 개발](../../development/parallel-work.md#역할과-에이전트별-소유-경계), [기술 설계와 티켓 분해](../../specs/README.md)
 
 ## 진행 기록
 

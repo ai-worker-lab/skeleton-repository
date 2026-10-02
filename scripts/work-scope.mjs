@@ -102,7 +102,7 @@ if (base) {
 
 const { items } = loadWorkItems({ root });
 const item = items.get(id);
-if (!item) fail(`work item ${id}이 없습니다. docs/work/${id}-<slug>.md가 있는지 확인하세요.`);
+if (!item) fail(`work item ${id}이 없습니다. docs/work/<역할 또는 epics>/${id}-<slug>.md가 있는지 확인하세요.`);
 if (!item.role)
   fail(`${item.path}에 '역할' 필드가 없습니다. '- 역할: <agent name>'을 추가하세요(pnpm work:check로 확인).`);
 const agents = loadAgents(resolve(root, '.omp/agents'));

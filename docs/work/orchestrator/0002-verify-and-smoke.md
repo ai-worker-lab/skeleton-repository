@@ -30,7 +30,7 @@
 
 ## 연결
 
-- [로컬 개발 환경](../development/local-environment.md), 0001(인스턴스 설정), 0003(`docs:check`, `work:scope`)
+- [로컬 개발 환경](../../development/local-environment.md), 0001(인스턴스 설정), 0003(`docs:check`, `work:scope`)
 
 ## 진행 기록
 

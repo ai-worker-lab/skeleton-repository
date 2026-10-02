@@ -20,14 +20,15 @@
 - [ADR 0001 디자인 토큰 단일 원본](adr/0001-design-tokens.md) — 디자인·웹·앱이 한 토큰 원본과 컴포넌트 규칙을 쓰는 결정
 - [인프라 관리](../infra/README.md) — 환경별 설정 위치와 원격 구성 상태
 - [ALM 운영 기준](alm/workflow.md) — 요구사항·work item·검증·배포·운영 피드백을 연결하는 도구 중립 절차
-- [작업 관리](work/README.md) — 에픽·티켓·하위 티켓 work item의 형식·필드·검사 규칙과 `pnpm work`·`work:next`·`work:scope` 명령
+- [작업 관리](work/README.md) — 에픽·티켓·하위 티켓 work item의 형식·필드·폴더(`epics/`·역할별)·검사 규칙과 `pnpm work`·`work:next`·`work:place`·`work:scope` 명령
 - [ADR 0002 work item을 저장소 문서로 관리](adr/0002-work-items-in-repository.md) — GitHub Issues 대신 `docs/work/`를 쓰는 결정
-- [ADR 0003 work item 3단계](adr/0003-work-item-hierarchy.md) — 에픽·티켓·하위 티켓 구조와 "티켓" 용어를 정한 결정
+- [ADR 0003 work item 3단계](adr/0003-work-item-hierarchy.md) — 에픽·티켓·하위 티켓 구조와 "티켓" 용어를 정한 결정(폴더 부분은 ADR 0009가 대체)
 - [ADR 0004 lint·format](adr/0004-lint-format.md) — ESLint + Prettier 선택과 ESLint 9 사용 이유
 - [ADR 0005 로컬 인프라에 Valkey 유지](adr/0005-keep-valkey-local-infra.md) — API 연결은 용도가 생길 때 추가
 - [ADR 0006 AGENTS.md를 지도로](adr/0006-agents-md-as-map.md) — 공통 정책 원문을 `docs/`로 옮기고 루트 `AGENTS.md`를 크기 예산 안의 지도로 두는 결정
 - [ADR 0007 저장소 work item 실행기](adr/0007-repository-work-item-runner.md) — 저장소 work item을 제어 평면으로, 브랜치를 착수 점유로, 에이전트 명령을 설정으로 두는 결정
 - [ADR 0008 worktree별 로컬 인스턴스](adr/0008-worktree-local-instances.md) — worktree마다 포트 슬롯·Compose project·볼륨을 나누는 결정
+- [ADR 0009 work item을 역할별 폴더에 둠](adr/0009-work-item-role-folders.md) — 에픽은 `docs/work/epics/`, 티켓은 `docs/work/<역할>/`에 두고 계층은 계속 필드로 표현하는 결정
 - [외부 서비스·도구 의존](architecture/external-dependencies.md) — 현재 사용 중이거나 계획된 외부 SaaS·도구와 기준 위치
 - [자주 묻는 질문](faq.md) — 저장소 구조, 개발 도구, 로컬 실행, 배포 목표, 언어 정책
 - [배포 대상 아키텍처](architecture/deployment-target.md) — Vercel, Supabase, Oracle ARM 목표 구성 및 미구현 범위

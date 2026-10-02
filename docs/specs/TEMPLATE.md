@@ -2,7 +2,7 @@
 
 - 상태: 초안 | 검토 | 승인 | 대체됨
 - 작성일: YYYY-MM-DD
-- 에픽: `docs/work/NNNN-….md`
+- 에픽: `docs/work/epics/NNNN-….md`
 - 입력: PRD(`docs/product/….md`), 디자인 인계(`design/<기능>/handoff.md`), 기술 조사(`docs/references/….md`), ADR
 
 작성 절차와 분해 규칙은 [기술 설계와 티켓 분해](README.md)를 따릅니다. 확정되지 않은 결정은 `[미정]`으로 표시합니다.

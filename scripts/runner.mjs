@@ -17,7 +17,14 @@ import { basename, dirname, join, relative, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { parseArgs } from 'node:util';
 import { loadWorkflow, renderPrompt } from './lib/runner-workflow.mjs';
-import { branchItemId, loadWorkItems, rankWorkItems, readClaims, WORK_BRANCH_PREFIX } from './lib/work-items.mjs';
+import {
+  branchItemId,
+  findWorkItemFile,
+  loadWorkItems,
+  rankWorkItems,
+  readClaims,
+  WORK_BRANCH_PREFIX,
+} from './lib/work-items.mjs';
 
 const root = join(dirname(fileURLToPath(import.meta.url)), '..');
 const stateDir = join(root, '.local/runner');
@@ -170,8 +177,12 @@ function worktrees() {
   return map;
 }
 
-function readState(file) {
-  if (!existsSync(file)) return undefined;
+/** worktree의 work item 상태. 에이전트가 역할·단계를 바꿔 파일을 옮겼으면(pnpm work:place) 번호로 찾습니다. */
+function readState(workspace, item, trackerDir) {
+  const path = join(workspace, item.path);
+  const dir = join(workspace, trackerDir);
+  const file = existsSync(path) ? path : existsSync(dir) ? findWorkItemFile(dir, item.id) : undefined;
+  if (!file) return undefined;
   return /^- 상태:\s*(.+?)\s*$/m.exec(readFileSync(file, 'utf8'))?.[1];
 }
 
@@ -383,7 +394,7 @@ function finish(entry, result) {
   if (entry.stopping) return emit('stopped', key, attempt, { reason: entry.stopping });
   if (shuttingDown) return emit('interrupted', key, attempt, { branch });
   if (entry.schedule) return emit('schedule_done', key, attempt, { exit, branch });
-  const state = readState(join(entry.workspace, entry.item.path));
+  const state = readState(entry.workspace, entry.item, config.tracker.dir);
   if (!state) {
     return emit('failed', key, attempt, { reason: `worktree의 ${entry.item.path}에서 상태를 읽지 못했습니다`, exit });
   }
@@ -437,7 +448,7 @@ function recover(config) {
   for (const [branch, path] of worktrees()) {
     const item = items.get(branchItemId(branch));
     if (!item || config.tracker.stop_states.includes(item.state)) continue;
-    const state = readState(join(path, item.path));
+    const state = readState(path, item, config.tracker.dir);
     if (!config.tracker.active_states.includes(state)) continue;
     retries.set(item.id, { key: item.id, item, attempt: 1, branch, dirName: basename(path), dueAt: 0 });
     emit('resume', item.id, 1, { branch, workspace: path, state });

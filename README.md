@@ -32,7 +32,7 @@
    git add -A && git commit -m "my-service로 초기화"
    ```
 
-4. README 첫 부분에 서비스 소개를 적습니다. 첫 work item은 MVP 탐색입니다. [제품 탐색과 PRD](docs/product/README.md)에 따라 유사 서비스 벤치마킹(`product`)과 라이브러리·오픈소스 기술 조사(`orchestrator`) 티켓을 만들고, PRD를 확정한 뒤 구현 티켓의 `선행`에 걸어 둡니다. 티켓은 [docs/work/TEMPLATE.md](docs/work/TEMPLATE.md)로 만들고 `pnpm work:check`·`pnpm work:next`로 확인합니다. 에이전트에게 맡길 때는 티켓을 `준비`로 두고 `pnpm work:run`을 띄우거나([work item 실행기](docs/development/agent-runner.md)), 대화형 세션에서 티켓 경로를 알려 줍니다. 에이전트는 [AGENTS.md](AGENTS.md)를 지도로 씁니다.
+4. README 첫 부분에 서비스 소개를 적습니다. 첫 work item은 MVP 탐색입니다. [제품 탐색과 PRD](docs/product/README.md)에 따라 유사 서비스 벤치마킹(`product`)과 라이브러리·오픈소스 기술 조사(`orchestrator`) 티켓을 만들고, PRD를 확정한 뒤 구현 티켓의 `선행`에 걸어 둡니다. 티켓은 [docs/work/TEMPLATE.md](docs/work/TEMPLATE.md)를 역할 폴더(`docs/work/<역할>/`)에 복사해 만들고 `pnpm work:check`·`pnpm work:next`로 확인합니다. 에이전트에게 맡길 때는 티켓을 `준비`로 두고 `pnpm work:run`을 띄우거나([work item 실행기](docs/development/agent-runner.md)), 대화형 세션에서 티켓 경로를 알려 줍니다. 에이전트는 [AGENTS.md](AGENTS.md)를 지도로 씁니다.
 
 <!-- template:end -->
 
@@ -96,6 +96,7 @@ pnpm design:check  # design/ 산출물 색 리터럴·인계 문서 검사(OpenD
 pnpm od <명령>     # 로컬 OpenDesign od CLI(예: pnpm od lint <html>, pnpm od design-systems list)
 pnpm work          # work item 트리(에픽 → 티켓 → 하위 티켓)와 진행률
 pnpm work:next     # 지금 착수할 수 있는 work item
+pnpm work:place    # 역할·단계를 바꾼 work item을 맞는 폴더(docs/work/<역할>/, epics/)로 옮기고 링크 고침
 pnpm work:scope    # 현재 티켓 브랜치의 변경이 역할 소유 경로 안인지 검사
 pnpm work:run      # WORKFLOW.md 정책으로 티켓마다 worktree와 코딩 에이전트 실행
 pnpm work:run --print-prompt [NNNN] # 에이전트를 실행하지 않고 렌더링된 프롬프트만 출력

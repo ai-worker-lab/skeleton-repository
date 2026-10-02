@@ -137,4 +137,4 @@ console.log(`
 init-project: 완료했습니다. ${self}를 지웠습니다. 다음 순서로 시작하세요.
   1. README 첫 부분에 서비스 소개를 적고 변경을 커밋합니다.
   2. make up && pnpm verify && pnpm smoke   # 로컬 인스턴스 기동과 전체 검증
-  3. docs/work/TEMPLATE.md로 첫 work item을 만들고 pnpm work:next로 확인합니다.`);
+  3. docs/work/TEMPLATE.md를 역할 폴더(docs/work/<역할>/)에 복사해 첫 work item을 만들고 pnpm work:next로 확인합니다.`);

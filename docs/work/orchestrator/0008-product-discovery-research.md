@@ -29,7 +29,7 @@
 
 ## 연결
 
-- [제품 탐색과 PRD](../product/README.md), [ALM 운영 기준](../alm/workflow.md)
+- [제품 탐색과 PRD](../../product/README.md), [ALM 운영 기준](../../alm/workflow.md)
 
 ## 진행 기록
 

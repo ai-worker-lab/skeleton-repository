@@ -4,6 +4,10 @@
 
 공개 릴리스 노트는 [RELEASES](RELEASES.md)에 있습니다. 작성 규칙은 [저장소 공통 정책의 변경 기록](docs/development/repository-policy.md#변경-기록)을 따릅니다.
 
+## 2026-10-02
+
+- work item 역할별 폴더: 에픽은 `docs/work/epics/`, 티켓·하위 티켓은 `docs/work/<역할>/`(ADR 0009, ADR 0003 결정 4 일부 대체). `pnpm work:check`가 폴더 배치를 검사하고 옮길 위치·명령을 안내, `pnpm work:place [NNNN ...] [--dry-run]`이 `git mv`와 상대 링크 수정을 함께 함(링크 해석은 `docs:check`와 공용 `scripts/lib/markdown-links.mjs`), 기존 0001~0011을 `docs/work/orchestrator/`로 옮김, 실행기·`work:scope`·`design:check`가 하위 폴더를 다룸, 작업 관리·실행기·이식 문서 갱신. 근거 `docs/work/orchestrator/0012-work-items-role-folders.md`.
+
 ## 2026-10-01
 
 - 하네스 이식성 개선(who-when 이식에서 드러난 템플릿 고유 값 가정 정리). 근거 `docs/work/0011-harness-adoption-fixes.md`.

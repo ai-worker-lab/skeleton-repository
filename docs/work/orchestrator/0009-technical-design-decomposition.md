@@ -29,7 +29,7 @@
 
 ## 연결
 
-- [기술 설계와 티켓 분해](../specs/README.md), [제품 탐색과 PRD](../product/README.md), [OpenDesign 사용 기준](../../design/docs/opendesign.md)
+- [기술 설계와 티켓 분해](../../specs/README.md), [제품 탐색과 PRD](../../product/README.md), [OpenDesign 사용 기준](../../../design/docs/opendesign.md)
 
 ## 진행 기록
 

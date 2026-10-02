@@ -1,6 +1,7 @@
 ---
 # pnpm work:run(scripts/runner.mjs)의 설정입니다. 키 설명과 운영 방법: docs/development/agent-runner.md
 tracker:
+  # work item 폴더. 하위의 epics/와 역할 폴더(docs/work/<역할>/)까지 읽습니다.
   dir: docs/work
   # 에이전트가 끝난 뒤 worktree의 work item 상태가 여기에 있으면 재시도하고, 그 밖의 상태면 인계로 끝냅니다.
   active_states: [준비, 진행]
@@ -44,7 +45,7 @@ work item의 수용 기준을 실제로 모두 충족하고, 실행한 검증의
 
 - 루트 `AGENTS.md`와 바꿀 영역의 `AGENTS.md`
 - `{{ item.path }}`, 그 상위·선행 work item과 연결된 문서. `연결`에 설계 문서(`docs/specs/`)가 있으면 해당 절의 계약·화면 상태·검증 계획을 따르고, 설계와 다르게 해야 하면 `진행 기록`에 이유를 적어 인계합니다.
-- work item 규칙: `docs/work/README.md`
+- work item 규칙: `docs/work/README.md`. 에픽은 `docs/work/epics/`, 티켓·하위 티켓은 `docs/work/<역할>/`에 있고, 번호는 폴더와 관계없이 하나입니다.
 
 ## 완료 조건
 
@@ -59,7 +60,7 @@ work item의 수용 기준을 실제로 모두 충족하고, 실행한 검증의
 ## 막히거나 범위 밖일 때
 
 - 수용 기준을 충족할 수 없거나 사용자 결정이 필요하면 `진행 기록`에 차단 사유와 시도한 내용을 적고, 상태를 `분류 대기`로 바꿔 커밋한 뒤 끝냅니다.
-- 범위 밖 개선점이나 이 하네스에 빠진 능력(검사, 명령, 문서, 로그 등)을 발견하면 직접 고치지 말고 새 work item으로 등록합니다. `docs/work/TEMPLATE.md` 형식, 다음 빈 번호, `상태: 분류 대기`, 우선순위 뒤에 `(AI 제안)`을 쓰고 `pnpm work:check`로 확인합니다.
+- 범위 밖 개선점이나 이 하네스에 빠진 능력(검사, 명령, 문서, 로그 등)을 발견하면 직접 고치지 말고 새 work item으로 등록합니다. `docs/work/TEMPLATE.md` 형식, 모든 폴더를 통틀어 다음 빈 번호, 맡을 역할의 폴더 `docs/work/<역할>/`, `상태: 분류 대기`, 우선순위 뒤에 `(AI 제안)`을 쓰고 `pnpm work:check`로 확인합니다.
 
 ## 금지
 

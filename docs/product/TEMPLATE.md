@@ -2,7 +2,7 @@
 
 - 상태: 초안 | 확정
 - 작성일: YYYY-MM-DD
-- 관련 work item: `docs/work/NNNN-….md`
+- 관련 work item: `docs/work/<역할>/NNNN-….md`
 
 요구마다 `[사용자 확정]`, `[AI 제안]`, `[미정]` 중 하나를 붙입니다. `[사용자 확정]`이 아닌 요구는 구현 기준으로 쓰지 않습니다. 작성 절차는 [제품 탐색과 PRD](README.md)를 따릅니다.
 

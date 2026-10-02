@@ -1,8 +1,8 @@
 // 저장소 Markdown 문서의 링크·anchor·연결·ADR 형식·변경 기록 순서·AGENTS.md 크기·조사 문서 확인일과 출처를 검사합니다.
 // 사용법: pnpm docs:check. 규칙의 기준은 루트 AGENTS.md입니다.
-import { execFileSync } from 'node:child_process';
 import { existsSync, readFileSync, statSync } from 'node:fs';
 import { dirname, join, posix, resolve } from 'node:path';
+import { linkPath, markdownFiles, proseLines, relativeLinks } from './lib/markdown-links.mjs';
 
 // AGENTS.md는 에이전트가 매 작업마다 읽는 지도라 길이가 곧 컨텍스트 비용입니다. 세부 내용은 docs/에 두고 링크합니다.
 const ROOT_AGENTS_MAX_LINES = 100;
@@ -10,9 +10,8 @@ const ROOT_AGENTS_MAX_CHARS = 3500;
 const AREA_AGENTS_MAX_LINES = 40;
 const ENTRY_POINTS = ['README.md', 'AGENTS.md', 'docs/README.md'];
 const ADR_STATES = ['제안', '승인', '대체됨', '폐기'];
-const EXCLUDED = /(^|\/)node_modules\/|^design\/\.od-skills\//;
 const ORPHAN_SCOPE = /^(docs|apps\/[^/]+\/docs|packages\/[^/]+\/docs|infra\/docs|design\/docs)\//;
-const WORK_ITEM = /^docs\/work\/\d{4}-[^/]+\.md$/;
+const WORK_ITEM = /^docs\/work\/(?:[^/]+\/)*\d{4}-[^/]+\.md$/;
 const ADR_FILE = /(^|\/)adr\/(\d{4})-[^/]+\.md$/;
 /** 외부 정보를 다루는 조사 문서. 확인일과 출처가 없으면 사실이 언제 기준인지 알 수 없습니다(docs/product/README.md). */
 const RESEARCH_FILE = /^docs\/(references|product\/research)\/(?!TEMPLATE\.md$|README\.md$)[^/]+\.md$/;
@@ -21,31 +20,7 @@ const root = resolve(dirname(new URL(import.meta.url).pathname), '..');
 const errors = [];
 const report = (file, line, problem, fix) => errors.push(`${file}:${line}: ${problem} — 해결: ${fix}`);
 
-const git = (...args) => execFileSync('git', args, { cwd: root, encoding: 'utf8' }).split('\0').filter(Boolean);
-const files = [
-  ...new Set([...git('ls-files', '-z', '*.md'), ...git('ls-files', '-z', '--others', '--exclude-standard', '*.md')]),
-]
-  .filter((file) => !EXCLUDED.test(file) && existsSync(join(root, file)))
-  .sort();
-
-/** 코드 블록 줄을 빈 줄로 바꿔 줄 번호를 유지한 본문 줄을 돌려줍니다. */
-function proseLines(text) {
-  let fence = null;
-  return text.split('\n').map((line) => {
-    const marker = /^\s{0,3}(`{3,}|~{3,})/.exec(line)?.[1];
-    if (fence) {
-      if (marker && marker[0] === fence[0] && marker.length >= fence.length) fence = null;
-      return '';
-    }
-    if (marker) {
-      fence = marker;
-      return '';
-    }
-    return line;
-  });
-}
-
-const withoutInlineCode = (line) => line.replace(/(`+)[^`]*?\1/g, (code) => ' '.repeat(code.length));
+const files = markdownFiles(root);
 
 /** GitHub이 제목에 붙이는 anchor slug와 같은 규칙입니다. */
 function headingSlugs(lines) {
@@ -68,30 +43,6 @@ function headingSlugs(lines) {
   return slugs;
 }
 
-/** 상대 링크를 { line, target, anchor } 목록으로 돌려줍니다. 외부 URL과 mailto 등 scheme 링크는 제외합니다. */
-function relativeLinks(lines) {
-  const links = [];
-  lines.map(withoutInlineCode).forEach((line, index) => {
-    const targets = [
-      ...[...line.matchAll(/!?\[[^\]]*\]\(\s*(<[^>]*>|[^)\s]+)/g)].map((match) => match[1]),
-      ...[...line.matchAll(/^\s{0,3}\[[^\]]+\]:\s*(<[^>]*>|\S+)/g)].map((match) => match[1]),
-    ];
-    for (const raw of targets) {
-      const value = raw.replace(/^<|>$/g, '');
-      if (/^[a-z][a-z0-9+.-]*:|^\/\//i.test(value)) continue;
-      const [path, anchor] = value.split('#', 2).map((part) => {
-        try {
-          return decodeURIComponent(part);
-        } catch {
-          return part; // 잘못된 퍼센트 인코딩은 원문 그대로 검사합니다.
-        }
-      });
-      links.push({ line: index + 1, target: path, anchor });
-    }
-  });
-  return links;
-}
-
 const docs = new Map(
   files.map((file) => {
     const lines = proseLines(readFileSync(join(root, file), 'utf8'));
@@ -101,9 +52,8 @@ const docs = new Map(
 
 /** 링크 대상의 저장소 기준 경로. 디렉터리는 끝에 '/'를 붙입니다. 없으면 null. */
 function resolveTarget(file, target) {
-  if (!target) return file;
-  const path = posix.normalize(target.startsWith('/') ? target.slice(1) : posix.join(posix.dirname(file), target));
-  if (path.startsWith('..')) return null;
+  const path = linkPath(file, target);
+  if (path === null) return null;
   const absolute = join(root, path);
   if (!existsSync(absolute)) return null;
   return statSync(absolute).isDirectory() ? `${path.replace(/\/$/, '')}/` : path;

@@ -14,6 +14,7 @@
     "work": "node scripts/work.mjs",
     "work:check": "node scripts/work.mjs --check",
     "work:next": "node scripts/work.mjs --next",
+    "work:place": "node scripts/work.mjs --place",
     "work:scope": "node scripts/work-scope.mjs",
     "work:run": "node scripts/runner.mjs",
     "instance": "node scripts/instance.mjs",
