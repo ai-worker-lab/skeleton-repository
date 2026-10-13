@@ -18,7 +18,7 @@
 - [x] 미리보기, 잘못된 입력, 기존 로컬 설정/수정 발견 시 파일을 바꾸지 않는다. 바이너리·심볼릭 링크를 훼손하지 않는다.
 - [x] 검증 실패 후 초기화를 다시 적용하지 않고 검증을 재실행할 수 있다.
 - [x] 초기화 회귀 테스트와 기존 전체 검증, 실제 초기화 복사본의 실행·smoke 검증을 기록한다.
-- [ ] 변경을 커밋·push하고 main 대상 검토 가능한 PR을 전달한다. 머지·배포는 별도다.
+- [x] 변경을 커밋·push하고 main 대상 검토 가능한 PR을 전달한다. 머지·배포는 별도다.
 
 ## 범위
 
@@ -104,3 +104,9 @@
 - 원격 CI workflow 371762183만 비활성화 후 `disabled_manually` 확인. 저장소 Actions 설정은 `enabled: true`, 기존에 CD workflow가 없어 변경한 CD 정의도 없음.
 - CI의 Actions 재실행은 더 이상 수용 기준이 아니다. 이전 빌링 차단은 이 작업의 완료 조건에서 제외하되 계정 문제를 해결했다고 주장하지 않는다. 실제 CD 구현·실행, 계정 요금·보호 설정 변경, 머지·배포는 미수행.
 - 저장소 work item의 `검증`은 PR 승인·머지 전 전달 상태다. HIST는 사용자 전역 기준에 따라 검증·커밋·push·PR 전달 확인 후 완료할 수 있다.
+
+## L5-v2 PR 전달
+
+- 2026-10-13: 정책 변경 커밋 `7f2d23c`를 push하고 [PR #1](https://github.com/ai-worker-lab/skeleton-repository/pull/1)의 제목·본문을 최종 범위와 검증 결과로 갱신했다. base `main`, head `work/0013-project-template-initialization`, 상태 `OPEN`, 관련 변경 21개 파일 포함을 확인했다.
+- 해당 커밋의 GitHub check run은 0개이며 원격 CI는 `disabled_manually`, Actions 전체는 `enabled: true`다. 로컬 CI 검증 증적과 검토 PR 전달로 수용 기준을 충족한다.
+- 실제 CD workflow 구현, PR 승인·머지, 배포는 미수행이다. L6/L7의 통합·배포 증적은 담당자가 해당 작업 후 기록한다.
