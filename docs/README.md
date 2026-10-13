@@ -4,6 +4,7 @@
 
 ## 주요 문서
 
+- [새 프로젝트 시작 안내](development/new-project.md) — 공통 스택 복제·초기화 미리보기·실패 복구·프로젝트별 설정과 검증
 - [저장소 공통 정책](development/repository-policy.md) — 언어·기준 정보·문서 배치·ADR·진입점·변경 기록
 - [제품 탐색과 PRD](product/README.md) — PRD 확정 전 유사 서비스 벤치마킹과 라이브러리·오픈소스·SaaS 기술 조사, [PRD 템플릿](product/TEMPLATE.md)·[벤치마킹 템플릿](product/research/TEMPLATE.md)·[기술 조사 템플릿](references/TEMPLATE.md)
 - [기술 설계와 티켓 분해](specs/README.md) — PRD·디자인 인계를 받아 `orchestrator`가 설계 문서(`docs/specs/`)를 쓰고 역할별 검토·사용자 승인 후 계약 → 병렬 구현 → 통합 티켓으로 나누는 절차, [설계 템플릿](specs/TEMPLATE.md)

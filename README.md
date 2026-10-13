@@ -1,7 +1,7 @@
 # app-skeleton
 
 <!-- template:start -->
-서비스를 시작하기 위한 에이전트 친화 모노레포 뼈대입니다. pnpm workspace에 NestJS API, Next.js App Router 웹, Expo + React Native 앱, 공유 TypeScript 계약, 디자인 토큰, PostgreSQL·Valkey 로컬 인프라와 개발·운영 규칙(work item, ADR, CI), 그리고 코딩 에이전트가 혼자 검증하고 일할 수 있는 [에이전트 하네스](#에이전트-하네스)를 담고 있습니다. 제품 기능은 없습니다.
+모든 신규 프로젝트가 같은 기술 스택으로 시작하기 위한 공통 모노레포 템플릿입니다. pnpm workspace에 NestJS API, Next.js App Router 웹, Expo + React Native 앱, 공유 TypeScript 계약, 디자인 토큰, PostgreSQL·Valkey 로컬 인프라와 개발·운영 규칙(work item, ADR, CI), 그리고 [에이전트 하네스](#에이전트-하네스)를 담고 있습니다. 제품 기능은 없습니다. 각 프로젝트는 별도 저장소와 로컬 설정·DB를 사용합니다.
 
 이 블록(`template:start`~`template:end`)은 템플릿 사용 안내이며 `scripts/init-project.mjs`가 서비스 소개 자리로 바꿉니다. 이미 있는 저장소에 하네스만 들이려면 [기존 저장소에 하네스 적용](docs/development/adopting-harness.md)을 따릅니다.
 
@@ -9,21 +9,22 @@
 
 필요한 도구는 아래 [요구사항](#요구사항)을 봅니다.
 
-1. 새 저장소를 만듭니다. GitHub에서는 이 저장소의 **Use this template**로 만들어 clone합니다. 템플릿 기능을 쓸 수 없으면 이력 없이 복사합니다.
+1. GitHub의 **Use this template → Create a new repository**로 프로젝트별 저장소를 만든 뒤 clone합니다. 예시의 `my-org`와 `my-service`를 실제 소유자·프로젝트 이름으로 바꿉니다.
 
    ```sh
-   git clone --depth 1 <이 저장소 URL> my-service && cd my-service
-   rm -rf .git && git init -b main && git add -A
+   git clone https://github.com/my-org/my-service.git
+   cd my-service
    ```
 
-2. 이름과 로컬 포트를 바꿉니다. 이름은 소문자 kebab-case이며 패키지 범위(`@<이름>/*`), DB·Compose·PM2 이름에 쓰입니다.
+2. `make up` 전에 이름·저장소·포트를 미리 확인하고 적용합니다. 이름은 소문자 kebab-case이며 패키지 범위(`@<이름>/*`), DB·Compose·PM2 이름에 쓰입니다.
 
    ```sh
    corepack enable
-   node scripts/init-project.mjs --name my-service --repo ai-worker-lab/my-service --port-offset 0
+   node scripts/init-project.mjs --name my-service --repo my-org/my-service --port-offset 0 --dry-run
+   node scripts/init-project.mjs --name my-service --repo my-org/my-service --port-offset 0
    ```
 
-   `--port-offset`은 같은 PC에서 여러 서비스를 함께 실행할 때 겹치지 않도록 기본 포트(API 3000, 웹 5173, Expo 8081, PostgreSQL 5432, Valkey 6379)에 더할 값입니다. 스크립트는 이름·저장소·포트(슬롯 0 포트 원본 `infra/local/.env.example`)를 바꾸고, 템플릿 값으로 만든 로컬 설정(`.local/instance.env`, `.env` 파일)을 지운 뒤 `pnpm install`, `pnpm verify --fast`, `pnpm build`로 결과를 확인합니다. 이 안내 블록을 서비스 소개 자리로 바꾸고 `CHANGELOGS.md`에 시작 기록을 남긴 뒤 스스로를 지웁니다.
+   `--port-offset`은 기본 포트(API 3000, 웹 5173, Expo 8081, PostgreSQL 5432, Valkey 6379)에 더할 값입니다. 함께 실행하는 프로젝트·worktree의 포트가 겹치지 않도록 정합니다. 초기화는 이름·저장소·슬롯 0 포트 원본(`infra/local/.env.example`)을 바꾸고 `pnpm install --frozen-lockfile`, 이름 치환 후 Prettier 서식 정규화, `pnpm verify --fast`, `pnpm build`를 실행합니다. 이 안내 블록을 서비스 소개 자리로 바꾸고 `CHANGELOGS.md`에 출처를 남깁니다. 기존 로컬 설정이나 수정이 있으면 보존한 채 중단합니다. 실패 복구·복사 방법·프로젝트별 설정은 [새 프로젝트 시작 안내](docs/development/new-project.md)를 봅니다.
 3. 실행과 검증을 확인하고 첫 커밋을 만듭니다.
 
    ```sh

@@ -4,6 +4,10 @@
 
 공개 릴리스 노트는 [RELEASES](RELEASES.md)에 있습니다. 작성 규칙은 [저장소 공통 정책의 변경 기록](docs/development/repository-policy.md#변경-기록)을 따릅니다.
 
+## 2026-10-13
+
+- 모든 신규 프로젝트의 NestJS·Next.js·Expo 공통 시작점으로 복제·초기화·복구 안내 정리([새 프로젝트 시작](docs/development/new-project.md)). 초기화 CLI에 미리보기·새 origin 추론·설치·서식·검증 마무리 재시도 추가, 포트 키만 수정, 기존 로컬 설정·바이너리·심볼릭 링크 보호. 회귀 테스트 `pnpm test:init`을 verify에 포함하고 CI에 실제 초기화 복사본 설치·검증·빌드 추가. 근거: `docs/work/orchestrator/0013-project-template-initialization.md`, [HIST-298](https://shaul1991.atlassian.net/browse/HIST-298).
+
 ## 2026-10-02
 
 - work item 역할별 폴더: 에픽은 `docs/work/epics/`, 티켓·하위 티켓은 `docs/work/<역할>/`(ADR 0009, ADR 0003 결정 4 일부 대체). `pnpm work:check`가 폴더 배치를 검사하고 옮길 위치·명령을 안내, `pnpm work:place [NNNN ...] [--dry-run]`이 `git mv`와 상대 링크 수정을 함께 함(링크 해석은 `docs:check`와 공용 `scripts/lib/markdown-links.mjs`), 기존 0001~0011을 `docs/work/orchestrator/`로 옮김, 실행기·`work:scope`·`design:check`가 하위 폴더를 다룸, 작업 관리·실행기·이식 문서 갱신. 근거 `docs/work/orchestrator/0012-work-items-role-folders.md`.

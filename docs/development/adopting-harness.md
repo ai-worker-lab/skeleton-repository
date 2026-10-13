@@ -20,6 +20,8 @@
 
 ## 치환 규칙
 
+초기화 도구를 가져오지 않는 하네스 이식에서는 `scripts/init-project.test.mjs`, `package.json`의 `test:init`, `scripts/verify.mjs`의 `test:init` 단계·오류 안내, CI `template` job도 제외합니다. 이 검증은 새 프로젝트 생성용 초기화 계약이며 기존 서비스의 하네스 검증에 필요하지 않습니다.
+
 | 값 | 템플릿 값 | 대상 저장소에서 |
 | --- | --- | --- |
 | 서비스 이름 | `app-skeleton`(Compose project, PM2 프로세스, 로그 문구), `app_skeleton`(DB 이름·계정) | 대상 저장소 이름. Compose project는 기존 이름과 같아야 기존 데이터 볼륨을 계속 씁니다([첫 실행](#pnpm-instance-첫-실행)) |

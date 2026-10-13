@@ -8,10 +8,11 @@
 
 | 명령 | 단계 |
 | --- | --- |
-| `pnpm verify` | `tokens:check → work:check → docs:check → design:check → lint → typecheck → build → test` |
-| `pnpm verify --fast` | `tokens:check → work:check → docs:check → design:check → lint → typecheck` |
+| `pnpm verify` | `test:init → tokens:check → work:check → docs:check → design:check → lint → typecheck → build → test` |
+| `pnpm verify --fast` | `test:init → tokens:check → work:check → docs:check → design:check → lint → typecheck` |
 
 - 기본은 첫 실패에서 멈추고 남은 단계를 `건너뜀`으로 표시합니다. 모든 단계 결과를 보려면 `--keep-going`을 붙입니다.
+- `test:init`은 임시 Git 복사본에서 초기화 CLI의 입력·미리보기·식별자·포트·기존 설정 보호·검증 재시도를 검사합니다. 실제 설치·빌드는 별도 CI `template` job과 복사본 실행 검증으로 확인합니다.
 - `.local/instance.env`([인스턴스 설정](local-environment.md))가 있으면 그 값을 환경변수로 보충합니다. 이미 설정된 환경변수가 우선합니다. `test` 단계의 API 통합 테스트는 이 값의 `TEST_DATABASE_URL`로 현재 작업공간의 PostgreSQL에 연결합니다.
 - `test`는 실제 PostgreSQL이 필요합니다. 먼저 `make infra-up`으로 DB를 띄웁니다.
 - `design:check`는 `design/` 산출물의 색 리터럴과 인계 문서를 검사하고, 로컬 OpenDesign이 실행 중일 때만 `od lint`를 함께 돌립니다([OpenDesign 사용 기준](../../design/docs/opendesign.md#검사)). CI에는 OpenDesign이 없으므로 `od lint`는 건너뜁니다.
@@ -42,6 +43,7 @@
 | `check` | 지원 Node.js LTS(`matrix.node`: 22·24·26)마다 `pnpm install --frozen-lockfile` 후 `pnpm verify --keep-going`. PostgreSQL 17 서비스 컨테이너에 `TEST_DATABASE_URL`로 연결합니다. 한 버전이 실패해도 나머지 버전 결과를 끝까지 봅니다. |
 | `smoke` | `.nvmrc` Node로 `node scripts/instance.mjs --print-env`의 슬롯 0 포트·주소(`API_PORT`·`WEB_PORT`·`API_URL`·`WEB_URL`, 원본 `infra/local/.env.example`)를 job 환경에 넣고, 공용 패키지·API·웹을 빌드해 PostgreSQL 서비스에 연결한 API(`node apps/api/dist/main.js`, `PORT=$API_PORT`)와 웹(`next start --port $WEB_PORT`)을 백그라운드로 띄운 뒤 준비를 기다려 `pnpm smoke`를 실행합니다. 실패하면 API·웹 로그를 출력합니다. |
 | `work scope` | `work/NNNN-*` 브랜치의 PR에서만 전체 이력을 받아 `pnpm work:scope --base origin/<기준 브랜치>`로 변경 파일이 티켓 역할의 소유 경로 안에 있는지 검사합니다. |
+| `template` | README에 템플릿 안내가 있는 저장소에서 CI checkout을 새 프로젝트 값으로 초기화하고 `--finish`로 frozen 설치·서식·빠른 검증·빌드를 확인합니다. 초기화된 파생 프로젝트에서는 실행 단계를 건너뜁니다. |
 
 지원 Node.js 버전을 바꾸면 workflow의 `matrix.node`와 README 요구사항을 함께 고칩니다.
 

@@ -10,6 +10,8 @@ const root = join(dirname(fileURLToPath(import.meta.url)), '..');
 
 // 단계 이름은 루트 package.json의 script 이름입니다. 값은 실패했을 때 출력할 해결 안내입니다.
 const HINTS = {
+  'test:init':
+    '프로젝트 초기화 계약이 깨졌습니다. pnpm test:init의 실패 시나리오와 scripts/init-project.mjs를 확인하세요.',
   'tokens:check':
     '디자인 토큰 생성물이 원본과 다릅니다. pnpm tokens:generate를 실행하고 packages/design-tokens/generated/ 변경을 함께 커밋하세요.',
   'work:check':
@@ -22,7 +24,7 @@ const HINTS = {
   build: '출력에서 실패한 패키지(@app-skeleton/...)와 첫 오류를 찾아 고치세요. 개별 재현: pnpm --filter <패키지> build',
   test: '테스트는 실제 PostgreSQL이 필요합니다. make infra-up으로 DB를 띄우고 pnpm instance로 TEST_DATABASE_URL을 확인하세요. 개별 재현: pnpm --filter @app-skeleton/api test',
 };
-const FAST = ['tokens:check', 'work:check', 'docs:check', 'design:check', 'lint', 'typecheck'];
+const FAST = ['test:init', 'tokens:check', 'work:check', 'docs:check', 'design:check', 'lint', 'typecheck'];
 const FULL = [...FAST, 'build', 'test'];
 const USAGE = '사용법: pnpm verify [--fast] [--keep-going]';
 

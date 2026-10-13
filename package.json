@@ -25,6 +25,7 @@
     "design:check": "node scripts/design.mjs check",
     "design:sync": "node scripts/design.mjs sync",
     "od": "node scripts/od.mjs",
+    "test:init": "node --test scripts/init-project.test.mjs",
     "test": "pnpm --filter @app-skeleton/shared build && pnpm -r --if-present test",
     "lint": "pnpm --filter @app-skeleton/shared build && eslint . && prettier --check .",
     "format": "prettier --write . && pnpm --filter @app-skeleton/shared build && eslint . --fix",

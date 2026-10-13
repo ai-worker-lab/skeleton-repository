@@ -38,6 +38,7 @@ pnpm 모노레포 스켈레톤입니다: NestJS API(`apps/api`), Next.js 웹(`ap
 
 ## 문서 지도
 
+- [새 프로젝트 시작 안내](docs/development/new-project.md) — 동일 스택 복제·안전한 초기화·실패 복구
 - [문서 색인](docs/README.md) — 모든 문서의 목록
 - [저장소 공통 정책](docs/development/repository-policy.md) — 언어·기준 정보·문서 배치·ADR·변경 기록
 - [로컬 개발 환경](docs/development/local-environment.md) · [검증 루프](docs/development/verification.md)
