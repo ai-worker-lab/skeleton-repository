@@ -1,6 +1,6 @@
 # 검증 루프
 
-에이전트와 CI는 같은 명령으로 변경을 검증합니다. 정적 검사·빌드·테스트는 `pnpm verify`, 실행 중인 API·웹 확인은 `pnpm smoke`입니다. 각 명령의 실제 단계는 스크립트가 기준이며 이 문서는 사용법과 완료 전 확인 범위를 설명합니다.
+CI는 개발자 또는 에이전트의 로컬 실행 환경에서 수행하며 GitHub Actions에서는 실행하지 않습니다. 정적 검사·빌드·테스트는 `pnpm verify`, 실행 중인 API·웹 확인은 `pnpm smoke`입니다. 각 명령의 실제 단계는 스크립트가 기준이며 이 문서는 사용법과 완료 전 확인 범위를 설명합니다.
 
 ## `pnpm verify`
 
@@ -8,13 +8,14 @@
 
 | 명령 | 단계 |
 | --- | --- |
-| `pnpm verify` | `tokens:check → work:check → docs:check → design:check → lint → typecheck → build → test` |
-| `pnpm verify --fast` | `tokens:check → work:check → docs:check → design:check → lint → typecheck` |
+| `pnpm verify` | `test:init → tokens:check → work:check → docs:check → design:check → lint → typecheck → build → test` |
+| `pnpm verify --fast` | `test:init → tokens:check → work:check → docs:check → design:check → lint → typecheck` |
 
 - 기본은 첫 실패에서 멈추고 남은 단계를 `건너뜀`으로 표시합니다. 모든 단계 결과를 보려면 `--keep-going`을 붙입니다.
+- `test:init`은 임시 Git 복사본에서 초기화 CLI의 입력·미리보기·식별자·포트·기존 설정 보호·검증 재시도를 검사합니다. 실제 설치·빌드는 아래 CI 절차의 초기화 복사본 검증으로 확인합니다.
 - `.local/instance.env`([인스턴스 설정](local-environment.md))가 있으면 그 값을 환경변수로 보충합니다. 이미 설정된 환경변수가 우선합니다. `test` 단계의 API 통합 테스트는 이 값의 `TEST_DATABASE_URL`로 현재 작업공간의 PostgreSQL에 연결합니다.
 - `test`는 실제 PostgreSQL이 필요합니다. 먼저 `make infra-up`으로 DB를 띄웁니다.
-- `design:check`는 `design/` 산출물의 색 리터럴과 인계 문서를 검사하고, 로컬 OpenDesign이 실행 중일 때만 `od lint`를 함께 돌립니다([OpenDesign 사용 기준](../../design/docs/opendesign.md#검사)). CI에는 OpenDesign이 없으므로 `od lint`는 건너뜁니다.
+- `design:check`는 `design/` 산출물의 색 리터럴과 인계 문서를 검사하고, 로컬 OpenDesign이 실행 중일 때만 `od lint`를 함께 돌립니다([OpenDesign 사용 기준](../../design/docs/opendesign.md#검사)). OpenDesign이 없는 실행 환경에서는 `od lint`를 건너뛰며 이를 검증 기록에 구분합니다.
 
 ## `pnpm smoke`
 
@@ -35,15 +36,33 @@
 
 ## CI
 
-[`.github/workflows/ci.yml`](../../.github/workflows/ci.yml)이 `main` 대상 PR과 `main` push에서 실행합니다.
+CI는 GitHub Actions 밖에서 실행합니다. 기본 실행 환경은 개발자 또는 에이전트의 로컬 checkout이며, 검증 원본은 `package.json`의 명령과 `scripts/verify.mjs`입니다. PR·push 이벤트로 검증 workflow를 실행하지 않습니다([ADR 0010](../adr/0010-local-ci-actions-cd.md)).
 
-| job | 내용 |
-| --- | --- |
-| `check` | 지원 Node.js LTS(`matrix.node`: 22·24·26)마다 `pnpm install --frozen-lockfile` 후 `pnpm verify --keep-going`. PostgreSQL 17 서비스 컨테이너에 `TEST_DATABASE_URL`로 연결합니다. 한 버전이 실패해도 나머지 버전 결과를 끝까지 봅니다. |
-| `smoke` | `.nvmrc` Node로 `node scripts/instance.mjs --print-env`의 슬롯 0 포트·주소(`API_PORT`·`WEB_PORT`·`API_URL`·`WEB_URL`, 원본 `infra/local/.env.example`)를 job 환경에 넣고, 공용 패키지·API·웹을 빌드해 PostgreSQL 서비스에 연결한 API(`node apps/api/dist/main.js`, `PORT=$API_PORT`)와 웹(`next start --port $WEB_PORT`)을 백그라운드로 띄운 뒤 준비를 기다려 `pnpm smoke`를 실행합니다. 실패하면 API·웹 로그를 출력합니다. |
-| `work scope` | `work/NNNN-*` 브랜치의 PR에서만 전체 이력을 받아 `pnpm work:scope --base origin/<기준 브랜치>`로 변경 파일이 티켓 역할의 소유 경로 안에 있는지 검사합니다. |
+```sh
+pnpm install --frozen-lockfile
+make up
+pnpm verify --keep-going
+pnpm smoke
+pnpm work:scope 0013 --base origin/main # 실제 티켓 번호와 PR 기준 브랜치 사용
+make down
+```
 
-지원 Node.js 버전을 바꾸면 workflow의 `matrix.node`와 README 요구사항을 함께 고칩니다.
+- smoke 브라우저는 최초 한 번 `pnpm exec playwright install chromium`으로 설치합니다. `make down`은 데이터 볼륨을 보존합니다.
+- PR에 검증한 커밋 또는 변경 식별자, Node/pnpm 버전, 실행 명령·결과·미실행 범위를 남깁니다. 코드를 고쳤으면 영향받는 검증을 다시 수행합니다. 로컬 검증을 건너뛰거나 실패를 성공으로 기록하지 않습니다.
+- Node.js 지원 대상은 22·24·26이고 로컬 기본값은 `.nvmrc`입니다. 기본 버전 외 호환성을 주장하려면 각 버전의 로컬 실행 결과를 따로 기록합니다. Actions matrix가 대신 확인한다고 가정하지 않습니다.
+- 초기화 CLI나 치환 규칙을 바꾸면 검증 대상 변경이 포함된 새 복사본에서 [새 프로젝트 시작 안내](new-project.md)를 실행합니다. 최대 40자 이름(`project-abcdefghijklmnopqrstuvwxyz-12345`)·포트 오프셋 12173으로 초기화하고 `--finish`, `make up`, `pnpm verify`, `pnpm smoke`를 확인한 뒤 종료합니다. 원본 checkout을 초기화하지 않습니다.
+
+### CD와의 경계
+
+GitHub Actions는 CD의 기본 실행 환경입니다. CI 실행량·대기열·실패·산출물 때문에 CD가 의존하거나 멈추지 않도록 다음 경계를 유지합니다.
+
+- Actions에 `verify`, 테스트 matrix, PR smoke, 초기화 회귀 검증 같은 CI job을 등록하지 않습니다. 로컬 CI를 Actions의 self-hosted runner로 옮기는 것도 이 정책에 맞지 않습니다.
+- CD는 프로젝트에서 승인한 배포 트리거로 실행합니다. CI workflow의 `workflow_run`, CI job의 `needs`, CI check 성공 상태나 CI workflow artifact를 실행 조건/입력으로 요구하지 않습니다.
+- 배포에 필요한 build·패키징·업로드·배포 후 상태 확인은 CD에 포함할 수 있습니다. 일반 코드 검증은 로컬 CI가 맡고 PR 검증 증적과 사람의 승인 절차를 유지합니다.
+- workflow는 배포 대상·환경·권한·secret·복구 방법이 정해진 프로젝트에서 작성합니다. 현재 템플릿에는 실행 가능한 CD workflow가 없습니다([배포 계획](../architecture/deployment-target.md)).
+- CI workflow만 제거/비활성화하며 저장소 Actions 전체를 끄거나 다른 CD workflow를 수정하지 않습니다. workflow 배치는 [Actions 디렉터리 안내](../../.github/workflows/README.md)를 따릅니다.
+
+이 분리는 CI의 Actions 사용을 없애는 변경입니다. 기존 계정 결제·한도 문제 자체를 해결하거나 CD 실행 성공을 보장하는 것은 아닙니다.
 
 ## 완료 보고 전 확인 범위
 
@@ -64,4 +83,4 @@ work item을 `검증` 상태로 올리거나 완료를 보고하기 전에 변�
 
 - `pnpm verify`: 맨 아래 `검증 요약`에서 `실패` 단계를 찾고, `해결 안내`의 명령을 먼저 실행합니다. 원인은 요약 위쪽의 `▶ <단계>` 아래 출력에 있습니다. 같은 단계만 다시 볼 때는 `pnpm <단계>`(예: `pnpm lint`)를 실행합니다.
 - `pnpm smoke`: 테스트 전 확인 단계가 실패하면 출력의 명령(`make up`, `pnpm logs api`, `pnpm exec playwright install chromium`)을 따릅니다. 테스트 실패는 Playwright 출력의 테스트 이름·기대값과 함께 적힌 설명(예: readiness 503이면 API의 `DATABASE_URL`)을 확인합니다. 콘솔 오류는 `pnpm logs web`·`pnpm logs api`와 함께 봅니다.
-- CI: 실패한 job의 단계 로그를 봅니다. `check`는 `pnpm verify` 요약을, `smoke`는 `pnpm smoke` 출력과 `API·웹 로그` 단계를 확인합니다.
+- 로컬 CI: 위 명령의 출력과 `pnpm logs <서비스>`를 확인하고 실패 근거를 PR/work item에 남깁니다. CD 오류는 해당 프로젝트 배포 workflow의 로그에서 확인합니다.

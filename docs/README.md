@@ -4,11 +4,14 @@
 
 ## 주요 문서
 
+- [ADR 0010 로컬 CI와 Actions CD 분리](adr/0010-local-ci-actions-cd.md) — CI의 Actions 사용을 없애고 CD 실행 경계를 보존
+
+- [새 프로젝트 시작 안내](development/new-project.md) — 공통 스택 복제·초기화 미리보기·실패 복구·프로젝트별 설정과 검증
 - [저장소 공통 정책](development/repository-policy.md) — 언어·기준 정보·문서 배치·ADR·진입점·변경 기록
 - [제품 탐색과 PRD](product/README.md) — PRD 확정 전 유사 서비스 벤치마킹과 라이브러리·오픈소스·SaaS 기술 조사, [PRD 템플릿](product/TEMPLATE.md)·[벤치마킹 템플릿](product/research/TEMPLATE.md)·[기술 조사 템플릿](references/TEMPLATE.md)
 - [기술 설계와 티켓 분해](specs/README.md) — PRD·디자인 인계를 받아 `orchestrator`가 설계 문서(`docs/specs/`)를 쓰고 역할별 검토·사용자 승인 후 계약 → 병렬 구현 → 통합 티켓으로 나누는 절차, [설계 템플릿](specs/TEMPLATE.md)
 - [로컬 개발 환경](development/local-environment.md) — PostgreSQL/Valkey Compose와 로컬 웹·모바일 앱·API 실행, worktree별 로컬 인스턴스, 로그 조회
-- [검증 루프](development/verification.md) — `pnpm verify`·`pnpm smoke`·CI와 완료 보고 전 확인 범위
+- [검증 루프](development/verification.md) — `pnpm verify`·`pnpm smoke` 로컬 CI와 GitHub Actions CD의 경계·완료 보고 전 확인 범위
 - [환경과 비밀값 관리](development/environment-secrets.md) — local/dev/prod 격리와 서비스별 설정 소유권
 - [영역별 병렬 개발](development/parallel-work.md) — 자동 발견되는 OMP 역할, `jev_route` 직접 라우팅, 소유 경로(`owns`), 복합 작업의 `orchestrator` 통합
 - [work item 실행기](development/agent-runner.md) — [WORKFLOW.md](../WORKFLOW.md) 정책으로 착수 가능한 티켓마다 worktree와 코딩 에이전트를 실행하는 `pnpm work:run`

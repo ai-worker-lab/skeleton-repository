@@ -11,6 +11,7 @@ pnpm 모노레포 스켈레톤입니다: NestJS API(`apps/api`), Next.js 웹(`ap
 - 티켓의 `역할` 소유 경로(`.omp/agents/*.md`의 `owns`) 밖을 바꾸지 않습니다. `pnpm work:scope`로 확인합니다.
 - 실행하지 않은 검증을 통과했다고 보고하지 않습니다. 배포·데이터 파괴·외부 공개는 명시적 요청 없이 하지 않습니다.
 - 제품 방향·우선순위·요구 확정은 사용자가 결정합니다.
+- CI는 로컬에서 실행하며 GitHub Actions에 CI job을 추가하지 않습니다. Actions는 CD의 기본 실행 환경입니다([경계](docs/development/verification.md#ci)).
 
 전체 정책 원문: [저장소 공통 정책](docs/development/repository-policy.md).
 
@@ -20,7 +21,7 @@ pnpm 모노레포 스켈레톤입니다: NestJS API(`apps/api`), Next.js 웹(`ap
 | --- | --- |
 | 로컬 실행(worktree마다 독립 포트·DB) | `make up` · `make status` · `make down` · `pnpm instance` |
 | 서비스 로그 | `pnpm logs <api\|web\|app\|infra> [--lines N]` |
-| 전체 검증(CI와 동일) | `pnpm verify` · 빠른 검증 `pnpm verify --fast` |
+| 로컬 CI 전체 검증 | `pnpm verify` · 빠른 검증 `pnpm verify --fast` |
 | 실행 중 API·웹 브라우저 검증 | `pnpm smoke` |
 | work item 트리·검사·착수 가능 목록 | `pnpm work` · `pnpm work:check` · `pnpm work:next` |
 | 티켓 소유 범위 검사 | `pnpm work:scope [NNNN]` |
@@ -38,6 +39,7 @@ pnpm 모노레포 스켈레톤입니다: NestJS API(`apps/api`), Next.js 웹(`ap
 
 ## 문서 지도
 
+- [새 프로젝트 시작 안내](docs/development/new-project.md) — 동일 스택 복제·안전한 초기화·실패 복구
 - [문서 색인](docs/README.md) — 모든 문서의 목록
 - [저장소 공통 정책](docs/development/repository-policy.md) — 언어·기준 정보·문서 배치·ADR·변경 기록
 - [로컬 개발 환경](docs/development/local-environment.md) · [검증 루프](docs/development/verification.md)

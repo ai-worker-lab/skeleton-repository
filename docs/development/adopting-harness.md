@@ -15,20 +15,24 @@
 | 묶음 | 파일 | 방법 |
 | --- | --- | --- |
 | 새 파일 | `scripts/`의 `verify.mjs`·`smoke.mjs`·`docs-check.mjs`·`design.mjs`·`instance.mjs`·`logs.mjs`·`od.mjs`·`runner.mjs`·`work-scope.mjs`와 `scripts/lib/`, `tests/smoke/`, `WORKFLOW.md`, `.omp/skills/`, `docs/development/`의 `repository-policy.md`·`verification.md`·`agent-runner.md`·`doc-gardening.md`·이 문서, `docs/specs/`, `docs/product/README.md`·`TEMPLATE.md`·`research/TEMPLATE.md`, `docs/references/TEMPLATE.md`, `design/system/`, `design/docs/opendesign.md`, `packages/design-tokens/src/opendesign.json`·`scripts/source.mjs`, 하네스 ADR(아래) | 템플릿 최신본을 복사한 뒤 [치환 규칙](#치환-규칙)을 적용합니다 |
-| 병합 파일 | 루트·영역 `AGENTS.md`, `README.md`, `Makefile`, `ecosystem.config.cjs`, 루트 `package.json`(scripts·devDependencies), `.github/workflows/ci.yml`, `.github/pull_request_template.md`, `.gitignore`(`.local/`), `.omp/agents/*.md`, `eslint.config.mjs`, `scripts/work.mjs`, `docs/README.md`, `docs/work/README.md`, `docs/alm/workflow.md`, `docs/development/`의 `local-environment.md`·`environment-secrets.md`·`parallel-work.md`, `docs/faq.md`, `docs/architecture/*.md`, `packages/design-tokens/`의 `scripts/generate.mjs`·`src/tokens.json`·`docs/usage.md`, 앱 `package.json`의 개발 서버 스크립트, `apps/api/src/main.ts`의 포트 읽기, 각 `.env.example`, `infra/local/compose.yaml`, 각 `CHANGELOGS.md`·`RELEASES.md`의 머리말 | 대상 저장소가 이미 바꾼 파일이므로 3-way 병합합니다. 대상 저장소 고유 문장(제품 설명, 보류 결정, 고유 ADR 색인)은 보존하고 하네스 규칙만 들입니다. 루트 `README.md`는 `harness:start`~`harness:end` 블록을 그대로 옮깁니다. `pnpm-lock.yaml`은 손으로 병합하지 않고 `pnpm install`로 다시 만듭니다 |
+| 병합 파일 | 루트·영역 `AGENTS.md`, `README.md`, `Makefile`, `ecosystem.config.cjs`, 루트 `package.json`(scripts·devDependencies), `.github/pull_request_template.md`, `.gitignore`(`.local/`), `.omp/agents/*.md`, `eslint.config.mjs`, `scripts/work.mjs`, `docs/README.md`, `docs/work/README.md`, `docs/alm/workflow.md`, `docs/development/`의 `local-environment.md`·`environment-secrets.md`·`parallel-work.md`, `docs/faq.md`, `docs/architecture/*.md`, `packages/design-tokens/`의 `scripts/generate.mjs`·`src/tokens.json`·`docs/usage.md`, 앱 `package.json`의 개발 서버 스크립트, `apps/api/src/main.ts`의 포트 읽기, 각 `.env.example`, `infra/local/compose.yaml`, 각 `CHANGELOGS.md`·`RELEASES.md`의 머리말 | 대상 저장소가 이미 바꾼 파일이므로 3-way 병합합니다. 대상 저장소 고유 문장(제품 설명, 보류 결정, 고유 ADR 색인)은 보존하고 하네스 규칙만 들입니다. 루트 `README.md`는 `harness:start`~`harness:end` 블록을 그대로 옮깁니다. `pnpm-lock.yaml`은 손으로 병합하지 않고 `pnpm install`로 다시 만듭니다 |
 | 제외 | 템플릿의 work item(`docs/work/orchestrator/0001-*` 등)과 변경 기록 본문, `scripts/init-project.mjs`, 루트 `README.md`의 `template:start`~`template:end` 블록, 디자인 토큰 값·이름, 제품 코드(`apps/*/src`의 화면·기능) | 옮기지 않습니다. 템플릿 work item이 필요한 맥락은 이식 티켓의 `진행 기록`에 템플릿 커밋으로 남깁니다 |
 
 ## 치환 규칙
 
+CI workflow는 이식하지 않습니다. 검증은 로컬에서 실행하며 기존 프로젝트의 CD workflow를 보존합니다([CI·CD 경계](verification.md#ci)).
+
+초기화 도구를 가져오지 않는 하네스 이식에서는 `scripts/init-project.test.mjs`, `package.json`의 `test:init`, `scripts/verify.mjs`의 `test:init` 단계·오류 안내도 제외합니다. 이 검증은 새 프로젝트 생성용 초기화 계약이며 기존 서비스의 하네스 검증에 필요하지 않습니다.
+
 | 값 | 템플릿 값 | 대상 저장소에서 |
 | --- | --- | --- |
 | 서비스 이름 | `app-skeleton`(Compose project, PM2 프로세스, 로그 문구), `app_skeleton`(DB 이름·계정) | 대상 저장소 이름. Compose project는 기존 이름과 같아야 기존 데이터 볼륨을 계속 씁니다([첫 실행](#pnpm-instance-첫-실행)) |
-| 패키지 범위 | `@app-skeleton/*` | 대상 저장소 범위(`@<이름>/*`). `package.json` filter, `Makefile`, `ecosystem.config.cjs`, CI, 생성물 머리말 |
+| 패키지 범위 | `@app-skeleton/*` | 대상 저장소 범위(`@<이름>/*`). `package.json` filter, `Makefile`, `ecosystem.config.cjs`, 생성물 머리말 |
 | 저장소 | `ai-worker-lab/skeleton-repository` | 대상 저장소 `owner/name` |
 | 슬롯 0 포트 | [`infra/local/.env.example`](../../infra/local/.env.example)의 `API_PORT`·`WEB_PORT`·`EXPO_PORT`·`POSTGRES_PORT`·`VALKEY_PORT` | 이 다섯 값만 대상 저장소가 쓰던 포트로 바꿉니다. 다른 파일은 포트 숫자를 갖지 않고 `pnpm instance` 값을 씁니다 |
 | 토큰 CSS 접두사 | `packages/design-tokens/src/tokens.json`의 `"$cssPrefix": "ds"`(→ `--ds-*`) | 대상 저장소가 쓰던 접두사(예: `pk` → `--pk-*`)를 이 값에 둡니다. 생성기와 `pnpm design:check`는 손대지 않아도 이 값을 따릅니다. 복사한 `design/system/DESIGN.md`의 `--ds-`는 새 접두사로 바꾸고, 웹 스타일(`apps/web/src/styles.css`의 `var(--ds-*)`)은 대상 저장소 것을 씁니다. 바꾼 뒤 `pnpm tokens:generate`와 `pnpm design:check`가 남은 옛 접두사를 고칠 이름과 함께 알려 줍니다([CSS 변수 접두사](../../packages/design-tokens/docs/usage.md#css-변수-접두사)) |
 | OpenDesign 슬롯 | `packages/design-tokens/src/opendesign.json`의 `--bg` 등 슬롯이 가리키는 토큰 경로 | 대상 저장소 토큰 키에 맞게 참조를 바꿉니다. 빠진 의미 토큰은 `pnpm tokens:generate`가 목록과 추가 위치를 한 번에 알려 주며, 새 토큰 값은 `(AI 제안)`으로 표시하고 기존 값은 바꾸지 않습니다 |
-| 기준 브랜치 | `WORKFLOW.md`의 `workspace.base`(`main`) | 대상 저장소의 통합 브랜치. `pnpm work:run`과 `pnpm work:scope`의 기본 기준이 함께 따라갑니다. CI는 `--base origin/<PR 기준 브랜치>`를 그대로 씁니다 |
+| 기준 브랜치 | `WORKFLOW.md`의 `workspace.base`(`main`) | 대상 저장소의 통합 브랜치. `pnpm work:run`과 `pnpm work:scope`의 기본 기준이 함께 따라갑니다. 로컬 검증도 `--base origin/<PR 기준 브랜치>`로 PR 기준을 지정할 수 있습니다 |
 
 치환 뒤 `git grep -nE 'app-skeleton|app_skeleton|skeleton-repository'`가 출처 표기 외에는 아무것도 찾지 않아야 합니다.
 

@@ -4,6 +4,10 @@
 
 환경별 구성 상태는 [infra/dev](../../infra/dev/README.md), [infra/prod](../../infra/prod/README.md)에, 설정·비밀값 소유권은 [환경과 비밀값 관리](../development/environment-secrets.md)에 기록합니다. 실행 가능한 로컬 설정은 [infra/local/compose.yaml](../../infra/local/compose.yaml)이며 원격 배포 명령이 아닙니다.
 
+## 배포 실행 환경
+
+GitHub Actions를 CD의 기본 실행 환경으로 사용합니다. CI는 로컬에서 실행하며 CD workflow에 CI job·완료 이벤트·검증 artifact 의존을 두지 않습니다([검증과 CD 경계](../development/verification.md#ci)). 현재 실제 CD workflow와 배포 대상 연결은 구현되지 않았습니다.
+
 ## 목표 배치
 
 - **웹 클라이언트:** Next.js 앱을 Vercel에서 제공. 도메인 API는 NestJS에 둔다.
