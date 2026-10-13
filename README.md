@@ -1,7 +1,7 @@
 # app-skeleton
 
 <!-- template:start -->
-모든 신규 프로젝트가 같은 기술 스택으로 시작하기 위한 공통 모노레포 템플릿입니다. pnpm workspace에 NestJS API, Next.js App Router 웹, Expo + React Native 앱, 공유 TypeScript 계약, 디자인 토큰, PostgreSQL·Valkey 로컬 인프라와 개발·운영 규칙(work item, ADR, CI), 그리고 [에이전트 하네스](#에이전트-하네스)를 담고 있습니다. 제품 기능은 없습니다. 각 프로젝트는 별도 저장소와 로컬 설정·DB를 사용합니다.
+모든 신규 프로젝트가 같은 기술 스택으로 시작하기 위한 공통 모노레포 템플릿입니다. pnpm workspace에 NestJS API, Next.js App Router 웹, Expo + React Native 앱, 공유 TypeScript 계약, 디자인 토큰, PostgreSQL·Valkey 로컬 인프라와 개발·운영 규칙(work item, ADR, 로컬 CI), 그리고 [에이전트 하네스](#에이전트-하네스)를 담고 있습니다. 제품 기능은 없습니다. 각 프로젝트는 별도 저장소와 로컬 설정·DB를 사용합니다.
 
 이 블록(`template:start`~`template:end`)은 템플릿 사용 안내이며 `scripts/init-project.mjs`가 서비스 소개 자리로 바꿉니다. 이미 있는 저장소에 하네스만 들이려면 [기존 저장소에 하네스 적용](docs/development/adopting-harness.md)을 따릅니다.
 
@@ -56,9 +56,11 @@
 
 에이전트용 지도는 [루트 AGENTS.md](AGENTS.md), 공통 정책 원문은 [저장소 공통 정책](docs/development/repository-policy.md), 영역별 추가 규칙은 각 하위 `AGENTS.md`가 기준입니다.
 
+CI는 로컬 개발자·에이전트 환경에서 실행하고 GitHub Actions는 CD의 기본 실행 환경으로 사용합니다. 현재 CD workflow는 미구현입니다. [검증과 CD 경계](docs/development/verification.md#ci)를 참고하세요.
+
 ## 요구사항
 
-- Node.js: 22·24·26 LTS를 지원하며 CI가 세 버전을 모두 검사합니다. 로컬 개발 기본 버전은 [`.nvmrc`](.nvmrc)입니다(`nvm use` 또는 `fnm use`).
+- Node.js: 지원 대상은 22·24·26이며 검증은 로컬에서 수행하고 실행한 버전을 기록합니다. 로컬 개발 기본 버전은 [`.nvmrc`](.nvmrc)입니다(`nvm use` 또는 `fnm use`).
 - pnpm: 루트 `package.json`의 `packageManager` 값(`corepack enable` 후 자동 사용)
 - Docker Engine/Desktop과 Compose v2 (로컬 PostgreSQL·Valkey용)
 - make, PM2(`pnpm install` 시 함께 설치)
@@ -88,7 +90,7 @@ pnpm tokens:generate # 디자인 토큰 원본에서 CSS 변수·앱 객체·디
 ```sh
 pnpm instance      # 이 checkout의 포트·주소·Compose project 출력(worktree마다 독립 인스턴스)
 pnpm logs api      # 서비스 최근 로그 (api|web|app|infra, --lines N, --follow)
-pnpm verify        # CI와 같은 전체 검증: 토큰·work item·문서·lint·타입·빌드·테스트
+pnpm verify        # 로컬 CI 전체 검증: 토큰·work item·문서·lint·타입·빌드·테스트
 pnpm verify --fast # 빌드·테스트를 뺀 빠른 검증
 pnpm smoke         # 실행 중인 API·웹에 Playwright smoke 테스트
 pnpm docs:check    # 문서 링크·형식 검사

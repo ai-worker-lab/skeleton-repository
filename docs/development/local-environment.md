@@ -71,4 +71,4 @@ pnpm test       # 공용 패키지 빌드 후 test 스크립트가 있는 모든
 
 ## CI
 
-CI job 구성과 로컬에서 같은 검사를 실행하는 방법(`pnpm verify`, `pnpm smoke`)은 [검증 루프](verification.md#ci)를 기준으로 합니다.
+로컬 CI 절차(`pnpm verify`, `pnpm smoke`)와 GitHub Actions CD의 경계는 [검증 루프](verification.md#ci)를 기준으로 합니다.

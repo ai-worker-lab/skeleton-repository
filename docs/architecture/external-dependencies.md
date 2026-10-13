@@ -9,9 +9,9 @@ app-skeleton이 의존하는 외부 SaaS와 개발 도구를 한곳에서 찾기
 | 대상 | 종류 | 상태 | 용도 | 기준 위치 |
 | --- | --- | --- | --- | --- |
 | GitHub (`ai-worker-lab/skeleton-repository`) | SaaS | 사용 중 | 원격 Git 저장소, Pull Request. Issues는 끔. Release는 선택 | [ADR 0002](../adr/0002-work-items-in-repository.md), `.github/pull_request_template.md` |
-| GitHub Actions | SaaS | 사용 중 | PR·`main` push 검사(Node 22·24·26 matrix, PostgreSQL 서비스 컨테이너) | `.github/workflows/ci.yml` |
+| GitHub Actions | SaaS | 계획(CD) | CD의 기본 실행 환경. CI는 로컬에서 실행하며 현재 CD workflow 미구현 | [CI·CD 경계](../development/verification.md#ci), [workflow 안내](../../.github/workflows/README.md) |
 | npm registry | SaaS | 사용 중 | `pnpm install`의 패키지 다운로드 | `pnpm-lock.yaml`, 각 `package.json` |
-| Node.js · pnpm(corepack) | 도구 | 사용 중 | 런타임과 workspace 관리. 지원 버전은 CI matrix, 로컬 기본값은 `.nvmrc` | `.github/workflows/ci.yml`, `.nvmrc`, 루트 `package.json`의 `packageManager` |
+| Node.js · pnpm(corepack) | 도구 | 사용 중 | 런타임과 workspace 관리. 지원 대상은 README, 로컬 기본값은 `.nvmrc` | [요구사항](../../README.md#요구사항), `.nvmrc`, 루트 `package.json`의 `packageManager` |
 | Docker Engine/Compose · Docker Hub 이미지 | 도구·SaaS | 사용 중 | 로컬 PostgreSQL(`postgres:17-alpine`)·Valkey(`valkey/valkey:8-alpine`) | `infra/local/compose.yaml` |
 | PM2 | 도구 | 사용 중 | 로컬 API·웹·Expo 개발 서버 실행 | `ecosystem.config.cjs`, `Makefile` |
 | Next.js 텔레메트리 | SaaS | 사용 중(기본값) | `next build`가 익명 사용 통계를 Vercel에 전송. 빌드 출력에서 확인 | `apps/web` |

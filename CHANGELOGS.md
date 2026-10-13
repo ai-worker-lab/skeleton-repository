@@ -6,6 +6,8 @@
 
 ## 2026-10-13
 
+- 사용자 확정: CI를 로컬에서 실행하고 GitHub Actions는 CD의 기본 실행 환경으로 사용. CI workflow 제거, 로컬 검증 절차·CD 의존성 경계·실제 CD 미구현 상태 명시([ADR 0010](docs/adr/0010-local-ci-actions-cd.md)). 근거: `docs/work/orchestrator/0013-project-template-initialization.md`, HIST-298 피드백.
+
 - 모든 신규 프로젝트의 NestJS·Next.js·Expo 공통 시작점으로 복제·초기화·복구 안내 정리([새 프로젝트 시작](docs/development/new-project.md)). 초기화 CLI에 미리보기·새 origin 추론·설치·서식·검증 마무리 재시도 추가, 포트 키만 수정, 기존 로컬 설정·바이너리·심볼릭 링크 보호. 회귀 테스트 `pnpm test:init`을 verify에 포함하고 CI에 실제 초기화 복사본 설치·검증·빌드 추가. 근거: `docs/work/orchestrator/0013-project-template-initialization.md`, [HIST-298](https://shaul1991.atlassian.net/browse/HIST-298).
 
 ## 2026-10-02

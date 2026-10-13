@@ -35,7 +35,7 @@ git remote add origin https://github.com/my-org/my-service.git
 | --- | --- |
 | 프로젝트 이름 | 패키지 범위, DB 사용자/이름 예시, Compose·PM2·Expo 이름/scheme, 디자인 시스템과 문서의 템플릿 식별자를 치환 |
 | 저장소 | 템플릿 `owner/name`을 새 값으로 치환. 소유자는 추정하지 않음 |
-| 로컬 포트 | `infra/local/.env.example`의 다섯 키만 기본 포트 + 오프셋으로 수정. 다른 숫자, CI DB와 컨테이너 내부 포트는 유지 |
+| 로컬 포트 | `infra/local/.env.example`의 다섯 키만 기본 포트 + 오프셋으로 수정. 다른 숫자와 컨테이너 내부 포트는 유지 |
 | 기존 로컬 설정·추적 파일 수정 | 적용 전 실패. 내용을 출력하거나 자동 삭제/덮어쓰기하지 않음 |
 | 바이너리·심볼릭 링크·추적되지 않은 파일 | 치환하지 않음 |
 | 초기화 도구·계약 테스트 | 원본 템플릿 식별자를 유지. `--finish` 마무리 재시도와 회귀 검사를 위해 보존 |
@@ -64,7 +64,7 @@ git add -A
 git commit -m "프로젝트 초기화"
 ```
 
-전체 검증에는 실제 PostgreSQL을 쓰는 API 테스트가 포함됩니다. Expo는 타입 검사와 개발 서버 시작까지 확인하고, iOS·Android 실제 동작은 [기기 테스트](../../apps/app/docs/device-testing.md)로 별도 확인합니다. 종료할 때 `make down`은 DB 볼륨을 보존합니다.
+이 검증은 로컬 개발자·에이전트 환경에서 실행합니다. GitHub Actions에는 CI를 등록하지 않고 프로젝트의 CD 용도로 사용합니다([실행 경계](verification.md#ci)). 전체 검증에는 실제 PostgreSQL을 쓰는 API 테스트가 포함됩니다. Expo는 타입 검사와 개발 서버 시작까지 확인하고, iOS·Android 실제 동작은 [기기 테스트](../../apps/app/docs/device-testing.md)로 별도 확인합니다. 종료할 때 `make down`은 DB 볼륨을 보존합니다.
 
 ## 프로젝트별로 정할 내용
 
