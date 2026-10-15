@@ -1,8 +1,12 @@
 # 변경 기록
 
-내부 참고용 전체 변경 기록입니다. 공개·배포 여부와 관계없이 모든 변경을 기록합니다. 이 파일에는 전용 로그가 없는 `design/`, `packages/`, `docs/`, `.github/`, 루트 설정·정책 변경과 여러 영역에 걸친 작업의 요약을 둡니다. 영역별 세부 변경은 [인프라](infra/CHANGELOGS.md), [백엔드 API](apps/api/CHANGELOGS.md), [웹](apps/web/CHANGELOGS.md), [앱](apps/app/CHANGELOGS.md) 로그에 있습니다.
+내부 참고용 전체 변경 기록입니다. 공개·배포 여부와 관계없이 모든 변경을 기록합니다. 이 파일에는 전용 로그가 없는 `design/`, `packages/`, `docs/`, `.github/`, 루트 설정·정책 변경과 여러 영역에 걸친 작업의 요약을 둡니다. 영역별 세부 변경은 [인프라](infra/CHANGELOGS.md), [NestJS API](apps/api/CHANGELOGS.md), [FastAPI](apps/api-python/CHANGELOGS.md), [웹](apps/web/CHANGELOGS.md), [앱](apps/app/CHANGELOGS.md) 로그에 있습니다.
 
 공개 릴리스 노트는 [RELEASES](RELEASES.md)에 있습니다. 작성 규칙은 [저장소 공통 정책의 변경 기록](docs/development/repository-policy.md#변경-기록)을 따릅니다.
+
+## 2026-10-15
+
+- NestJS 기본값을 유지하면서 Python + FastAPI를 선택할 수 있도록 API 실행·검증·초기화 경로를 연결했습니다. `api.config.json`·`API_BACKEND`, `pnpm api`, `init-project --api`, 로컬 인스턴스·PM2·CI가 같은 선택을 따릅니다. Python 구현은 [FastAPI 변경 기록](apps/api-python/CHANGELOGS.md), 사용법과 설계 제안은 [API 백엔드 선택](docs/development/api-backends.md)·[ADR 0010](docs/adr/0010-selectable-api-backends.md)에 기록하고 역할 소유 범위·아키텍처·환경·검증 안내를 갱신했습니다.
 
 ## 2026-10-02
 

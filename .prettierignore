@@ -2,6 +2,12 @@
 *.md
 # 생성물과 도구 산출물
 pnpm-lock.yaml
+uv.lock
+**/.venv/
+**/__pycache__/
+**/.pytest_cache/
+**/.mypy_cache/
+**/.ruff_cache/
 packages/design-tokens/generated/
 design/
 .local/

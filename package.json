@@ -5,7 +5,8 @@
   "scripts": {
     "dev:app": "pnpm --filter @app-skeleton/app start",
     "dev:web": "pnpm --filter @app-skeleton/web start",
-    "dev:api": "pnpm --filter @app-skeleton/api start:dev",
+    "dev:api": "node scripts/api.mjs dev",
+    "api": "node scripts/api.mjs",
     "db:up": "make infra-up",
     "db:down": "make infra-down",
     "db:logs": "make infra-logs",
@@ -25,11 +26,11 @@
     "design:check": "node scripts/design.mjs check",
     "design:sync": "node scripts/design.mjs sync",
     "od": "node scripts/od.mjs",
-    "test": "pnpm --filter @app-skeleton/shared build && pnpm -r --if-present test",
-    "lint": "pnpm --filter @app-skeleton/shared build && eslint . && prettier --check .",
-    "format": "prettier --write . && pnpm --filter @app-skeleton/shared build && eslint . --fix",
-    "build": "pnpm --filter @app-skeleton/design-tokens check && pnpm --filter @app-skeleton/shared build && pnpm --filter @app-skeleton/api build && pnpm --filter @app-skeleton/web build",
-    "typecheck": "pnpm --filter @app-skeleton/design-tokens check && pnpm --filter @app-skeleton/shared build && pnpm --filter @app-skeleton/api typecheck && pnpm --filter @app-skeleton/app typecheck && pnpm --filter @app-skeleton/web typecheck"
+    "test": "pnpm --filter @app-skeleton/shared build && node --test scripts/api.test.mjs && pnpm -r --filter '!@app-skeleton/api' --if-present test && pnpm api test",
+    "lint": "pnpm --filter @app-skeleton/shared build && eslint . && prettier --check . && node scripts/api.mjs lint --if-fastapi",
+    "format": "prettier --write . && pnpm --filter @app-skeleton/shared build && eslint . --fix && node scripts/api.mjs format --if-fastapi",
+    "build": "pnpm --filter @app-skeleton/design-tokens check && pnpm --filter @app-skeleton/shared build && pnpm api build && pnpm --filter @app-skeleton/web build",
+    "typecheck": "pnpm --filter @app-skeleton/design-tokens check && pnpm --filter @app-skeleton/shared build && pnpm api typecheck && pnpm --filter @app-skeleton/app typecheck && pnpm --filter @app-skeleton/web typecheck"
   },
   "devDependencies": {
     "@eslint/js": "^9.39.5",

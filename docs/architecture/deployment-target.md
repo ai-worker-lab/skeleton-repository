@@ -6,8 +6,8 @@
 
 ## 목표 배치
 
-- **웹 클라이언트:** Next.js 앱을 Vercel에서 제공. 도메인 API는 NestJS에 둔다.
-- **API:** Oracle Cloud Infrastructure의 ARM 서버(목표 사양 2 OCPU, 12 GB RAM)에 NestJS API 실행.
+- **웹 클라이언트:** Next.js 앱을 Vercel에서 제공. 도메인 로직은 선택한 API에 둔다.
+- **API:** Oracle Cloud Infrastructure의 ARM 서버(목표 사양 2 OCPU, 12 GB RAM)에 선택한 NestJS 또는 FastAPI API 실행.
 - **캐시:** 프로덕션 캐시 제품과 실행 위치는 미정입니다. 로컬 Compose의 Valkey 설정은 프로덕션 배포 결정을 의미하지 않습니다. 제품별 비교는 [Redis와 Valkey 레퍼런스](../references/redis-vs-valkey.md)를 참고하세요.
 - **관계형 데이터베이스:** Supabase 관리형 PostgreSQL 사용. API에서 TLS 연결을 사용하며 데이터베이스 포트를 공개 인터넷에 열지 않습니다.
 - **모바일:** Expo + React Native 앱은 Apple App Store와 Google Play를 대상으로 한다.
@@ -25,6 +25,7 @@
 
 프레임워크 best practice와 권장 디렉터리 구조는 각각 별도 문서로 관리한다. 각 문서는 공식 framework 문서를 근거로 하며, 현재 골격과의 차이를 추적한다.
 
+- [API 백엔드 선택](../development/api-backends.md) — NestJS·FastAPI 선택, 공통 HTTP 계약, 개발·검증 명령.
 - [NestJS API 구조와 구현 기준](nestjs-api.md) — 기능 모듈, configuration, DTO validation, database 경계.
 - [Next.js 웹 구조와 구현 기준](nextjs-web.md) — App Router, Server/Client Component 경계, same-origin BFF.
 - [Expo 모바일 구조와 구현 기준](expo-mobile.md) — Expo Router, route와 기능 폴더 경계, API client.
@@ -33,4 +34,4 @@
 
 ## 공유 계약과 배포 경계
 
-`packages/shared`는 API route와 직렬화 가능한 DTO/type만 제공한다. 데이터베이스 접근, 비밀값, UI state, 도메인 service는 공유 패키지에 넣지 않는다. NestJS API가 단일 도메인 경계이며 Next.js와 Expo는 같은 계약을 소비한다. 웹과 API, iOS/Android 앱은 각각 독립 배포한다.
+`packages/shared`는 API route와 직렬화 가능한 DTO/type만 제공한다. 데이터베이스 접근, 비밀값, UI state, 도메인 service는 공유 패키지에 넣지 않는다. 선택한 API가 단일 도메인 경계이며 Next.js와 Expo는 같은 계약을 소비한다. 웹과 API, iOS/Android 앱은 각각 독립 배포한다.

@@ -20,7 +20,7 @@ const HINTS = {
   typecheck:
     '출력된 파일:줄의 타입 오류를 고치세요. 공유 계약 타입은 packages/shared/src가 기준이며 바꾼 뒤 소비자(API·웹·앱)를 함께 맞춥니다.',
   build: '출력에서 실패한 패키지(@app-skeleton/...)와 첫 오류를 찾아 고치세요. 개별 재현: pnpm --filter <패키지> build',
-  test: '테스트는 실제 PostgreSQL이 필요합니다. make infra-up으로 DB를 띄우고 pnpm instance로 TEST_DATABASE_URL을 확인하세요. 개별 재현: pnpm --filter @app-skeleton/api test',
+  test: '테스트는 실제 PostgreSQL이 필요합니다. make infra-up으로 DB를 띄우고 pnpm instance로 TEST_DATABASE_URL을 확인하세요. 선택한 API만 재현: pnpm api test',
 };
 const FAST = ['tokens:check', 'work:check', 'docs:check', 'design:check', 'lint', 'typecheck'];
 const FULL = [...FAST, 'build', 'test'];

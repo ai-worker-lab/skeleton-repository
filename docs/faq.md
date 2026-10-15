@@ -6,7 +6,7 @@
 
 ### 왜 디자인, 앱, 웹, API를 각각 나누나요?
 
-OpenDesign 산출물은 `design/`, 모바일 앱은 `apps/app/`, 웹 클라이언트는 `apps/web/`, API는 `apps/api/`에 둡니다. 각 영역을 독립적으로 개발·검증할 수 있고, 웹은 앱 설치 없이 이용하는 진입점이 됩니다. 공통 TypeScript 계약은 `packages/shared/`에, 디자인·웹·앱이 함께 쓰는 디자인 토큰은 `packages/design-tokens/`에 둡니다. 현재 웹·앱은 제품 이름·컨셉과 API health 상태만 보여 주는 시작 화면이며 제품 기능은 아직 구현되지 않았습니다. 현재 폴더는 루트 `README.md`에 정리되어 있습니다.
+OpenDesign 산출물은 `design/`, 모바일 앱은 `apps/app/`, 웹 클라이언트는 `apps/web/`, API는 `apps/api/`(NestJS) 또는 `apps/api-python/`(FastAPI)에 둡니다. 각 영역을 독립적으로 개발·검증할 수 있고, 웹은 앱 설치 없이 이용하는 진입점이 됩니다. 공통 TypeScript 계약은 `packages/shared/`에, 디자인·웹·앱이 함께 쓰는 디자인 토큰은 `packages/design-tokens/`에 둡니다. 현재 웹·앱은 제품 이름·컨셉과 API health 상태만 보여 주는 시작 화면이며 제품 기능은 아직 구현되지 않았습니다. 현재 폴더는 루트 `README.md`에 정리되어 있습니다.
 
 ### 제품·개발 문서와 ADR은 어디에 두나요?
 
@@ -30,13 +30,17 @@ OpenDesign 산출물은 `design/`, 모바일 앱은 `apps/app/`, 웹 클라이�
 
 ### 인프라·API·웹·앱마다 secret 파일이 필요한가요?
 
-모든 영역에 빈 파일을 만드는 대신 소비 서비스와 권한에 맞게 분리합니다. 현재 Compose는 `infra/local/.env`만 읽고 API에 자동으로 전달하지 않습니다. API는 자신의 `apps/api/.env`를 읽고, 웹·앱에는 공개 설정만 둡니다. 원격 비밀값과 서비스별 경계는 [환경과 비밀값 관리](development/environment-secrets.md)가 기준입니다.
+모든 영역에 빈 파일을 만드는 대신 소비 서비스와 권한에 맞게 분리합니다. 현재 Compose는 `infra/local/.env`만 읽고 API에 자동으로 전달하지 않습니다. API는 선택한 백엔드의 `.env`를 읽고, 웹·앱에는 공개 설정만 둡니다. 원격 비밀값과 서비스별 경계는 [환경과 비밀값 관리](development/environment-secrets.md)가 기준입니다.
 
 ## 개발 도구
 
 ### 왜 pnpm을 사용하나요? npm이나 다른 도구는 안 되나요?
 
 현재 저장소는 `pnpm-workspace.yaml`로 앱과 공용 패키지를 하나의 workspace로 관리하고, `workspace:*` 의존성과 `pnpm-lock.yaml`로 내부 패키지 연결·설치를 고정합니다. 그래서 pnpm은 지금 구조에 잘 맞는 실용적인 선택입니다. npm workspaces나 Yarn도 대안이지만, 이 저장소에서는 도구를 바꾸는 이득보다 설정·lockfile·작업 흐름을 함께 바꾸는 비용이 큽니다. pnpm이 모든 프로젝트에서 유일한 최선이라는 뜻은 아닙니다. 사용 버전은 루트 `package.json`의 `packageManager`가 기준입니다.
+
+### Python + FastAPI로도 API를 만들 수 있나요?
+
+새 서비스 초기화 시 `--api fastapi`를 지정하거나 `api.config.json`의 `backend`를 `fastapi`로 바꾸면 됩니다. Python 3.12와 uv를 설치한 뒤 `pnpm api sync`를 실행합니다. `make up`·`pnpm verify`는 선택을 따르며 웹·앱은 같은 HTTP 계약을 사용합니다. 상세 명령과 선택 우선순위는 [API 백엔드 선택](development/api-backends.md)을 참고하세요.
 
 ### PM2는 왜 필요하고, 반드시 써야 하나요?
 
