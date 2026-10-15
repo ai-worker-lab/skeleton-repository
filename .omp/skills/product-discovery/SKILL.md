@@ -28,7 +28,7 @@ PRD 초안의 핵심 기능마다 후보 2개 이상과 "직접 만들기"를 �
 | 기준 | 확인 방법 |
 | --- | --- |
 | 기능 적합 | 공식 문서·예제가 요구 조건을 만족하는지 |
-| 스택 적합 | NestJS(서버), Next.js App Router(서버 컴포넌트·Edge 여부), Expo SDK·React Native New Architecture·Expo Go 지원(`https://reactnative.directory/api/libraries?search=<이름>`), PostgreSQL. 필요하면 영역 agent에 임시 디렉터리에서 설치·예제 실행을 맡깁니다 |
+| 스택 적합 | 선택한 NestJS 또는 FastAPI(서버), Next.js App Router(서버 컴포넌트·Edge 여부), Expo SDK·React Native New Architecture·Expo Go 지원(`https://reactnative.directory/api/libraries?search=<이름>`), PostgreSQL. 필요하면 영역 agent에 임시 디렉터리에서 설치·예제 실행을 맡깁니다 |
 | 라이선스 | `npm view <pkg> license`, 저장소 LICENSE. AGPL·SSPL·BSL·Commons Clause·"source-available"은 서비스 제공 방식과 함께 위험으로 표시 |
 | 유지보수 | `npm view <pkg> version time.modified`, `gh api repos/<owner>/<repo>`(`pushed_at`, `open_issues`), 최근 릴리스 간격, 메인테이너 수 |
 | 채택도 | `https://api.npmjs.org/downloads/point/last-week/<pkg>`, 스타, 공개 사용 사례 |

@@ -16,7 +16,7 @@ concurrency:
 
 jobs:
   check:
-    name: check (Node ${{ matrix.node }})
+    name: check (${{ matrix.api }}, Node ${{ matrix.node }})
     runs-on: ubuntu-latest
     timeout-minutes: 20
     strategy:
@@ -24,6 +24,10 @@ jobs:
       matrix:
         # 지원하는 Node.js LTS 메이저 버전. 로컬 개발 기본값은 .nvmrc입니다.
         node: [22, 24, 26]
+        api: [nestjs]
+        include:
+          - node: 22
+            api: fastapi
     services:
       postgres:
         image: postgres:17-alpine
@@ -39,6 +43,7 @@ jobs:
           --health-timeout 5s
           --health-retries 10
     env:
+      API_BACKEND: ${{ matrix.api }}
       TEST_DATABASE_URL: postgresql://app_skeleton:app-skeleton-ci-only@127.0.0.1:5432/app_skeleton
     steps:
       - uses: actions/checkout@v7
@@ -49,11 +54,25 @@ jobs:
           node-version: ${{ matrix.node }}
           cache: pnpm
       - run: pnpm install --frozen-lockfile
+      - uses: astral-sh/setup-uv@1c37ad07a6a961277cf70c0d37d6f313000f5884 # v10.3.0
+        if: matrix.api == 'fastapi'
+        with:
+          version: '0.13.1'
+          python-version: '3.12'
+          enable-cache: true
+          cache-dependency-glob: apps/api-python/uv.lock
+      - run: pnpm api sync
       # 로컬과 같은 단계(scripts/verify.mjs)를 실행합니다. 실패해도 남은 단계 결과까지 보고합니다.
       - run: pnpm verify --keep-going
 
   smoke:
-    name: smoke
+    name: smoke (${{ matrix.api }})
+    strategy:
+      fail-fast: false
+      matrix:
+        api: [nestjs, fastapi]
+    env:
+      API_BACKEND: ${{ matrix.api }}
     runs-on: ubuntu-latest
     timeout-minutes: 20
     services:
@@ -78,18 +97,26 @@ jobs:
           node-version-file: .nvmrc
           cache: pnpm
       - run: pnpm install --frozen-lockfile
+      - uses: astral-sh/setup-uv@1c37ad07a6a961277cf70c0d37d6f313000f5884 # v10.3.0
+        if: matrix.api == 'fastapi'
+        with:
+          version: '0.13.1'
+          python-version: '3.12'
+          enable-cache: true
+          cache-dependency-glob: apps/api-python/uv.lock
+      - run: pnpm api sync
       # 포트·주소는 이 checkout 인스턴스(슬롯 0, 원본 infra/local/.env.example) 값을 다음 단계 환경으로 넘깁니다.
       - name: 인스턴스 포트
         run: node scripts/instance.mjs --print-env | grep -E '^(API_PORT|WEB_PORT|API_URL|WEB_URL)=' >> "$GITHUB_ENV"
       - run: pnpm --filter @app-skeleton/shared build
-      - run: pnpm --filter @app-skeleton/api build
+      - run: pnpm api build
       - run: pnpm --filter @app-skeleton/web build
       - name: API·웹 시작
         env:
           DATABASE_URL: postgresql://app_skeleton:app-skeleton-ci-only@127.0.0.1:5432/app_skeleton
         run: |
           mkdir -p .local/ci
-          PORT="$API_PORT" nohup node apps/api/dist/main.js > .local/ci/api.log 2>&1 &
+          PORT="$API_PORT" nohup pnpm api start > .local/ci/api.log 2>&1 &
           API_INTERNAL_URL="$API_URL" nohup pnpm --filter @app-skeleton/web exec next start --port "$WEB_PORT" > .local/ci/web.log 2>&1 &
       - name: 서비스 준비 대기
         run: |

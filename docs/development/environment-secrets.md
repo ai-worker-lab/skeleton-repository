@@ -19,11 +19,11 @@
 | 영역 | 로컬 설정 위치·주입 방식 | 현재 소비 범위 |
 | --- | --- | --- |
 | 인프라 | `infra/local/.env` / 추적하는 예시는 `infra/local/.env.example` | Compose의 PostgreSQL 계정·DB명과 호스트 포트. Makefile의 `--env-file`로 명시적으로 전달하며, 호스트 포트는 `.local/instance.env`의 값이 셸 환경으로 넘어가 `--env-file` 값보다 우선함. 추적 예시의 `API_PORT`·`WEB_PORT`·`EXPO_PORT`·`POSTGRES_PORT`·`VALKEY_PORT`는 슬롯 0 포트의 유일한 원본([로컬 개발 환경](local-environment.md#인스턴스와-포트)) |
-| API | `apps/api/.env` / 추적되는 안전한 예시 `apps/api/.env.example`; 원격 배포는 프로세스 환경변수 | `loadLocalEnvironment()`가 Nest 생성 전에 로컬 `.env`를 읽고 이미 주입된 값을 덮어쓰지 않음. `DATABASE_URL`·`PORT` 필수(기본값 없음, 로컬은 `pnpm instance`가 채움) |
-| 웹 | `apps/web/.env.local`; 웹 영역 소유의 추적 예시 `apps/web/.env.example`; 원격 배포에서는 웹 호스팅 환경 설정 | 서버 전용 `API_INTERNAL_URL`로 Nest API에 연결. 현재 `NEXT_PUBLIC_*` 공개 변수는 없음 |
+| API | 선택한 백엔드의 `apps/api/.env` 또는 `apps/api-python/.env`; 같은 디렉터리의 `.env.example`이 안전한 예시. 원격 배포는 프로세스 환경변수 | 각 백엔드가 시작 전에 자기 `.env`를 읽고 이미 주입된 값을 덮어쓰지 않음. `DATABASE_URL`·`PORT` 필수(기본값 없음, 로컬은 `pnpm instance`가 채움) |
+| 웹 | `apps/web/.env.local`; 웹 영역 소유의 추적 예시 `apps/web/.env.example`; 원격 배포에서는 웹 호스팅 환경 설정 | 서버 전용 `API_INTERNAL_URL`로 선택한 API에 연결. 현재 `NEXT_PUBLIC_*` 공개 변수는 없음 |
 | 모바일 앱 | `apps/app/.env`; 앱 영역 소유의 추적 예시 `apps/app/.env.example` | Expo client의 `EXPO_PUBLIC_API_BASE_URL`. 서명 자격 증명은 앱 번들에 넣지 않음 |
 
-환경 파일은 소비 코드가 실제로 읽는 서비스에만 둡니다. API bootstrap은 `apps/api/.env`를 Nest provider 검증 전에 로드하고, 이미 전달된 프로세스 환경값은 유지합니다. Next.js와 Expo 공개 변수는 각 도구의 개발·빌드 환경에서 주입되며 공개 prefix 값만 클라이언트 번들에 포함할 수 있습니다. 새 설정은 소비 코드, 안전한 예시, 관련 서비스 문서를 같은 변경에서 갱신합니다.
+환경 파일은 소비 코드가 실제로 읽는 서비스에만 둡니다. API bootstrap은 선택한 백엔드의 `.env`를 필수 설정 검증 전에 로드하고, 이미 전달된 프로세스 환경값은 유지합니다. Next.js와 Expo 공개 변수는 각 도구의 개발·빌드 환경에서 주입되며 공개 prefix 값만 클라이언트 번들에 포함할 수 있습니다. 새 설정은 소비 코드, 안전한 예시, 관련 서비스 문서를 같은 변경에서 갱신합니다.
 
 각 프로세스는 자신의 설정만 받습니다. 인프라 전체 `.env`를 API·웹·앱에 일괄 주입하지 않습니다. DB 비밀번호와 API 연결 문자열처럼 연관된 값은 로컬에서 서로 맞아야 하지만, 운영에서는 API에 필요한 최소 권한의 DB 계정을 별도로 사용합니다. 변경 시 소비 서비스까지 함께 갱신합니다.
 
@@ -43,7 +43,9 @@
 
 ## 로컬 파일과 노출 대응
 
-`make up`(또는 `pnpm instance`, [scripts/lib/instance.mjs](../../scripts/lib/instance.mjs))은 위 네 로컬 파일이 없으면 추적 예시에서 권한 `600`으로 만들고, 예시에 있는 포트·주소 값은 이 checkout의 인스턴스 값으로 채웁니다. 기존 개인 설정은 덮어쓰지 않습니다. 같은 checkout의 포트·연결 문자열은 `.local/instance.env`에 있고, PM2가 각 프로세스에 자기 값만 넘깁니다(`ecosystem.config.cjs`).
+API 선택은 비밀값이 아닌 저장소 설정입니다. 루트 `api.config.json`의 `backend`를 사용하며 프로세스 환경변수 `API_BACKEND`가 우선합니다([API 백엔드 선택](api-backends.md)). API의 `.env`에 선택을 저장하지 않습니다.
+
+`make up`(또는 `pnpm instance`, [scripts/lib/instance.mjs](../../scripts/lib/instance.mjs))은 인프라·두 API·웹·앱의 로컬 파일이 없으면 추적 예시에서 권한 `600`으로 만들고, 예시에 있는 포트·주소 값은 이 checkout의 인스턴스 값으로 채웁니다. 기존 개인 설정은 덮어쓰지 않습니다. 같은 checkout의 포트·연결 문자열은 `.local/instance.env`에 있고, PM2가 각 프로세스에 자기 값만 넘깁니다(`ecosystem.config.cjs`).
 
 [`.gitignore`](../../.gitignore)는 모든 깊이의 `.env`, `.env.*`를 제외하고 `.env.example`만 허용합니다. 예시에는 변수 이름과 안전한 로컬 값만 넣습니다. 로컬 권한 제한은 같은 사용자로 실행되는 다른 프로그램으로부터의 격리를 보장하지 않습니다.
 

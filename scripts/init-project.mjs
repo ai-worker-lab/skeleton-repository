@@ -1,12 +1,13 @@
 #!/usr/bin/env node
 // 템플릿 자리표시자(이름·저장소·포트)를 새 서비스 값으로 바꾸고 검사를 실행합니다. 한 번만 실행합니다.
-// 사용법: node scripts/init-project.mjs --name my-service [--repo owner/name] [--port-offset 0] [--no-verify]
+// 사용법: node scripts/init-project.mjs --name my-service [--repo owner/name] [--api nestjs|fastapi] [--port-offset 0] [--no-verify]
 import { execFileSync } from 'node:child_process';
 import { existsSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { parseArgs } from 'node:util';
 import { readBasePorts } from './lib/instance.mjs';
+import apiBackend from './lib/api-backend.cjs';
 
 const root = join(dirname(fileURLToPath(import.meta.url)), '..');
 const self = 'scripts/init-project.mjs';
@@ -24,11 +25,19 @@ const { values } = parseArgs({
   options: {
     name: { type: 'string' },
     repo: { type: 'string' },
+    api: { type: 'string' },
     'port-offset': { type: 'string', default: '0' },
     'no-verify': { type: 'boolean', default: false },
   },
 });
 const name = values.name ?? fail('--name이 필요합니다. 예: --name my-service');
+let backend;
+try {
+  // 초기화는 --api 또는 추적된 선택을 저장합니다. 셸의 임시 API_BACKEND는 영구 설정으로 복사하지 않습니다.
+  backend = values.api === undefined ? apiBackend.readApiBackend(root, {}) : apiBackend.validateApiBackend(values.api);
+} catch (error) {
+  fail(error.message);
+}
 if (!/^[a-z][a-z0-9]*(?:-[a-z0-9]+)*$/.test(name) || name.length > 40) {
   fail(`이름 "${name}"은 소문자로 시작하는 kebab-case(최대 40자)여야 합니다.`);
 }
@@ -58,7 +67,10 @@ try {
 } catch {
   fail('git 저장소가 아닙니다. 복사한 폴더라면 먼저 `git init && git add -A`로 파일을 추적시킨 뒤 다시 실행하세요.');
 }
-const files = tracked.split('\n').filter((file) => file && file !== self && !BINARY.test(file));
+// uv.lock은 패키지 해시·버전의 원본이며 Python 패키지 이름(skeleton-api)은 서비스 이름과 독립적입니다.
+const files = tracked
+  .split('\n')
+  .filter((file) => file && file !== self && !file.endsWith('/uv.lock') && !BINARY.test(file));
 
 let changed = 0;
 for (const file of files) {
@@ -87,12 +99,13 @@ for (const file of files) {
     changed++;
   }
 }
+writeFileSync(join(root, 'api.config.json'), `${JSON.stringify({ backend }, null, 2)}\n`);
 
 const today = new Date().toLocaleDateString('sv-SE');
 const changelogPath = join(root, 'CHANGELOGS.md');
 const changelog = readFileSync(changelogPath, 'utf8');
 const firstSection = changelog.indexOf('\n## ');
-const entry = `- \`${PLACEHOLDER.repo}\` 템플릿에서 \`${name}\`로 초기화: 패키지 범위 \`@${name}/*\`, 저장소 \`${repo}\`, 로컬 포트 API ${BASE_PORTS.API_PORT + offset}·웹 ${BASE_PORTS.WEB_PORT + offset}·Expo ${BASE_PORTS.EXPO_PORT + offset}·PostgreSQL ${BASE_PORTS.POSTGRES_PORT + offset}·Valkey ${BASE_PORTS.VALKEY_PORT + offset}.\n`;
+const entry = `- \`${PLACEHOLDER.repo}\` 템플릿에서 \`${name}\`로 초기화: 패키지 범위 \`@${name}/*\`, 저장소 \`${repo}\`, API \`${backend}\`, 로컬 포트 API ${BASE_PORTS.API_PORT + offset}·웹 ${BASE_PORTS.WEB_PORT + offset}·Expo ${BASE_PORTS.EXPO_PORT + offset}·PostgreSQL ${BASE_PORTS.POSTGRES_PORT + offset}·Valkey ${BASE_PORTS.VALKEY_PORT + offset}.\n`;
 // 오늘 날짜 제목이 이미 맨 위에 있으면 그 아래에 넣고, 없으면 새 날짜 제목을 만듭니다(날짜 제목 중복 금지, docs:check).
 const todayHeading = `\n## ${today}\n`;
 const afterHeading = firstSection + todayHeading.length;
@@ -101,7 +114,9 @@ const updated = changelog.startsWith(todayHeading, firstSection)
   : `${changelog.slice(0, firstSection)}\n\n## ${today}\n\n${entry}${changelog.slice(firstSection)}`;
 writeFileSync(changelogPath, updated.replace(/\n{3,}/g, '\n\n'));
 
-console.log(`init-project: ${changed}개 파일을 바꿨습니다. 이름 ${name}, 저장소 ${repo}, 포트 오프셋 ${offset}.`);
+console.log(
+  `init-project: ${changed}개 파일을 바꿨습니다. 이름 ${name}, 저장소 ${repo}, API ${backend}, 포트 오프셋 ${offset}.`,
+);
 // 템플릿 이름·포트로 만든 인스턴스 설정과 로컬 설정 파일은 낡았으므로 지웁니다. 다음 make·pnpm instance가 새 값으로 다시 만듭니다.
 rmSync(join(root, '.local/instance.env'), { force: true });
 const templateValue = new RegExp(
@@ -109,7 +124,13 @@ const templateValue = new RegExp(
     .map((value) => `(?<![\\w-])${value}(?![\\w-])`)
     .join('|'),
 );
-for (const local of ['infra/local/.env', 'apps/api/.env', 'apps/web/.env.local', 'apps/app/.env']) {
+for (const local of [
+  'infra/local/.env',
+  'apps/api/.env',
+  'apps/api-python/.env',
+  'apps/web/.env.local',
+  'apps/app/.env',
+]) {
   const path = join(root, local);
   if (existsSync(path) && templateValue.test(readFileSync(path, 'utf8'))) {
     rmSync(path);
@@ -120,10 +141,11 @@ for (const local of ['infra/local/.env', 'apps/api/.env', 'apps/web/.env.local',
 if (!values['no-verify']) {
   const run = (args) => {
     console.log(`\n$ pnpm ${args.join(' ')}`);
-    execFileSync('pnpm', args, { cwd: root, stdio: 'inherit' });
+    execFileSync('pnpm', args, { cwd: root, env: { ...process.env, API_BACKEND: backend }, stdio: 'inherit' });
   };
   try {
     run(['install']);
+    if (backend === 'fastapi') run(['api', 'sync']);
     for (const args of [['verify', '--fast'], ['build']]) run(args);
   } catch {
     fail(

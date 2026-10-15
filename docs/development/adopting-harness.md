@@ -6,7 +6,7 @@
 
 ## 전제와 작업 단위
 
-- 대상 저장소가 같은 구조(pnpm workspace, `apps/api`·`apps/web`·`apps/app`, `packages/shared`·`packages/design-tokens`, `infra/local` Compose, `docs/work/` work item)라고 가정합니다. 없는 영역은 해당 파일 묶음을 빼고, 경로가 다르면 복사한 스크립트의 경로 상수(예: `scripts/lib/instance.mjs`의 `LOCAL_FILES`)를 맞춥니다.
+- 대상 저장소가 같은 구조(pnpm workspace, 선택한 API(`apps/api` 또는 `apps/api-python`)·`apps/web`·`apps/app`, `packages/shared`·`packages/design-tokens`, `infra/local` Compose, `docs/work/` work item)라고 가정합니다. 없는 영역은 해당 파일 묶음을 빼고, 경로가 다르면 복사한 스크립트의 경로 상수(예: `scripts/lib/instance.mjs`의 `LOCAL_FILES`)를 맞춥니다.
 - 이식은 대상 저장소의 `orchestrator` 독립 티켓 하나로 합니다. 브랜치는 `work/NNNN-<slug>`이고, `진행 기록`에 템플릿 저장소와 기준 커밋을 적습니다.
 - 옮길 파일 목록은 템플릿에서 확인합니다: 대상 저장소가 템플릿의 어느 커밋에서 갈라졌는지 알면 `git -C <템플릿> diff --stat <갈라진 커밋>..main`이 하네스 변경 전체입니다.
 
@@ -14,9 +14,11 @@
 
 | 묶음 | 파일 | 방법 |
 | --- | --- | --- |
-| 새 파일 | `scripts/`의 `verify.mjs`·`smoke.mjs`·`docs-check.mjs`·`design.mjs`·`instance.mjs`·`logs.mjs`·`od.mjs`·`runner.mjs`·`work-scope.mjs`와 `scripts/lib/`, `tests/smoke/`, `WORKFLOW.md`, `.omp/skills/`, `docs/development/`의 `repository-policy.md`·`verification.md`·`agent-runner.md`·`doc-gardening.md`·이 문서, `docs/specs/`, `docs/product/README.md`·`TEMPLATE.md`·`research/TEMPLATE.md`, `docs/references/TEMPLATE.md`, `design/system/`, `design/docs/opendesign.md`, `packages/design-tokens/src/opendesign.json`·`scripts/source.mjs`, 하네스 ADR(아래) | 템플릿 최신본을 복사한 뒤 [치환 규칙](#치환-규칙)을 적용합니다 |
-| 병합 파일 | 루트·영역 `AGENTS.md`, `README.md`, `Makefile`, `ecosystem.config.cjs`, 루트 `package.json`(scripts·devDependencies), `.github/workflows/ci.yml`, `.github/pull_request_template.md`, `.gitignore`(`.local/`), `.omp/agents/*.md`, `eslint.config.mjs`, `scripts/work.mjs`, `docs/README.md`, `docs/work/README.md`, `docs/alm/workflow.md`, `docs/development/`의 `local-environment.md`·`environment-secrets.md`·`parallel-work.md`, `docs/faq.md`, `docs/architecture/*.md`, `packages/design-tokens/`의 `scripts/generate.mjs`·`src/tokens.json`·`docs/usage.md`, 앱 `package.json`의 개발 서버 스크립트, `apps/api/src/main.ts`의 포트 읽기, 각 `.env.example`, `infra/local/compose.yaml`, 각 `CHANGELOGS.md`·`RELEASES.md`의 머리말 | 대상 저장소가 이미 바꾼 파일이므로 3-way 병합합니다. 대상 저장소 고유 문장(제품 설명, 보류 결정, 고유 ADR 색인)은 보존하고 하네스 규칙만 들입니다. 루트 `README.md`는 `harness:start`~`harness:end` 블록을 그대로 옮깁니다. `pnpm-lock.yaml`은 손으로 병합하지 않고 `pnpm install`로 다시 만듭니다 |
+| 새 파일 | `scripts/`의 `api.mjs`·`verify.mjs`·`smoke.mjs`·`docs-check.mjs`·`design.mjs`·`instance.mjs`·`logs.mjs`·`od.mjs`·`runner.mjs`·`work-scope.mjs`와 `scripts/lib/`, `tests/smoke/`, `WORKFLOW.md`, `.omp/skills/`, `docs/development/`의 `api-backends.md`·`repository-policy.md`·`verification.md`·`agent-runner.md`·`doc-gardening.md`·이 문서, `docs/specs/`, `docs/product/README.md`·`TEMPLATE.md`·`research/TEMPLATE.md`, `docs/references/TEMPLATE.md`, `design/system/`, `design/docs/opendesign.md`, `packages/design-tokens/src/opendesign.json`·`scripts/source.mjs`, 하네스 ADR(아래) | 템플릿 최신본을 복사한 뒤 [치환 규칙](#치환-규칙)을 적용합니다 |
+| 병합 파일 | 루트·영역 `AGENTS.md`, `README.md`, `Makefile`, `ecosystem.config.cjs`, 루트 `package.json`(scripts·devDependencies)·`api.config.json`, `.github/workflows/ci.yml`, `.github/pull_request_template.md`, `.gitignore`(`.local/`), `.omp/agents/*.md`, `eslint.config.mjs`, `scripts/work.mjs`, `docs/README.md`, `docs/work/README.md`, `docs/alm/workflow.md`, `docs/development/`의 `local-environment.md`·`environment-secrets.md`·`parallel-work.md`, `docs/faq.md`, `docs/architecture/*.md`, `packages/design-tokens/`의 `scripts/generate.mjs`·`src/tokens.json`·`docs/usage.md`, 앱 `package.json`의 개발 서버 스크립트, 선택한 API 진입점의 포트 읽기, 각 `.env.example`, `infra/local/compose.yaml`, 각 `CHANGELOGS.md`·`RELEASES.md`의 머리말 | 대상 저장소가 이미 바꾼 파일이므로 3-way 병합합니다. 대상 저장소 고유 문장(제품 설명, 보류 결정, 고유 ADR 색인)은 보존하고 하네스 규칙만 들입니다. 루트 `README.md`는 `harness:start`~`harness:end` 블록을 그대로 옮깁니다. `pnpm-lock.yaml`은 손으로 병합하지 않고 `pnpm install`로 다시 만듭니다 |
 | 제외 | 템플릿의 work item(`docs/work/orchestrator/0001-*` 등)과 변경 기록 본문, `scripts/init-project.mjs`, 루트 `README.md`의 `template:start`~`template:end` 블록, 디자인 토큰 값·이름, 제품 코드(`apps/*/src`의 화면·기능) | 옮기지 않습니다. 템플릿 work item이 필요한 맥락은 이식 티켓의 `진행 기록`에 템플릿 커밋으로 남깁니다 |
+
+API 선택 도구를 함께 옮기면 `api.config.json`에 대상의 백엔드를 기록하고 `scripts/lib/api-backend.cjs`의 경로·명령을 대상 구조와 맞춥니다. FastAPI를 쓰는 대상은 `pyproject.toml`·`uv.lock`과 Python 검사 도구도 유지해야 합니다([API 백엔드 선택](api-backends.md)).
 
 ## 치환 규칙
 
@@ -59,7 +61,7 @@ ADR 0006에 따라 공통 정책 원문은 루트 `AGENTS.md`가 아니라 [저�
 이식 브랜치에서 `pnpm instance`(또는 `make up`)를 처음 실행하면 다음 파일이 생깁니다.
 
 - `.local/instance.env`: 이 checkout의 슬롯, Compose project, 포트, 연결 주소. `.local/`은 Git에서 제외합니다. 주 checkout은 슬롯 0으로 `infra/local/.env.example`의 포트와 Compose project `<서비스 이름>`(`scripts/lib/instance.mjs`의 `BASE_NAME`)을 씁니다. 대상 저장소가 쓰던 Compose project 이름(`docker compose ls`, `docker volume ls`로 확인)과 다르면 새 빈 볼륨이 생기므로, 첫 `make up` 전에 이름을 맞춥니다. `make`는 이미 있는 `.local/instance.env`를 그대로 읽으므로 포트 원본을 바꾼 뒤에는 `pnpm instance`를 먼저 실행해 다시 만듭니다(이름과 Compose project는 유지).
-- 없는 로컬 설정 파일: `infra/local/.env`, `apps/api/.env`, `apps/web/.env.local`, `apps/app/.env`. 추적 예시에서 만들고 포트·연결 값은 인스턴스 값으로 채웁니다. 이미 있는 파일은 덮어쓰지 않으며, `make` 대상이 넘기는 인스턴스 값이 파일 값보다 우선합니다([로컬 개발 환경](local-environment.md)). 대상 저장소의 기존 파일에 옛 포트가 남아 있고 `pnpm dev:*`처럼 직접 실행할 때도 새 값이 필요하면, 파일을 지우고 `pnpm instance`로 다시 만듭니다. 값 하나는 `pnpm instance --get <KEY>`(예: `--get WEB_PORT`)로 확인합니다.
+- 없는 로컬 설정 파일: `infra/local/.env`, `apps/api/.env`, `apps/api-python/.env`, `apps/web/.env.local`, `apps/app/.env`. 추적 예시에서 만들고 포트·연결 값은 인스턴스 값으로 채웁니다. 이미 있는 파일은 덮어쓰지 않으며, `make` 대상이 넘기는 인스턴스 값이 파일 값보다 우선합니다([로컬 개발 환경](local-environment.md)). 대상 저장소의 기존 파일에 옛 포트가 남아 있고 `pnpm dev:*`처럼 직접 실행할 때도 새 값이 필요하면, 파일을 지우고 `pnpm instance`로 다시 만듭니다. 값 하나는 `pnpm instance --get <KEY>`(예: `--get WEB_PORT`)로 확인합니다.
 
 ## 이미 하네스를 쓰는 저장소: 역할별 work item 폴더
 

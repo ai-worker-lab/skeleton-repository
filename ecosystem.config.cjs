@@ -1,5 +1,6 @@
 const { existsSync, readFileSync } = require('node:fs');
 const { join } = require('node:path');
+const { readApiBackend } = require('./scripts/lib/api-backend.cjs');
 
 const root = __dirname;
 // 이 checkout의 인스턴스 설정(scripts/lib/instance.mjs가 생성). 각 앱에는 자기 포트·연결 값만 넘깁니다.
@@ -21,10 +22,10 @@ module.exports = {
     {
       name: 'app-skeleton-api',
       cwd: root,
-      script: 'pnpm',
-      args: ['--filter', '@app-skeleton/api', 'start:dev'],
+      script: process.execPath,
+      args: ['scripts/api.mjs', 'dev'],
       interpreter: 'none',
-      env: pick('PORT', 'DATABASE_URL'),
+      env: { ...pick('PORT', 'DATABASE_URL'), API_BACKEND: readApiBackend(root) },
       autorestart: false,
     },
     {

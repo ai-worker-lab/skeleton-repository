@@ -11,6 +11,7 @@
 | `pnpm verify` | `tokens:check → work:check → docs:check → design:check → lint → typecheck → build → test` |
 | `pnpm verify --fast` | `tokens:check → work:check → docs:check → design:check → lint → typecheck` |
 
+- API 단계는 [백엔드 선택](api-backends.md)에 따라 실행됩니다. 기본값은 NestJS이며 `API_BACKEND=fastapi pnpm verify`는 Python API와 웹·앱·공용 패키지를 검사합니다. Python 3.12와 uv를 준비하고 `API_BACKEND=fastapi pnpm api sync`로 잠긴 의존성을 설치합니다.
 - 기본은 첫 실패에서 멈추고 남은 단계를 `건너뜀`으로 표시합니다. 모든 단계 결과를 보려면 `--keep-going`을 붙입니다.
 - `.local/instance.env`([인스턴스 설정](local-environment.md))가 있으면 그 값을 환경변수로 보충합니다. 이미 설정된 환경변수가 우선합니다. `test` 단계의 API 통합 테스트는 이 값의 `TEST_DATABASE_URL`로 현재 작업공간의 PostgreSQL에 연결합니다.
 - `test`는 실제 PostgreSQL이 필요합니다. 먼저 `make infra-up`으로 DB를 띄웁니다.
@@ -39,8 +40,8 @@
 
 | job | 내용 |
 | --- | --- |
-| `check` | 지원 Node.js LTS(`matrix.node`: 22·24·26)마다 `pnpm install --frozen-lockfile` 후 `pnpm verify --keep-going`. PostgreSQL 17 서비스 컨테이너에 `TEST_DATABASE_URL`로 연결합니다. 한 버전이 실패해도 나머지 버전 결과를 끝까지 봅니다. |
-| `smoke` | `.nvmrc` Node로 `node scripts/instance.mjs --print-env`의 슬롯 0 포트·주소(`API_PORT`·`WEB_PORT`·`API_URL`·`WEB_URL`, 원본 `infra/local/.env.example`)를 job 환경에 넣고, 공용 패키지·API·웹을 빌드해 PostgreSQL 서비스에 연결한 API(`node apps/api/dist/main.js`, `PORT=$API_PORT`)와 웹(`next start --port $WEB_PORT`)을 백그라운드로 띄운 뒤 준비를 기다려 `pnpm smoke`를 실행합니다. 실패하면 API·웹 로그를 출력합니다. |
+| `check` | NestJS는 지원 Node.js LTS(`matrix.node`: 22·24·26), FastAPI는 Node 22와 Python 3.12·uv 조합에서 `pnpm install --frozen-lockfile`·`pnpm api sync` 후 `pnpm verify --keep-going`을 실행합니다. 각 조합은 `API_BACKEND`로 선택하고 PostgreSQL 17 서비스에 `TEST_DATABASE_URL`로 연결합니다. 한 조합이 실패해도 나머지 결과를 끝까지 봅니다. |
+| `smoke` | NestJS·FastAPI 각각에 대해 `.nvmrc` Node를 사용하며 FastAPI 조합은 Python 3.12·uv도 준비합니다. `node scripts/instance.mjs --print-env`의 슬롯 0 포트·주소(원본 `infra/local/.env.example`)를 주입하고 공용 패키지·선택한 API·웹을 빌드합니다. PostgreSQL에 연결한 API(`pnpm api start`, `PORT=$API_PORT`)와 웹(`next start --port $WEB_PORT`)을 띄운 뒤 같은 `pnpm smoke`를 실행합니다. 실패하면 API·웹 로그를 출력합니다. |
 | `work scope` | `work/NNNN-*` 브랜치의 PR에서만 전체 이력을 받아 `pnpm work:scope --base origin/<기준 브랜치>`로 변경 파일이 티켓 역할의 소유 경로 안에 있는지 검사합니다. |
 
 지원 Node.js 버전을 바꾸면 workflow의 `matrix.node`와 README 요구사항을 함께 고칩니다.
@@ -54,7 +55,7 @@ work item을 `검증` 상태로 올리거나 완료를 보고하기 전에 변�
 | 문서·work item만 | `pnpm verify --fast` |
 | 디자인(`design/`, 토큰 원본) | `pnpm tokens:generate`, `pnpm design:sync`, `pnpm design:check --require-lint`, `pnpm verify --fast`. 미리보기는 1280px·390px에서 직접 확인합니다([OpenDesign 사용 기준](../../design/docs/opendesign.md)). |
 | 스크립트·설정·`packages/*` | `pnpm verify` |
-| API(`apps/api/`) | `make infra-up` 후 `pnpm verify`, `make up` 후 `pnpm smoke` |
+| API(`apps/api/`·`apps/api-python/`) | 해당 백엔드를 선택하고 `make infra-up` 후 `pnpm verify`, `make up` 후 `pnpm smoke`. 공유 HTTP 계약·선택 도구 변경은 두 백엔드에서 각각 확인 |
 | 웹(`apps/web/`) | `pnpm verify`, `make up` 후 `pnpm smoke`. 바꾼 화면은 브라우저로 직접 확인합니다([웹 규칙](../../apps/web/AGENTS.md)). |
 | 앱(`apps/app/`) | `pnpm verify`. 화면 동작은 [기기 테스트](../../apps/app/docs/device-testing.md)로 확인합니다(자동 UI 테스트 없음). |
 | 인프라·`Makefile`·PM2 설정 | `make up` 후 `make status`, `pnpm smoke` |

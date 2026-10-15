@@ -1,7 +1,7 @@
 # app-skeleton
 
 <!-- template:start -->
-서비스를 시작하기 위한 에이전트 친화 모노레포 뼈대입니다. pnpm workspace에 NestJS API, Next.js App Router 웹, Expo + React Native 앱, 공유 TypeScript 계약, 디자인 토큰, PostgreSQL·Valkey 로컬 인프라와 개발·운영 규칙(work item, ADR, CI), 그리고 코딩 에이전트가 혼자 검증하고 일할 수 있는 [에이전트 하네스](#에이전트-하네스)를 담고 있습니다. 제품 기능은 없습니다.
+서비스를 시작하기 위한 에이전트 친화 모노레포 뼈대입니다. pnpm workspace에 NestJS API(기본) 또는 Python + FastAPI(선택), Next.js App Router 웹, Expo + React Native 앱, 공유 TypeScript 계약, 디자인 토큰, PostgreSQL·Valkey 로컬 인프라와 개발·운영 규칙(work item, ADR, CI), 그리고 코딩 에이전트가 혼자 검증하고 일할 수 있는 [에이전트 하네스](#에이전트-하네스)를 담고 있습니다. 제품 기능은 없습니다.
 
 이 블록(`template:start`~`template:end`)은 템플릿 사용 안내이며 `scripts/init-project.mjs`가 서비스 소개 자리로 바꿉니다. 이미 있는 저장소에 하네스만 들이려면 [기존 저장소에 하네스 적용](docs/development/adopting-harness.md)을 따릅니다.
 
@@ -16,14 +16,16 @@
    rm -rf .git && git init -b main && git add -A
    ```
 
-2. 이름과 로컬 포트를 바꿉니다. 이름은 소문자 kebab-case이며 패키지 범위(`@<이름>/*`), DB·Compose·PM2 이름에 쓰입니다.
+2. 이름과 로컬 포트, API 백엔드를 정합니다. 이름은 소문자 kebab-case이며 패키지 범위(`@<이름>/*`), DB·Compose·PM2 이름에 쓰입니다.
 
    ```sh
    corepack enable
-   node scripts/init-project.mjs --name my-service --repo ai-worker-lab/my-service --port-offset 0
+   node scripts/init-project.mjs --name my-service --repo ai-worker-lab/my-service --port-offset 0 --api nestjs
    ```
 
-   `--port-offset`은 같은 PC에서 여러 서비스를 함께 실행할 때 겹치지 않도록 기본 포트(API 3000, 웹 5173, Expo 8081, PostgreSQL 5432, Valkey 6379)에 더할 값입니다. 스크립트는 이름·저장소·포트(슬롯 0 포트 원본 `infra/local/.env.example`)를 바꾸고, 템플릿 값으로 만든 로컬 설정(`.local/instance.env`, `.env` 파일)을 지운 뒤 `pnpm install`, `pnpm verify --fast`, `pnpm build`로 결과를 확인합니다. 이 안내 블록을 서비스 소개 자리로 바꾸고 `CHANGELOGS.md`에 시작 기록을 남긴 뒤 스스로를 지웁니다.
+   Python API로 시작하려면 `--api fastapi`를 지정하고 Python 3.12와 uv를 준비합니다. 선택은 루트 `api.config.json`에 저장됩니다([API 백엔드 선택](docs/development/api-backends.md)).
+
+   `--port-offset`은 같은 PC에서 여러 서비스를 함께 실행할 때 겹치지 않도록 기본 포트(API 3000, 웹 5173, Expo 8081, PostgreSQL 5432, Valkey 6379)에 더할 값입니다. 스크립트는 이름·저장소·포트(슬롯 0 포트 원본 `infra/local/.env.example`)를 바꾸고, 템플릿 값으로 만든 로컬 설정(`.local/instance.env`, `.env` 파일)을 지운 뒤 `pnpm install`·선택한 API 의존성 설치, `pnpm verify --fast`, `pnpm build`로 결과를 확인합니다. 이 안내 블록을 서비스 소개 자리로 바꾸고 `CHANGELOGS.md`에 시작 기록을 남긴 뒤 스스로를 지웁니다.
 3. 실행과 검증을 확인하고 첫 커밋을 만듭니다.
 
    ```sh
@@ -45,9 +47,10 @@
 - `design/` — 디자인 시스템 패키지(`system/`), 인계된 디자인 산출물(`<기능>/`), 디자인 문서. 로컬 OpenDesign 사용법은 [OpenDesign 사용 기준](design/docs/opendesign.md).
 - `apps/app/` — Expo + React Native 모바일 앱.
 - `apps/web/` — 앱 설치 없이 이용하기 위한 Next.js App Router 웹 클라이언트.
-- `apps/api/` — NestJS + TypeScript API.
+- `apps/api/` — 기본 NestJS + TypeScript API.
+- `apps/api-python/` — 선택 가능한 Python + FastAPI API. [백엔드 선택과 명령](docs/development/api-backends.md)
 - `infra/` — [local·dev·prod 인프라 관리](infra/README.md). 현재 실행 가능한 구성은 local입니다.
-- `packages/shared/` — 클라이언트와 API가 공유하는 TypeScript 계약.
+- `packages/shared/` — HTTP 경로·응답 계약과 클라이언트·NestJS용 TypeScript 타입. FastAPI도 같은 HTTP 계약을 구현합니다.
 - `packages/design-tokens/` — 디자인·웹·앱이 함께 쓰는 디자인 토큰 원본과 생성물. [사용법](packages/design-tokens/docs/usage.md)
 - `scripts/` — 저장소 도구: work item 검사·착수 목록·소유 범위·실행기(`work.mjs`, `work-scope.mjs`, `runner.mjs`), 검증(`verify.mjs`, `smoke.mjs`, `docs-check.mjs`), 로컬 인스턴스·로그(`instance.mjs`, `logs.mjs`).
 - `tests/smoke/` — 실행 중인 API·웹을 확인하는 Playwright smoke 테스트.
@@ -61,22 +64,26 @@
 - pnpm: 루트 `package.json`의 `packageManager` 값(`corepack enable` 후 자동 사용)
 - Docker Engine/Desktop과 Compose v2 (로컬 PostgreSQL·Valkey용)
 - make, PM2(`pnpm install` 시 함께 설치)
+- FastAPI를 선택할 때만 Python 3.12와 uv. Python 의존성은 `apps/api-python/pyproject.toml`·`uv.lock`으로 관리합니다.
 
 ## 명령어
 
 ```sh
 pnpm install
+pnpm api sync      # 선택한 API 의존성 준비(FastAPI는 uv.lock 사용)
 make up            # 로컬 인스턴스 설정 생성 후 인프라·API·웹·Expo 실행
 make status        # 컨테이너 및 개발 서버 상태
 make down          # 전체 종료(데이터 볼륨 유지)
 make infra-restart # 인프라만 재시작 (api-·web-·app-restart도 같은 형식)
-pnpm format        # Prettier 서식 적용 후 ESLint 자동 수정
+pnpm format        # JS/TS 서식·lint 자동 수정과 선택한 API 서식 적용
 pnpm tokens:generate # 디자인 토큰 원본에서 CSS 변수·앱 객체·디자인 tokens.css·OpenDesign 디자인 시스템 생성
 ```
 
-`make up`은 없는 로컬 설정 파일(`infra/local/.env`, `apps/api/.env`, `apps/web/.env.local`, `apps/app/.env`)을 예시에서 만듭니다. 이 checkout의 API·웹·Expo·PostgreSQL·Valkey 포트와 주소는 `pnpm instance`가 보여 줍니다. 주 checkout(슬롯 0)의 포트 원본은 [`infra/local/.env.example`](infra/local/.env.example)이고, git worktree는 슬롯마다 100씩 더한 포트와 별도 DB를 씁니다.
+`make up`은 없는 로컬 설정 파일(`infra/local/.env`, `apps/api/.env`, `apps/api-python/.env`, `apps/web/.env.local`, `apps/app/.env`)을 예시에서 만듭니다. 이 checkout의 API·웹·Expo·PostgreSQL·Valkey 포트와 주소는 `pnpm instance`가 보여 줍니다. 주 checkout(슬롯 0)의 포트 원본은 [`infra/local/.env.example`](infra/local/.env.example)이고, git worktree는 슬롯마다 100씩 더한 포트와 별도 DB를 씁니다.
 
-자세한 내용은 [로컬 개발 환경](docs/development/local-environment.md), [환경과 비밀값 관리](docs/development/environment-secrets.md), [배포 대상 아키텍처](docs/architecture/deployment-target.md), [CHANGELOGS](CHANGELOGS.md)를 참고하세요. 디자인 산출물은 `design/`에 두고, 앱·API 소스는 이 폴더에 두지 않습니다.
+API 기본 선택은 [`api.config.json`](api.config.json)의 `backend`이며, `API_BACKEND=fastapi make up`처럼 한 실행에만 바꿀 수도 있습니다. 루트 개발·빌드·검증 명령은 같은 선택을 따릅니다.
+
+자세한 내용은 [API 백엔드 선택](docs/development/api-backends.md), [로컬 개발 환경](docs/development/local-environment.md), [환경과 비밀값 관리](docs/development/environment-secrets.md), [배포 대상 아키텍처](docs/architecture/deployment-target.md), [CHANGELOGS](CHANGELOGS.md)를 참고하세요. 디자인 산출물은 `design/`에 두고, 앱·API 소스는 이 폴더에 두지 않습니다.
 
 <!-- harness:start -->
 

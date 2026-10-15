@@ -1,13 +1,13 @@
 # 저장소 지도
 
-pnpm 모노레포 스켈레톤입니다: NestJS API(`apps/api`), Next.js 웹(`apps/web`), Expo 앱(`apps/app`), 공유 계약(`packages/shared`), 디자인 토큰(`packages/design-tokens`), 로컬 인프라(`infra/local`). 이 파일은 지도입니다. 세부 규칙은 링크한 문서에서 필요할 때 읽습니다.
+pnpm 모노레포 스켈레톤입니다: NestJS API(`apps/api`, 기본) 또는 FastAPI(`apps/api-python`, 선택), Next.js 웹(`apps/web`), Expo 앱(`apps/app`), 공유 계약(`packages/shared`), 디자인 토큰(`packages/design-tokens`), 로컬 인프라(`infra/local`). 이 파일은 지도입니다. 세부 규칙은 링크한 문서에서 필요할 때 읽습니다.
 
 ## 반드시 지킬 규칙
 
 - 문서·변경 기록·보고는 한국어. 식별자·명령·경로는 원문 표기.
 - 사실은 한 곳에만 둡니다. 실행 가능한 원본(코드·설정·manifest)이 문서보다 우선이고, 문서는 근거 경로를 밝힙니다.
 - 코드·설정을 바꾸면 영향받는 문서·링크·변경 기록(`CHANGELOGS.md`, 영역 로그)을 같은 변경에서 고칩니다.
-- 작업 영역의 `AGENTS.md`를 함께 읽습니다: [api](apps/api/AGENTS.md), [web](apps/web/AGENTS.md), [app](apps/app/AGENTS.md), [infra](infra/AGENTS.md).
+- 작업 영역의 `AGENTS.md`를 함께 읽습니다: [NestJS API](apps/api/AGENTS.md), [FastAPI](apps/api-python/AGENTS.md), [web](apps/web/AGENTS.md), [app](apps/app/AGENTS.md), [infra](infra/AGENTS.md).
 - 티켓의 `역할` 소유 경로(`.omp/agents/*.md`의 `owns`) 밖을 바꾸지 않습니다. `pnpm work:scope`로 확인합니다.
 - 실행하지 않은 검증을 통과했다고 보고하지 않습니다. 배포·데이터 파괴·외부 공개는 명시적 요청 없이 하지 않습니다.
 - 제품 방향·우선순위·요구 확정은 사용자가 결정합니다.
@@ -19,6 +19,7 @@ pnpm 모노레포 스켈레톤입니다: NestJS API(`apps/api`), Next.js 웹(`ap
 | 목적 | 명령 |
 | --- | --- |
 | 로컬 실행(worktree마다 독립 포트·DB) | `make up` · `make status` · `make down` · `pnpm instance` |
+| API 선택·명령 | `api.config.json` / `API_BACKEND` · `pnpm api <명령>` ([가이드](docs/development/api-backends.md)) |
 | 서비스 로그 | `pnpm logs <api\|web\|app\|infra> [--lines N]` |
 | 전체 검증(CI와 동일) | `pnpm verify` · 빠른 검증 `pnpm verify --fast` |
 | 실행 중 API·웹 브라우저 검증 | `pnpm smoke` |
