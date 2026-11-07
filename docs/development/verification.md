@@ -14,6 +14,7 @@
 - API 단계는 [백엔드 선택](api-backends.md)에 따라 실행됩니다. 기본값은 NestJS이며 `API_BACKEND=fastapi pnpm verify`는 Python API와 웹·앱·공용 패키지를 검사합니다. Python 3.12와 uv를 준비하고 `API_BACKEND=fastapi pnpm api sync`로 잠긴 의존성을 설치합니다.
 - 기본은 첫 실패에서 멈추고 남은 단계를 `건너뜀`으로 표시합니다. 모든 단계 결과를 보려면 `--keep-going`을 붙입니다.
 - `.local/instance.env`([인스턴스 설정](local-environment.md))가 있으면 그 값을 환경변수로 보충합니다. 이미 설정된 환경변수가 우선합니다. `test` 단계의 API 통합 테스트는 이 값의 `TEST_DATABASE_URL`로 현재 작업공간의 PostgreSQL에 연결합니다.
+- `test`에는 Expo 의존성의 이미지 읽기·경로 탐색·URL 처리 회귀 검사(`scripts/security-dependencies.test.mjs`)가 포함됩니다. [보안 의존성 관리](dependency-security.md)를 참고합니다.
 - `test`는 실제 PostgreSQL이 필요합니다. 먼저 `make infra-up`으로 DB를 띄웁니다.
 - `design:check`는 `design/` 산출물의 색 리터럴과 인계 문서를 검사하고, 로컬 OpenDesign이 실행 중일 때만 `od lint`를 함께 돌립니다([OpenDesign 사용 기준](../../design/docs/opendesign.md#검사)). CI에는 OpenDesign이 없으므로 `od lint`는 건너뜁니다.
 

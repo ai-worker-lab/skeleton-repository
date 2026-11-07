@@ -55,3 +55,5 @@
 - 외부 기술·라이선스 비교 자료: `docs/references/`
 
 하위 문서 폴더는 해당 범위의 첫 문서가 생길 때 만듭니다.
+
+- [보안 의존성 관리](development/dependency-security.md) — 제한된 override·패치의 이유와 감사 한계.
