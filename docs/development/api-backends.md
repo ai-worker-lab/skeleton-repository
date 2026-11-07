@@ -12,6 +12,8 @@
 node scripts/init-project.mjs --name my-service --repo owner/my-service --api fastapi
 ```
 
+초기화에서 `--api`를 생략하면 `api.config.json`의 선택을 유지합니다. 초기화와 `--finish`의 설치·검증은 이 파일의 선택을 강제하며 셸의 임시 `API_BACKEND`를 무시합니다. 일반 개발·검증 명령에는 위의 환경변수 우선순위가 적용됩니다. 초기화 미리보기·설정 보호·복구는 [새 프로젝트 시작 안내](new-project.md)를 참고합니다.
+
 이미 초기화한 저장소는 `api.config.json`을 바꿉니다.
 
 ```json
@@ -60,8 +62,10 @@ FastAPI의 실행·검사 명령은 `uv run --locked --directory apps/api-python
 
 공유 HTTP 경로·DTO·오류 타입의 기준은 [`packages/shared/src/index.ts`](../../packages/shared/src/index.ts)입니다. NestJS와 클라이언트는 TypeScript 타입을 직접 사용하고, FastAPI는 같은 JSON 계약을 Python 모델로 구현합니다. TypeScript 선언만 바꾸어도 Python 코드가 자동으로 바뀌지는 않습니다. 공통 계약을 바꾸면 두 구현과 HTTP 테스트를 함께 갱신합니다.
 
-두 구현은 `/api/health` liveness, DB 질의를 수행하는 `/api/health/ready` readiness와 `ApiError` 오류 형식을 제공합니다. 실제 PostgreSQL을 사용하는 각 백엔드의 통합 테스트와 같은 Playwright smoke가 이를 확인합니다. CI도 선택 파일 값과 별개로 두 구현을 검사합니다([검증 루프](verification.md)).
+두 구현은 `/api/health` liveness, DB 질의를 수행하는 `/api/health/ready` readiness와 `ApiError` 오류 형식을 제공합니다. 실제 PostgreSQL을 사용하는 각 백엔드의 통합 테스트와 같은 Playwright smoke가 이를 확인합니다. 공유 HTTP 계약·선택 도구를 바꾸면 로컬 CI에서 두 백엔드를 각각 선택해 검사하고 실행 결과를 기록합니다([검증 루프](verification.md)).
 
 SQL migration은 각 구현의 `migrations/`에서 읽습니다. 두 실행기는 같은 `schema_migrations` 이력 테이블과 PostgreSQL advisory lock을 사용하지만, 선택을 바꾸는 작업이 SQL 파일이나 기존 데이터를 변환하지는 않습니다. 제품 기능을 구현한 저장소에서 백엔드를 바꿀 때는 새 구현의 HTTP 계약·migration 이력·데이터 호환성을 먼저 확인합니다.
 
 NestJS 구조는 [NestJS API 구현 기준](../architecture/nestjs-api.md), FastAPI 구조와 직접 실행·테스트 방법은 [FastAPI 개발 안내](../../apps/api-python/docs/development.md)를 참고합니다. 선택 구조의 배경과 트레이드오프는 [ADR 0010](../adr/0010-selectable-api-backends.md)에 기록합니다.
+
+FastAPI의 `pnpm api format`은 Ruff 서식 처리를 먼저 실행한 뒤 lint 자동 수정을 적용합니다. 초기화로 프로젝트 이름이 길어져 생긴 줄 길이 오류가 서식 처리 전에 작업을 중단하지 않도록 하기 위함입니다.

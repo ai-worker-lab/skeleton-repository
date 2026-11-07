@@ -37,7 +37,8 @@ const commands = {
     start: [uv('python', '-m', 'skeleton_api')],
     build: [uv('python', '-m', 'compileall', '-q', 'src')],
     lint: [uv('ruff', 'check', '.'), uv('ruff', 'format', '--check', '.')],
-    format: [uv('ruff', 'check', '--fix', '.'), uv('ruff', 'format', '.')],
+    // 이름 치환으로 길어진 줄을 먼저 정리해야 E501이 서식 처리를 막지 않습니다.
+    format: [uv('ruff', 'format', '.'), uv('ruff', 'check', '--fix', '.')],
     typecheck: [uv('mypy', 'src')],
     test: [uv('pytest')],
   },

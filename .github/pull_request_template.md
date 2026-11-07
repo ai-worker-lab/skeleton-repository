@@ -15,6 +15,12 @@
 
 실제로 실행한 명령·시나리오와 관찰한 결과를 적습니다. 테스트 통과만으로 확인할 수 없는 UI·API·DB·외부 동작은 해당 경로를 별도로 확인합니다. 명령과 범위의 기준은 [검증 루프](../docs/development/verification.md)입니다.
 
+CI는 로컬 개발자·에이전트 환경에서 실행합니다. GitHub Actions는 CD의 기본 실행 환경이며 CI를 실행하지 않습니다.
+
+- 검증한 커밋 또는 변경 식별자:
+- 실행 환경(Node/pnpm 버전):
+- 미실행 범위:
+
 - [ ] `pnpm verify` 통과 (문서·work item만 바꿨다면 `pnpm verify --fast`)
 - [ ] API·웹·인프라를 바꿨다면 `make up` 후 `pnpm smoke` 통과
 - [ ] `work/NNNN-*` 브랜치라면 `pnpm work:scope` 통과

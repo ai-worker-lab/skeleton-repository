@@ -26,6 +26,7 @@
     "design:check": "node scripts/design.mjs check",
     "design:sync": "node scripts/design.mjs sync",
     "od": "node scripts/od.mjs",
+    "test:init": "node --test scripts/init-project.test.mjs",
     "test": "pnpm --filter @app-skeleton/shared build && node --test scripts/api.test.mjs scripts/security-dependencies.test.mjs && pnpm -r --filter '!@app-skeleton/api' --if-present test && pnpm api test",
     "lint": "pnpm --filter @app-skeleton/shared build && eslint . && prettier --check . && node scripts/api.mjs lint --if-fastapi",
     "format": "prettier --write . && pnpm --filter @app-skeleton/shared build && eslint . --fix && node scripts/api.mjs format --if-fastapi",

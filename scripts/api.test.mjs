@@ -1,5 +1,5 @@
 import assert from 'node:assert/strict';
-import { execFileSync, spawn, spawnSync } from 'node:child_process';
+import { spawn, spawnSync } from 'node:child_process';
 import {
   chmodSync,
   copyFileSync,
@@ -17,8 +17,6 @@ import { fileURLToPath } from 'node:url';
 import { test } from 'node:test';
 
 const source = join(dirname(fileURLToPath(import.meta.url)), '..');
-// 초기화 도구는 새 서비스에서 한 번 실행한 뒤 삭제됩니다. API 선택 검사는 계속 유지합니다.
-const initializationOnly = { skip: !existsSync(join(source, 'scripts/init-project.mjs')) };
 
 function fixture(t, backend = 'nestjs') {
   const root = realpathSync(mkdtempSync(join(tmpdir(), 'api-selection-')));
@@ -142,67 +140,6 @@ test('개발 서버 종료 신호를 자식 프로세스에 전달한다', { tim
   child.kill('SIGTERM');
   assert.equal(await completed, 0);
   assert.equal(readFileSync(signalFile, 'utf8'), 'SIGTERM');
-});
-
-function initializationFixture(t, backend) {
-  const f = fixture(t, backend);
-  for (const file of ['scripts/init-project.mjs', 'scripts/lib/instance.mjs', 'infra/local/.env.example']) {
-    f.write(file, readFileSync(join(source, file)));
-  }
-  f.write('package.json', '{"name":"app-skeleton"}\n');
-  f.write('README.md', '# app-skeleton\n');
-  f.write('CHANGELOGS.md', '# 변경 기록\n\n## 2026-01-01\n\n- 템플릿\n');
-  f.write('apps/api-python/pyproject.toml', '[project]\nname = "skeleton-api"\nversion = "0.1.0"\n');
-  // 이름·포트처럼 보이는 잠금 파일 데이터도 템플릿 치환 대상이 되어서는 안 됩니다.
-  f.write('apps/api-python/uv.lock', 'name = "skeleton-api"\nvalue = "app-skeleton 15432 app_skeleton"\n');
-  execFileSync('git', ['init', '--quiet', f.root]);
-  execFileSync('git', ['add', '.'], { cwd: f.root });
-  f.write('apps/api-python/.env', 'DATABASE_URL=postgresql://app_skeleton@localhost:15432/app_skeleton\n');
-  f.write('.local/instance.env', 'PORT_SLOT=0\n');
-  f.initialize = (args = []) =>
-    spawnSync(
-      process.execPath,
-      [join(f.root, 'scripts/init-project.mjs'), '--name', 'my-service', '--no-verify', ...args],
-      {
-        cwd: f.root,
-        env: { ...process.env, API_BACKEND: 'invalid-shell-override' },
-        encoding: 'utf8',
-      },
-    );
-  return f;
-}
-
-test('초기화에서 FastAPI 선택을 저장하고 Python 잠금 파일과 패키지 이름을 보존한다', initializationOnly, (t) => {
-  const f = initializationFixture(t, 'nestjs');
-  const lock = readFileSync(join(f.root, 'apps/api-python/uv.lock'), 'utf8');
-  const result = f.initialize(['--api', 'fastapi']);
-  assert.equal(result.status, 0, result.stderr);
-  assert.equal(JSON.parse(readFileSync(join(f.root, 'api.config.json'), 'utf8')).backend, 'fastapi');
-  assert.equal(JSON.parse(readFileSync(join(f.root, 'package.json'), 'utf8')).name, 'my-service');
-  assert.equal(readFileSync(join(f.root, 'apps/api-python/uv.lock'), 'utf8'), lock);
-  assert.match(readFileSync(join(f.root, 'apps/api-python/pyproject.toml'), 'utf8'), /name = "skeleton-api"/);
-  assert.equal(existsSync(join(f.root, 'apps/api-python/.env')), false);
-  assert.equal(existsSync(join(f.root, '.local/instance.env')), false);
-  assert.equal(existsSync(join(f.root, 'scripts/init-project.mjs')), false);
-});
-
-test('초기화의 --api 생략은 추적된 선택을 유지하고 셸의 임시 선택을 무시한다', initializationOnly, (t) => {
-  for (const backend of ['nestjs', 'fastapi']) {
-    const f = initializationFixture(t, backend);
-    const result = f.initialize();
-    assert.equal(result.status, 0, result.stderr);
-    assert.equal(JSON.parse(readFileSync(join(f.root, 'api.config.json'), 'utf8')).backend, backend);
-  }
-});
-
-test('잘못된 초기화 --api는 파일을 바꾸기 전에 실패한다', initializationOnly, (t) => {
-  const f = initializationFixture(t, 'nestjs');
-  const result = f.initialize(['--api', 'python']);
-  assert.equal(result.status, 1);
-  assert.match(result.stderr, /nestjs 또는 fastapi/);
-  assert.equal(execFileSync('git', ['diff', '--exit-code'], { cwd: f.root, encoding: 'utf8' }), '');
-  assert.equal(existsSync(join(f.root, 'scripts/init-project.mjs')), true);
-  assert.equal(existsSync(join(f.root, 'apps/api-python/.env')), true);
 });
 
 test('PM2는 인스턴스에 저장된 과거 선택 대신 현재 API 설정을 읽는다', (t) => {

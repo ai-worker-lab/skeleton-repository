@@ -18,7 +18,7 @@ Next15·Nest11·Expo54를 유지합니다. Expo의 RN0.81.5·React19.1.0 조합�
 
 Router6이 사용하는 query-string7은 CommonJS이며 decode-uri-component를 함수로 바로 호출합니다. 수정된 decoder0.5.1은 ESM default export이므로 버전만 바꾸면 호출이 깨집니다.
 
-`patches/query-string@7.1.3.patch`는 해당 require에 `.default`만 붙입니다. 실제 보안 수정 알고리즘은 upstream decoder0.5.1을 사용하며 자체 decoder를 복제하지 않습니다. pnpm의 `patchedDependencies`와 lock hash가 재설치에 이 패치를 적용합니다. synchronous ESM require와 ESLint 도구의 요구사항을 함께 만족하도록 Node22.13 이상인22계열·24.3 이상인24계열·26계열을 지원하며 CI는 최신22/24/26을 검사합니다.
+`patches/query-string@7.1.3.patch`는 해당 require에 `.default`만 붙입니다. 실제 보안 수정 알고리즘은 upstream decoder0.5.1을 사용하며 자체 decoder를 복제하지 않습니다. pnpm의 `patchedDependencies`와 lock hash가 재설치에 이 패치를 적용합니다. synchronous ESM require와 ESLint 도구의 요구사항을 함께 만족하도록 Node 22.13 이상인 22계열·24.3 이상인 24계열·26계열을 지원합니다. 허용 범위의 원본은 루트 `package.json`의 `engines.node`이며, 각 버전의 호환성은 [로컬 CI](verification.md#ci)에서 실제 실행한 결과로 기록합니다.
 
 한글·잘못된 percent 인코딩·반복 값의 처리와 roundtrip은 회귀 테스트에서 확인합니다. [decoder 보안 공지](https://github.com/advisories/GHSA-qr28-fpjm-wq7f).
 

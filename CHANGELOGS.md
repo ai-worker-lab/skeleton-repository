@@ -6,12 +6,21 @@
 
 ## 2026-11-07
 
+- FastAPI를 긴 프로젝트 이름으로 초기화할 때 Python 줄 길이 오류로 검증이 멈추지 않도록 초기화·재시도에 Ruff 서식 처리를 연결했습니다. 근거: `scripts/api.mjs`, `scripts/init-project.mjs`, `docs/work/orchestrator/0013-project-template-initialization.md`.
+- PR1 초기화 안정화에 PR2의 FastAPI 선택과 PR3의 보안 의존성을 통합했습니다. 로컬 CI·Actions CD 정책을 유지하며 두 백엔드의 초기화·실패 복구·기존 설정 보호를 같은 계약으로 검증합니다. CI ADR 번호는 기존 FastAPI ADR0010과 겹치지 않도록0011로 정리했습니다. 근거: `docs/work/orchestrator/0013-project-template-initialization.md`, `docs/work/orchestrator/0018-initializer-formatting.md`.
+
 - 웹 Next15.5.29·API Nest11.2.8·Expo54.0.38과 보안 수정 간접 의존성을 반영했습니다. PM2는 보안 수정이 제공되는7.0.4로 갱신하고, query-string7의 ESM decoder 연결을 한 줄 패치했습니다. 근거: [보안 의존성 관리](docs/development/dependency-security.md), `docs/work/orchestrator/0017-security-dependencies.md`, 커밋 c7ad22b, [PR3](https://github.com/ai-worker-lab/skeleton-repository/pull/3).
 - 초기화 검증에서 발견한 긴 프로젝트 이름의 서식 실패는 별도 분류 대기 항목 `docs/work/orchestrator/0018-initializer-formatting.md`로 기록했습니다.
 
 ## 2026-10-15
 
 - NestJS 기본값을 유지하면서 Python + FastAPI를 선택할 수 있도록 API 실행·검증·초기화 경로를 연결했습니다. `api.config.json`·`API_BACKEND`, `pnpm api`, `init-project --api`, 로컬 인스턴스·PM2·CI가 같은 선택을 따릅니다. Python 구현은 [FastAPI 변경 기록](apps/api-python/CHANGELOGS.md), 사용법과 설계 제안은 [API 백엔드 선택](docs/development/api-backends.md)·[ADR 0010](docs/adr/0010-selectable-api-backends.md)에 기록하고 역할 소유 범위·아키텍처·환경·검증 안내를 갱신했습니다.
+
+## 2026-10-13
+
+- 사용자 확정: CI를 로컬에서 실행하고 GitHub Actions는 CD의 기본 실행 환경으로 사용. CI workflow 제거, 로컬 검증 절차·CD 의존성 경계·실제 CD 미구현 상태 명시([ADR 0011](docs/adr/0011-local-ci-actions-cd.md)). 근거: `docs/work/orchestrator/0013-project-template-initialization.md`, HIST-298 피드백.
+
+- 모든 신규 프로젝트의 NestJS·Next.js·Expo 공통 시작점으로 복제·초기화·복구 안내 정리([새 프로젝트 시작](docs/development/new-project.md)). 초기화 CLI에 미리보기·새 origin 추론·설치·서식·검증 마무리 재시도 추가, 포트 키만 수정, 기존 로컬 설정·바이너리·심볼릭 링크 보호. 회귀 테스트 `pnpm test:init`을 verify에 포함하고 CI에 실제 초기화 복사본 설치·검증·빌드 추가. 근거: `docs/work/orchestrator/0013-project-template-initialization.md`, [HIST-298](https://shaul1991.atlassian.net/browse/HIST-298).
 
 ## 2026-10-02
 
