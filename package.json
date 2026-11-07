@@ -26,7 +26,7 @@
     "design:check": "node scripts/design.mjs check",
     "design:sync": "node scripts/design.mjs sync",
     "od": "node scripts/od.mjs",
-    "test": "pnpm --filter @app-skeleton/shared build && node --test scripts/api.test.mjs && pnpm -r --filter '!@app-skeleton/api' --if-present test && pnpm api test",
+    "test": "pnpm --filter @app-skeleton/shared build && node --test scripts/api.test.mjs scripts/security-dependencies.test.mjs && pnpm -r --filter '!@app-skeleton/api' --if-present test && pnpm api test",
     "lint": "pnpm --filter @app-skeleton/shared build && eslint . && prettier --check . && node scripts/api.mjs lint --if-fastapi",
     "format": "prettier --write . && pnpm --filter @app-skeleton/shared build && eslint . --fix && node scripts/api.mjs format --if-fastapi",
     "build": "pnpm --filter @app-skeleton/design-tokens check && pnpm --filter @app-skeleton/shared build && pnpm api build && pnpm --filter @app-skeleton/web build",
@@ -34,16 +34,35 @@
   },
   "devDependencies": {
     "@eslint/js": "^9.39.5",
-    "@next/eslint-plugin-next": "^15.5.27",
+    "@next/eslint-plugin-next": "^15.5.29",
     "@playwright/test": "^1.63.0",
     "eslint": "^9.39.5",
     "eslint-config-expo": "^10.0.0",
     "eslint-config-prettier": "^10.1.8",
     "eslint-plugin-react-hooks": "^7.1.1",
     "globals": "^17.12.0",
-    "pm2": "6.0.14",
+    "pm2": "7.0.4",
     "prettier": "^3.9.9",
     "typescript-eslint": "^8.71.0",
     "yaml": "^2.9.1"
+  },
+  "pnpm": {
+    "overrides": {
+      "@nestjs/platform-express@11>multer": "2.5.0",
+      "next@15>postcss": "8.5.32",
+      "@expo/metro-config@54>postcss": "8.5.32",
+      "pm2@7>js-yaml": "4.3.2",
+      "get-uri>basic-ftp": "6.2.1",
+      "glob@>=9.0.0 <=14.0.1": "14.0.4",
+      "minimatch@>=7.0.0 <11.0.1": "11.0.5",
+      "query-string@7>decode-uri-component": "0.5.1",
+      "metro@>=0.83.0 <0.83.8": "0.83.8"
+    },
+    "patchedDependencies": {
+      "query-string@7.1.3": "patches/query-string@7.1.3.patch"
+    }
+  },
+  "engines": {
+    "node": "^22.13.0 || ^24.3.0 || ^26.0.0"
   }
 }

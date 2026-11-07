@@ -2,6 +2,10 @@
 
 내부 참고용으로 모바일 앱의 모든 변경을 공개 여부와 관계없이 기록합니다. 작성 규칙은 [저장소 공통 정책의 변경 기록](../../docs/development/repository-policy.md#변경-기록)을 따르며, 공개 릴리스 노트는 [RELEASES](../../RELEASES.md)에 있습니다.
 
+## 2026-11-07
+
+- Expo54.0.38·Router6.0.24로 갱신하며 RN0.81.5·React19.1.0 호환 조합을 유지합니다. Metro0.83.8의 이미지 parser 수정, PostCSS·glob/minimatch·URL decoder 보안 수정과 query-string CommonJS 연결 패치를 반영했습니다. 실제 이미지 읽기·경로 탐색·URL 처리 회귀 검사를 추가했습니다. 근거: 루트 `scripts/security-dependencies.test.mjs`, `patches/query-string@7.1.3.patch`, `docs/work/orchestrator/0017-security-dependencies.md`.
+
 ## 2026-10-01
 
 - Expo 개발 서버 포트 기본값 숫자를 없앰: `start`·`android`·`ios`는 `EXPO_PORT`가 없으면 `pnpm instance --get EXPO_PORT`로 이 checkout 인스턴스 포트를 씀. `.env.example`의 `EXPO_PUBLIC_API_BASE_URL`은 빈 값과 형식 주석, 런타임 설정·기기 검증 문서는 `<API 포트>`·`<Expo 포트>` 자리표시자와 `pnpm instance` 안내로 바꿈. 근거: `docs/work/0011-harness-adoption-fixes.md`.

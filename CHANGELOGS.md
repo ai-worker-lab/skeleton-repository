@@ -4,6 +4,11 @@
 
 공개 릴리스 노트는 [RELEASES](RELEASES.md)에 있습니다. 작성 규칙은 [저장소 공통 정책의 변경 기록](docs/development/repository-policy.md#변경-기록)을 따릅니다.
 
+## 2026-11-07
+
+- 웹 Next15.5.29·API Nest11.2.8·Expo54.0.38과 보안 수정 간접 의존성을 반영했습니다. PM2는 보안 수정이 제공되는7.0.4로 갱신하고, query-string7의 ESM decoder 연결을 한 줄 패치했습니다. 근거: [보안 의존성 관리](docs/development/dependency-security.md), `docs/work/orchestrator/0017-security-dependencies.md`.
+- 초기화 검증에서 발견한 긴 프로젝트 이름의 서식 실패는 별도 분류 대기 항목 `docs/work/orchestrator/0018-initializer-formatting.md`로 기록했습니다.
+
 ## 2026-10-15
 
 - NestJS 기본값을 유지하면서 Python + FastAPI를 선택할 수 있도록 API 실행·검증·초기화 경로를 연결했습니다. `api.config.json`·`API_BACKEND`, `pnpm api`, `init-project --api`, 로컬 인스턴스·PM2·CI가 같은 선택을 따릅니다. Python 구현은 [FastAPI 변경 기록](apps/api-python/CHANGELOGS.md), 사용법과 설계 제안은 [API 백엔드 선택](docs/development/api-backends.md)·[ADR 0010](docs/adr/0010-selectable-api-backends.md)에 기록하고 역할 소유 범위·아키텍처·환경·검증 안내를 갱신했습니다.
