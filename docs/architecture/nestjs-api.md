@@ -4,7 +4,7 @@
 
 ## 책임 경계
 
-NestJS는 유일한 도메인 API다. 권한, PostgreSQL 변경, 업무 규칙을 소유한다. Next.js는 표현·SSR, Expo는 네이티브 UI만 담당한다. `packages/shared`에는 직렬화 가능한 DTO와 경로 상수만 둔다. 데이터베이스 접근·도메인 service·비밀값은 공유 패키지에 두지 않는다.
+NestJS는 기본으로 선택되는 도메인 API다. Python을 쓰는 서비스는 [FastAPI 백엔드](../development/api-backends.md)를 선택하며, 한 실행 환경에서는 선택한 API 하나가 도메인 경계를 맡는다. 권한, PostgreSQL 변경, 업무 규칙을 소유한다. Next.js는 표현·SSR, Expo는 네이티브 UI만 담당한다. `packages/shared`에는 직렬화 가능한 DTO와 경로 상수만 둔다. 데이터베이스 접근·도메인 service·비밀값은 공유 패키지에 두지 않는다.
 
 ## 권장 소스 구조
 

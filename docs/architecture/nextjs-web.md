@@ -1,6 +1,6 @@
 # Next.js 웹 구조와 구현 기준
 
-**상태: 구현 기준.** 이 문서는 app-skeleton 웹의 Next.js App Router 구조, SSR, API 경계를 정의한다. Next.js는 웹 presentation 계층이고 도메인 API는 NestJS다.
+**상태: 구현 기준.** 이 문서는 app-skeleton 웹의 Next.js App Router 구조, SSR, API 경계를 정의한다. Next.js는 웹 presentation 계층이고 도메인 API는 [선택한 백엔드](../development/api-backends.md)가 담당한다.
 
 ## 권장 소스 구조
 
@@ -10,12 +10,12 @@ apps/web/src/
     layout.tsx                     # root shell, metadata
     (public)/
       page.tsx                     # 시작 화면
-    api/backend/[...path]/route.ts # 좁은 same-origin Nest BFF
+    api/backend/[...path]/route.ts # 좁은 same-origin API BFF
     loading.tsx, error.tsx, not-found.tsx
   features/                        # 기능별 화면·유스케이스 (제품 범위 확정 후 추가)
   components/                      # 공용 accessible UI
   lib/api/
-    server.ts                      # SSR -> Nest direct calls
+    server.ts                      # SSR -> API direct calls
     browser.ts                     # browser -> same-origin BFF
 ```
 
@@ -23,14 +23,14 @@ apps/web/src/
 
 ## Server/Client Component 경계
 
-App Router의 page/layout은 Server Component를 기본값으로 사용한다. 페이지의 HTML, metadata와 본문은 서버에서 Nest API를 호출해 렌더링한다. 브라우저 상태와 이벤트가 필요한 최소 조각만 Client Component로 둔다. 앱 전체를 `'use client'`로 묶는 SPA 방식은 사용하지 않는다.
+App Router의 page/layout은 Server Component를 기본값으로 사용한다. 페이지의 HTML, metadata와 본문은 서버에서 도메인 API를 호출해 렌더링한다. 브라우저 상태와 이벤트가 필요한 최소 조각만 Client Component로 둔다. 앱 전체를 `'use client'`로 묶는 SPA 방식은 사용하지 않는다.
 
 여러 사용자가 같은 결과를 보는 응답이라도 변경이 즉시 반영되어야 하면 `cache: 'no-store'`로 읽는다. 사용자별 응답은 request-scoped로 읽고 shared cache에 넣지 않는다. 느린 uncached 읽기는 route loading boundary 또는 Suspense fallback으로 스트리밍한다.
 
-## Nest API BFF
+## 도메인 API BFF
 
-- 서버 렌더링은 server-only `API_INTERNAL_URL`로 Nest API를 직접 호출한다(`lib/api/server.ts`). 브라우저는 same-origin BFF(`/api/backend/...`)만 호출한다(`lib/api/browser.ts`).
-- `api/backend/[...path]/route.ts`는 허용된 Nest path/method만 전달하고 status/body를 반환하는 transport proxy다. 권한 규칙, database logic, validation policy를 복제하지 않는다. 필요한 경로만 정확히 allowlist하고, 절대 URL 전달과 임의 header forwarding은 허용하지 않는다.
+- 서버 렌더링은 server-only `API_INTERNAL_URL`로 도메인 API를 직접 호출한다(`lib/api/server.ts`). 브라우저는 same-origin BFF(`/api/backend/...`)만 호출한다(`lib/api/browser.ts`).
+- `api/backend/[...path]/route.ts`는 허용된 API path/method만 전달하고 status/body를 반환하는 transport proxy다. 권한 규칙, database logic, validation policy를 복제하지 않는다. 필요한 경로만 정확히 allowlist하고, 절대 URL 전달과 임의 header forwarding은 허용하지 않는다.
 - `NEXT_PUBLIC_*`에는 API secret이나 credential을 넣지 않는다.
 
 ## UI와 상태

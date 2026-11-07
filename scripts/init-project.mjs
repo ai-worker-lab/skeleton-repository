@@ -7,6 +7,7 @@ import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { parseArgs } from 'node:util';
 import { readBasePorts, BASE_PORTS_FILE } from './lib/instance.mjs';
+import apiBackend from './lib/api-backend.cjs';
 
 const root = join(dirname(fileURLToPath(import.meta.url)), '..');
 const PLACEHOLDER = { name: 'app-skeleton', snake: 'app_skeleton', repo: 'ai-worker-lab/skeleton-repository' };
@@ -17,15 +18,17 @@ const LOCAL_FILES = [
   '.local/instance.env',
   'infra/local/.env',
   'apps/api/.env',
+  'apps/api-python/.env',
   'apps/web/.env.local',
   'apps/app/.env',
 ];
 const USAGE = `사용법:
-  node scripts/init-project.mjs --name my-service --repo owner/my-service [--port-offset 0] [--dry-run] [--no-verify]
+  node scripts/init-project.mjs --name my-service --repo owner/my-service [--api nestjs|fastapi] [--port-offset 0] [--dry-run] [--no-verify]
   node scripts/init-project.mjs --finish
 
-NestJS·Next.js·Expo 전체 구성을 유지합니다. 새 복사본에서 make up 전에 실행하세요.
+NestJS(기본) 또는 FastAPI와 Next.js·Expo 전체 구성을 유지합니다. 새 복사본에서 make up 전에 실행하세요.
 --repo         새 GitHub origin이 있으면 생략 가능. 템플릿 origin/원격 없음은 명시 필수.
+--api          nestjs 또는 fastapi. 생략하면 api.config.json의 선택을 유지합니다.
 --port-offset  API 3000·웹 5173·Expo 8081·PostgreSQL 5432·Valkey 6379에 더할 정수.
 --dry-run      변경 파일·프로젝트 식별자·포트만 표시(파일/설치 변경 없음).
 --no-verify    초기화만 적용. 설치·검증은 완료되지 않은 상태입니다.
@@ -36,15 +39,21 @@ function git(...args) {
   return execFileSync('git', args, { cwd: root, encoding: 'utf8', stdio: ['ignore', 'pipe', 'pipe'] });
 }
 
-function verify() {
+function verify(backend) {
   for (const args of [
     ['install', '--frozen-lockfile'],
+    ...(backend === 'fastapi' ? [['api', 'sync']] : []),
     ['exec', 'prettier', '--write', '.'],
+    ...(backend === 'fastapi' ? [['api', 'format']] : []),
     ['verify', '--fast'],
     ['build'],
   ]) {
     console.log(`\n$ pnpm ${args.join(' ')}`);
-    const result = spawnSync('pnpm', args, { cwd: root, stdio: 'inherit' });
+    const result = spawnSync('pnpm', args, {
+      cwd: root,
+      env: { ...process.env, API_BACKEND: backend },
+      stdio: 'inherit',
+    });
     if (result.status !== 0) {
       throw new Error(
         '검사가 실패했습니다. 원인을 고친 뒤 `node scripts/init-project.mjs --finish`로 초기화 마무리를 재실행하세요.',
@@ -78,6 +87,7 @@ function main() {
     options: {
       name: { type: 'string' },
       repo: { type: 'string' },
+      api: { type: 'string' },
       'port-offset': { type: 'string' },
       'no-verify': { type: 'boolean' },
       'dry-run': { type: 'boolean' },
@@ -95,11 +105,14 @@ function main() {
       throw new Error('--finish는 다른 옵션과 함께 쓰지 않습니다.');
     if (packageJson.name === PLACEHOLDER.name)
       throw new Error('아직 초기화하지 않았습니다. --name과 --repo로 먼저 초기화하세요.');
-    verify();
+    verify(apiBackend.readApiBackend(root, {}));
     return;
   }
   if (packageJson.name !== PLACEHOLDER.name)
     throw new Error('이미 초기화된 저장소입니다. 초기화 마무리는 --finish를 쓰세요.');
+  // 초기화와 마무리는 셸의 일시적인 API_BACKEND를 저장하거나 검증에 사용하지 않습니다.
+  const backend =
+    values.api === undefined ? apiBackend.readApiBackend(root, {}) : apiBackend.validateApiBackend(values.api);
   const name = values.name;
   if (!name || !/^[a-z][a-z0-9]*(?:-[a-z0-9]+)*$/.test(name) || name.length > 40 || name === PLACEHOLDER.name) {
     throw new Error('--name은 템플릿 이름과 다른 소문자 kebab-case(최대 40자)여야 합니다.');
@@ -127,7 +140,7 @@ function main() {
   } catch {
     throw new Error('독립된 git 저장소가 필요합니다. 새 복사본에서 git init -b main && git add -A 후 실행하세요.');
   }
-  const required = ['package.json', 'README.md', 'CHANGELOGS.md', BASE_PORTS_FILE];
+  const required = ['package.json', 'api.config.json', 'README.md', 'CHANGELOGS.md', BASE_PORTS_FILE];
   const entries = tracked.map((entry) => {
     const [, mode, stage, file] = /^(\d+) [a-f0-9]+ (\d+)\t([\s\S]+)$/.exec(entry) ?? [];
     if (!file || stage !== '0') throw new Error('추적 파일의 충돌을 먼저 해결하세요.');
@@ -159,7 +172,15 @@ function main() {
   const snake = name.replaceAll('-', '_');
   const changes = new Map();
   for (const { mode, file } of entries) {
-    if (TOOL_FILES.has(file) || !['100644', '100755'].includes(mode)) continue;
+    // 잠금 파일과 패치는 upstream 데이터와 해시를 보존합니다.
+    if (
+      TOOL_FILES.has(file) ||
+      file === 'uv.lock' ||
+      file.endsWith('/uv.lock') ||
+      file.startsWith('patches/') ||
+      !['100644', '100755'].includes(mode)
+    )
+      continue;
     const path = join(root, file);
     if (!lstatSync(path).isFile()) throw new Error(`추적 파일 형식이 바뀌었습니다: ${file}`);
     const buffer = readFileSync(path);
@@ -192,9 +213,11 @@ function main() {
     }
     if (text !== original) changes.set(file, text);
   }
+  const config = `${JSON.stringify({ backend }, null, 2)}\n`;
+  if (config !== readFileSync(join(root, 'api.config.json'), 'utf8')) changes.set('api.config.json', config);
   const today = new Date().toLocaleDateString('sv-SE');
   const changelog = changes.get('CHANGELOGS.md') ?? readFileSync(join(root, 'CHANGELOGS.md'), 'utf8');
-  const entry = `- \`${PLACEHOLDER.repo}\`에서 \`${name}\` 초기화. 저장소 \`${repo}\`, 포트 오프셋 ${offset}. 근거: \`scripts/init-project.mjs\`.\n`;
+  const entry = `- \`${PLACEHOLDER.repo}\`에서 \`${name}\` 초기화. 저장소 \`${repo}\`, API \`${backend}\`, 포트 오프셋 ${offset}. 근거: \`scripts/init-project.mjs\`.\n`;
   const heading = `## ${today}\n`;
   const firstSection = changelog.indexOf('\n## ');
   const position = firstSection < 0 ? changelog.trimEnd().length : firstSection;
@@ -203,7 +226,7 @@ function main() {
     ? `${changelog.slice(0, position + 1 + heading.length)}\n${entry}${changelog.slice(position + 1 + heading.length)}`
     : `${changelog.slice(0, position)}\n\n${heading}\n${entry}${changelog.slice(position)}`;
   changes.set('CHANGELOGS.md', updated.replace(/\n{3,}/g, '\n\n'));
-  console.log(`init-project: ${name}, 저장소 ${repo}, 포트 오프셋 ${offset}.`);
+  console.log(`init-project: ${name}, 저장소 ${repo}, API ${backend}, 포트 오프셋 ${offset}.`);
   console.log(
     Object.entries(ports)
       .map(([key, port]) => `${key}=${port}`)
@@ -220,7 +243,7 @@ function main() {
     console.log(
       '검증 미실행: node scripts/init-project.mjs --finish 후 make up && pnpm verify && pnpm smoke를 실행하세요.',
     );
-  else verify();
+  else verify(backend);
 }
 
 try {

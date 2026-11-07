@@ -14,6 +14,7 @@ const INSTANCE_FILE = '.local/instance.env';
 const LOCAL_FILES = [
   [BASE_PORTS_FILE, 'infra/local/.env'],
   ['apps/api/.env.example', 'apps/api/.env'],
+  ['apps/api-python/.env.example', 'apps/api-python/.env'],
   ['apps/web/.env.example', 'apps/web/.env.local'],
   ['apps/app/.env.example', 'apps/app/.env'],
 ];

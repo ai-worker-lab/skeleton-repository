@@ -19,7 +19,7 @@ description: 확정된 PRD와 디자인 인계로 기술 설계 문서(docs/spec
 
 ## 설계 작성
 
-1. 입력을 모읍니다: 확정 PRD(`[사용자 확정]` 요구 목록), `handoff.md`, 기술 조사·ADR, 관련 코드(`packages/shared`, `apps/api/src`, 웹·앱 API 클라이언트, migration). 입력이 확정되지 않았으면 무엇이 빠졌는지 보고하고 멈춥니다.
+1. 입력을 모읍니다: 확정 PRD(`[사용자 확정]` 요구 목록), `handoff.md`, 기술 조사·ADR, 관련 코드(`packages/shared`, 선택한 API의 `apps/api/src` 또는 `apps/api-python/src`, 웹·앱 API 클라이언트, migration). 입력이 확정되지 않았으면 무엇이 빠졌는지 보고하고 멈춥니다.
 2. `docs/specs/TEMPLATE.md`를 복사해 `docs/specs/<에픽 slug>.md`를 만들고 `상태: 초안`으로 둡니다.
 3. **요구 대응표**부터 채웁니다. 모든 `[사용자 확정]` 요구가 화면·API·데이터·티켓 중 하나 이상에 나타나야 합니다.
 4. 데이터 모델, API 계약 초안, 화면 상태와 API 대응, 권한·개인정보, 비기능을 채웁니다. 기존 코드의 패턴(오류 형식 `ApiError`, BFF 경로, migration 실행 방식)을 따르고 새 패턴이 필요하면 ADR 후보로 적습니다.

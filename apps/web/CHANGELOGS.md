@@ -2,6 +2,14 @@
 
 내부 참고용으로 웹 클라이언트의 모든 변경을 공개 여부와 관계없이 기록합니다. 작성 규칙은 [저장소 공통 정책의 변경 기록](../../docs/development/repository-policy.md#변경-기록)을 따르며, 공개 릴리스 노트는 [RELEASES](../../RELEASES.md)에 있습니다.
 
+## 2026-11-07
+
+- Next.js 최소 버전을15.5.29로 올려 알려진 이미지 최적화 Critical과 Server Actions DoS 수정본을 사용합니다. Next의 PostCSS도 수정 버전으로 제한했습니다. 근거: `package.json`, 루트 `package.json`, `docs/work/orchestrator/0017-security-dependencies.md`.
+
+## 2026-10-15
+
+- README의 API 연결 안내를 선택한 NestJS·FastAPI에 공통으로 적용하도록 갱신했습니다. HTTP 계약과 웹 구현은 그대로입니다. 근거: `apps/web/README.md`, `docs/development/api-backends.md`.
+
 ## 2026-10-01
 
 - 개발 서버 포트 기본값 숫자를 없앰: `start`는 `WEB_PORT`가 없으면 `pnpm instance --get WEB_PORT`로 이 checkout 인스턴스 포트를 씀(worktree 직접 실행도 그 슬롯 포트). `.env.example`의 `API_INTERNAL_URL`은 빈 값과 형식 주석, README는 포트 자리표시자와 `pnpm instance` 안내로 바꿈. 근거: `docs/work/0011-harness-adoption-fixes.md`.

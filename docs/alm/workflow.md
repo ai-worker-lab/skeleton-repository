@@ -69,7 +69,7 @@ work item은 사용자에게 보이는 결과인 **에픽**, 한 역할의 작�
 
 `CHANGELOGS.md`는 내부 참고용 전체 변경 기록이고, `RELEASES.md`는 공개용 릴리스 노트입니다. 둘의 역할을 섞지 않습니다.
 
-- 영역별 `CHANGELOGS.md`(`infra/`, `apps/api/`, `apps/web/`, `apps/app/`)는 해당 영역의 모든 변경을 공개·적용 여부와 관계없이 기록합니다. 전용 로그가 없는 영역(`design/`, `packages/`, `docs/`, `.github/`, 루트 설정·정책)과 여러 영역에 걸친 작업의 요약은 루트 `CHANGELOGS.md`에 둡니다.
+- 영역별 `CHANGELOGS.md`(`infra/`, `apps/api/`, `apps/api-python/`, `apps/web/`, `apps/app/`)는 해당 영역의 모든 변경을 공개·적용 여부와 관계없이 기록합니다. 전용 로그가 없는 영역(`design/`, `packages/`, `docs/`, `.github/`, 루트 설정·정책)과 여러 영역에 걸친 작업의 요약은 루트 `CHANGELOGS.md`에 둡니다.
 - 변경 기록 항목은 날짜별 제목(최신순) 아래에 변경 내용과 근거(커밋, work item, 관련 경로)를 적습니다. 공개 릴리스에 포함되면 해당 `RELEASES.md` 버전을 표시합니다.
 - `RELEASES.md`는 사용자에게 실제로 공개한 릴리스만 기록합니다. 각 항목은 버전, 날짜, Git tag, 대상(웹·앱·API 등)과 사용자 관점의 변경 내용을 담고, 내부 구현 세부·미공개 계획·비밀값은 넣지 않습니다.
 - 환경별 배포 시각·결과·복구 정보는 운영 work item이나 배포 플랫폼에 남깁니다.

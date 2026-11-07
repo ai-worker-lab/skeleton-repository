@@ -35,6 +35,7 @@ export default defineConfig([
     '**/dist/',
     '**/.next/',
     '**/.expo/',
+    '**/.venv/',
     '.local/',
     'design/',
     'packages/design-tokens/generated/',
@@ -48,7 +49,7 @@ export default defineConfig([
 
   // Node 실행 코드: API, 공유 패키지, 스크립트, 루트 설정.
   {
-    files: ['apps/api/**/*.ts', 'packages/**/*.{ts,mjs}', 'scripts/**/*.mjs', '*.{js,mjs,cjs}'],
+    files: ['apps/api/**/*.ts', 'packages/**/*.{ts,mjs}', 'scripts/**/*.{mjs,cjs}', '*.{js,mjs,cjs}'],
     languageOptions: { globals: globals.node },
   },
   { files: ['apps/api/test/**/*.ts'], languageOptions: { globals: globals.jest } },

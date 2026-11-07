@@ -1,4 +1,4 @@
-# ADR 0010: CI는 로컬에서 실행하고 GitHub Actions는 CD에 사용
+# ADR 0011: CI는 로컬에서 실행하고 GitHub Actions는 CD에 사용
 
 - 날짜: 2026-10-13
 - 상태: 승인 (사용자 확정)

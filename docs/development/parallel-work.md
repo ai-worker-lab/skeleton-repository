@@ -36,12 +36,12 @@ git worktree add -b work/<NNNN>-<slug> ../app-skeleton-worktrees/<NNNN>-<slug> <
 | `product` | 사용자·시장 조사, 유사 서비스 벤치마킹, 근거 정리, 시나리오·수용 기준을 포함한 PRD 초안([제품 탐색과 PRD](../product/README.md)). 제품 확정 결정은 사용자에게 요청 |
 | `orchestrator` | 둘 이상의 역할이 필요한 작업과 루트 설정·CI·workspace 연결의 분해·위임·의존성 조정·통합 검증, 디자인 기술 검토와 기술 설계·티켓 분해(`docs/specs/`), 라이브러리·오픈소스·SaaS 기술 조사(`docs/references/`) |
 | `infra` | PostgreSQL·Valkey 서비스, Compose, 네트워크와 환경별 인프라 설정 |
-| `api` | 인증·권한·도메인 규칙·트랜잭션·DB schema/migration·HTTP 요청/응답/오류, 합의된 `packages/shared/` API 계약 |
+| `api` | NestJS(`apps/api/`)·FastAPI(`apps/api-python/`)의 인증·권한·도메인 규칙·트랜잭션·DB schema/migration·HTTP 요청/응답/오류, 합의된 `packages/shared/` API 계약 |
 | `web` | Next.js 화면·SSR·브라우저 상호작용·웹 전용 API 소비 |
 | `app` | Expo·React Native 화면·네이티브 동작·모바일 API 소비 |
 | `designer` | 시각 시스템·디자인 토큰 이름·값과 생성물·사용자 흐름·화면 상태와 구현에 필요한 디자인 산출물 |
 
-PRD가 저장소에서 추적 가능한 변경으로 수정될 때 `product`는 확정/제안/미정 상태를 지키며 초안을 제안하고, 사용자가 확정한 요구만 승인된 기준으로 취급합니다. 단일 영역 변경은 해당 agent가 맡고, 여러 영역에 걸치는 변경은 `orchestrator`가 역할과 통합 순서를 정합니다. 각 영역 agent는 소유 경로 밖을 직접 수정하지 않습니다. `packages/shared/` 계약과 root `Makefile`처럼 공용 변경의 소유자를 명확히 정하고, 하위 `AGENTS.md`의 적용 규칙을 따릅니다. 앱 사이 직접 import와 영역에 맞지 않는 의존성은 ESLint `no-restricted-imports`(루트 `eslint.config.mjs`)가 막습니다.
+PRD가 저장소에서 추적 가능한 변경으로 수정될 때 `product`는 확정/제안/미정 상태를 지키며 초안을 제안하고, 사용자가 확정한 요구만 승인된 기준으로 취급합니다. 단일 영역 변경은 해당 agent가 맡고, 여러 영역에 걸치는 변경은 `orchestrator`가 역할과 통합 순서를 정합니다. 각 영역 agent는 소유 경로 밖을 직접 수정하지 않습니다. `packages/shared/` 계약과 root `Makefile`처럼 공용 변경의 소유자를 명확히 정하고, 하위 `AGENTS.md`의 적용 규칙을 따릅니다. JS/TS 앱 사이 직접 import와 영역에 맞지 않는 의존성은 ESLint `no-restricted-imports`(루트 `eslint.config.mjs`)가 막습니다.
 
 디자인 산출물만 필요한 요청은 `jev_route`가 `designer`에게 직접 라우팅합니다. 디자인과 웹·앱 구현이 함께 필요한 복합 작업은 `orchestrator`가 기술 구현 담당자와 Designer 사이의 산출물·핸드오프를 조정합니다. `designer`는 로컬 OpenDesign으로 산출물을 만들며, 새 산출물은 사용자 확인 브리프를 먼저 받고 확인된 브리프에 따라 OpenDesign Cloud 또는 Local Codex로 생성합니다. 승인된 산출물은 `design/<기능>/`의 화면과 `handoff.md`로 인계하고, 웹·앱은 이 인계를 기준으로 통합합니다([OpenDesign 사용 기준](../../design/docs/opendesign.md)). 수작업으로 만든 이미지나 임의 대체물을 제품 자산으로 넣지 않습니다.
 
@@ -50,7 +50,7 @@ PRD가 저장소에서 추적 가능한 변경으로 수정될 때 `product`는 
 
 ## 계약과 병렬화 경계
 
-- API의 HTTP 경로·메서드·요청·응답·오류와 직렬화 가능한 공통 타입의 기준은 API 구현 및 `packages/shared/`입니다. 데이터베이스 접근, 비밀값, UI 상태는 공유 계약에 넣지 않습니다.
+- API의 HTTP 경로·메서드·요청·응답·오류와 직렬화 가능한 공통 타입의 기준은 API 구현 및 `packages/shared/`입니다. 두 백엔드의 선택·검증은 [API 백엔드 선택](api-backends.md)을 따릅니다. FastAPI는 공유 TypeScript 타입을 직접 import하지 않으므로 같은 HTTP 계약을 Python 모델과 통합 테스트에 반영합니다. 데이터베이스 접근, 비밀값, UI 상태는 공유 계약에 넣지 않습니다.
 - 웹·앱의 화면 구조·시각 스타일·상태 표현은 사용자가 승인한 `design/<기능>/` 산출물과 `handoff.md`를 기준으로 한다. 색·간격·모서리·글자 크기 토큰은 `@app-skeleton/design-tokens`가 단일 원본이며 웹·앱·디자인은 그 생성물만 사용한다([ADR 0001](../adr/0001-design-tokens.md)). 토큰 생성기와 workspace 연결은 복합 작업의 통합 담당이 맡는다. 각 플랫폼은 디자인의 화면·에셋을 앱 소유 코드로 옮기며 디자인 도구 내부 파일을 런타임에서 불러오지 않는다. 구현에 필요한 화면 상태가 디자인에 없으면 가장 가까운 승인 화면을 따른다.
 - 화면 데이터·인증·권한·업무 규칙은 실제 API와 `packages/shared/` 계약을 기준으로 한다. 웹·앱은 표현과 상호작용을 담당하며 서버 업무 규칙을 복제하거나 독자 API 계약을 만들지 않는다. 개발용 mock은 확정된 API 계약에 한정하고 실제 사용자 경로에서는 실제 API를 호출한다.
 - API 계약을 바꾸는 기능도 병렬화할 수 있습니다. 먼저 계약 담당자가 경로·메서드·인증 조건·요청/응답 DTO·오류 동작을 정하고 `packages/shared/`에 반영해 기준 커밋으로 통합합니다. 이 짧은 계약 단계가 끝나면 API·웹·앱 담당자가 각 격리 작업공간에서 같은 계약을 기준으로 병렬 구현합니다.

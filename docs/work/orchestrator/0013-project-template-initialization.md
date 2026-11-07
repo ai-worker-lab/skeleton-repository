@@ -98,7 +98,7 @@
 
 ## L3/L4-v2 구현·검증
 
-- 대상: 0013-L2-v2에 따른 현재 작업 브랜치의 CI workflow 제거, ADR 0010 및 연결된 README·AGENTS·검증/배포/이식 안내·PR 템플릿 변경.
+- 대상: 0013-L2-v2에 따른 현재 작업 브랜치의 CI workflow 제거, ADR 0011 및 연결된 README·AGENTS·검증/배포/이식 안내·PR 템플릿 변경.
 - `pnpm verify --fast` 7단계 통과(9.0초, 초기화 회귀 18건 포함). 문서 84개 링크 검사, `pnpm work:scope 0013`, `git diff --check` 통과.
 - `.github/workflows/`에 실행 가능한 YAML workflow가 없음을 확인. 로컬 검증 코드·package scripts·제품 코드는 이전 검증 커밋과 차이 없음.
 - 원격 CI workflow 371762183만 비활성화 후 `disabled_manually` 확인. 저장소 Actions 설정은 `enabled: true`, 기존에 CD workflow가 없어 변경한 CD 정의도 없음.
@@ -110,3 +110,25 @@
 - 2026-10-13: 정책 변경 커밋 `7f2d23c`를 push하고 [PR #1](https://github.com/ai-worker-lab/skeleton-repository/pull/1)의 제목·본문을 최종 범위와 검증 결과로 갱신했다. base `main`, head `work/0013-project-template-initialization`, 상태 `OPEN`, 관련 변경 21개 파일 포함을 확인했다.
 - 해당 커밋의 GitHub check run은 0개이며 원격 CI는 `disabled_manually`, Actions 전체는 `enabled: true`다. 로컬 CI 검증 증적과 검토 PR 전달로 수용 기준을 충족한다.
 - 실제 CD workflow 구현, PR 승인·머지, 배포는 미수행이다. L6/L7의 통합·배포 증적은 담당자가 해당 작업 후 기록한다.
+
+
+## 2026-11-07 최신 main 통합
+
+- 사용자 요청: PR2·PR3 병합 뒤 발생한 충돌을 수정해 기존 PR1에 반영한다. main510709f를 정상 merge하며 이력을 강제로 덮어쓰지 않는다.
+- 이전 범위 중 다른 백엔드를 제외한 부분은 후속 PR2 반영으로 변경한다. NestJS 기본값·FastAPI 선택·Python 잠금 파일·보안 패치와 의존성을 유지하며 초기화 계약을 통합한다.
+- 추가 수용 기준: 두 백엔드의 미리보기·초기화·실패 후 finish, 잘못된 입력·기존 Python 로컬 설정 보호, 저장된 API 선택과 검증 환경의 일치를 확인한다.
+- 긴 이름의 서식 실패는0018과 함께 검증한다. CI는 로컬에서 실행하고 Actions의 CI를 재활성화하거나 실제 배포하지 않는다. 검증 후 PR 검토·병합은 사용자에게 인계한다.
+
+- 2026-11-07: 통합 원본의 Node26.13.0 `pnpm verify --keep-going`9단계 통과(33.2초). 초기화25개, API 실행 도구8개, 보안 회귀4개와 NestJS API9개를 포함한다.
+- 2026-11-07: Node22.23.4·24.18.0에서 초기화/API 도구/보안 회귀37개씩 통과. 독립 검토자는 Node22에서 두 백엔드를 각각40자 이름으로 초기화하고 초기화/API 도구33개씩 재실행해 통과했다. 원본 코드 검토에서 추가 결함은 발견하지 못했다.
+- 2026-11-07: main 대비 앱 manifest·pnpm-lock.yaml·보안 패치 변경 없음. production·전체 audit는 Critical0/High0/Moderate0/Low1로 유지되며 deepmerge 수정판 부재는 보안 관리 문서에 따른다. 변경분 gitleaks 검사에서 발견0건.
+
+- 2026-11-07: FastAPI40자 이름의 실제 finish에서 Python database.py 줄 길이137/E501 오류를 발견했다. 초기화에 Python 서식 처리를 추가하고 API format의 Ruff 순서를 서식→lint 수정으로 바꿔 기존 사본의 finish 복구와 전체 검증을 다시 확인한다.
+
+- 2026-11-07: NestJS40자 이름의 새 사본에서 미리보기 무변경·실제 초기화·fast verify7단계·빌드·full verify9단계·DB9개·production API/Web smoke5개와 웹 프록시를 통과했다. iOS·Android Expo export도 통과했다. Python 서식 보완3파일 반영 후37개 회귀를 다시 통과했으며 테스트 서버·임시 DB는 정리했다.
+- 2026-11-07: Python 서식 보완 뒤 Node22/24의37개 회귀를 다시 통과했다. root manifest의보안버전·패치·lockfile은main과동일하며 변경이 없다.
+
+- 2026-11-07: FastAPI40자 사본에서 셸 API_BACKEND=nestjs로 finish를 재실행해도 저장된fastapi의 uv sync·Prettier·Ruff·fast verify·빌드가 성공했다. 이어 full verify9단계(32.6초), PostgreSQL 테스트16개, production API/Web smoke5개(1.7초)가 통과했다. 최종코드3파일 입력 일치·uv.lock/patch 보존·pnpm-lock namespace만 변경·서버 종료와 임시DB 삭제를 확인했다.
+- 2026-11-07: 독립 검토자가 Python 서식 보완의 순서·실패 중단·저장된 API 환경 전달을 재검토했으며 추가 결함을 발견하지 못했다. 실제 모바일 기기·원격 CD·운영 배포는 실행하지 않았다. 기존 Next ESLint plugin/Pages 경고는 빌드 성공과 구분해 남긴다.
+
+- 2026-11-07: 최종코드의 별도 play-laptop/NestJS/offset30000 사본도 실제 초기화·frozen 설치·서식·fast verify7단계·API/Web 빌드를 통과했다. Node22/24 회귀와 두 백엔드40자 사본 검증을 함께 근거로0018 수용 기준을 확인했다.

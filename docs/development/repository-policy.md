@@ -26,7 +26,7 @@
 - `docs/`: 제품 전체 요구사항, 여러 영역에 걸친 사용자 흐름, 저장소 아키텍처, 공통 개발·배포 가이드.
 - `docs/references/`: 외부 프로젝트·기술·라이선스의 비교와 배경 자료. 출처와 확인일을 표시하고, 저장소의 현재 설정·아키텍처 결정과 구분합니다.
 - `docs/adr/`: 여러 영역이나 저장소 전체에 영향을 주는 결정.
-- `apps/api/docs/`: 백엔드 전용 개발·아키텍처·운영·배포 가이드. 백엔드 전용 결정은 `apps/api/docs/adr/`.
+- `apps/api/docs/`·`apps/api-python/docs/`: 각 백엔드 전용 개발·아키텍처·운영·배포 가이드와 `adr/`. 두 백엔드와 클라이언트가 공유하는 HTTP 계약·선택 방식은 루트 `docs/`에 둡니다.
 - `apps/app/docs/`: 모바일 앱 전용 가이드. 앱 전용 결정은 `apps/app/docs/adr/`.
 - `apps/web/docs/`: 브라우저 웹 전용 가이드. 웹 전용 결정은 `apps/web/docs/adr/`.
 - `design/docs/`: 디자인 원칙과 디자인 작업 가이드. 디자인 전용 결정은 `design/docs/adr/`. OpenDesign 산출물은 `design/`에 유지하며, Markdown을 명시적으로 기준 원본으로 정하고 산출물이 그 문서를 참조하는 경우가 아니면 내용을 Markdown으로 중복 작성하지 않습니다.
@@ -56,7 +56,7 @@
 ## 변경 기록
 
 - `CHANGELOGS.md`는 내부 참고용 전체 변경 기록입니다. 공개·배포 여부와 관계없이 저장소의 모든 변경을 기록합니다. 커밋 전 작업도 기록할 수 있으며, 커밋 뒤에는 해당 커밋을 연결합니다.
-- 영역별 변경은 해당 영역의 로그에 기록합니다: `infra/CHANGELOGS.md`, `apps/api/CHANGELOGS.md`, `apps/web/CHANGELOGS.md`, `apps/app/CHANGELOGS.md`. 전용 로그가 없는 `design/`, `packages/`, `docs/`, `.github/`, 루트 설정·정책 변경은 루트 `CHANGELOGS.md`에 기록합니다. 여러 영역에 걸친 작업은 루트 로그에 한 줄로 요약하고, 세부 내용은 영역 로그에 둡니다.
+- 영역별 변경은 해당 영역의 로그에 기록합니다: `infra/CHANGELOGS.md`, `apps/api/CHANGELOGS.md`, `apps/api-python/CHANGELOGS.md`, `apps/web/CHANGELOGS.md`, `apps/app/CHANGELOGS.md`. 전용 로그가 없는 `design/`, `packages/`, `docs/`, `.github/`, 루트 설정·정책 변경은 루트 `CHANGELOGS.md`에 기록합니다. 여러 영역에 걸친 작업은 루트 로그에 한 줄로 요약하고, 세부 내용은 영역 로그에 둡니다.
 - 변경 기록 항목은 날짜별 제목(`## YYYY-MM-DD`, 최신순) 아래에 둡니다. 각 항목에 무엇이 바뀌었는지와 근거(커밋, work item, 관련 경로 중 해당하는 것)를 적고, 공개 릴리스에 포함된 경우 해당 `RELEASES.md` 버전을 표시합니다.
 - 루트 `RELEASES.md`는 공개용 릴리스 노트입니다. 사용자에게 실제로 공개한 릴리스만 기록하며, 버전·날짜·Git tag·대상(웹·앱·API 등)과 사용자 관점의 변경 내용을 적습니다. 내부 구현 세부·미공개 계획·비밀값은 넣지 않습니다. GitHub Releases를 사용할 경우 설명은 같은 tag의 `RELEASES.md` 항목을 원본으로 합니다.
 - 환경별 배포 시각·결과·복구 정보는 운영 work item이나 배포 플랫폼에 기록합니다. 코드, 설정, 설치 안내, 현재 아키텍처는 실행 가능한 원본이나 범위별 기준 문서에 두고, 변경 기록에는 무엇이 바뀌었는지만 적습니다.

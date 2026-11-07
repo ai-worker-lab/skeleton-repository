@@ -4,14 +4,15 @@
 
 ## 주요 문서
 
-- [ADR 0010 로컬 CI와 Actions CD 분리](adr/0010-local-ci-actions-cd.md) — CI의 Actions 사용을 없애고 CD 실행 경계를 보존
-
 - [새 프로젝트 시작 안내](development/new-project.md) — 공통 스택 복제·초기화 미리보기·실패 복구·프로젝트별 설정과 검증
 - [저장소 공통 정책](development/repository-policy.md) — 언어·기준 정보·문서 배치·ADR·진입점·변경 기록
 - [제품 탐색과 PRD](product/README.md) — PRD 확정 전 유사 서비스 벤치마킹과 라이브러리·오픈소스·SaaS 기술 조사, [PRD 템플릿](product/TEMPLATE.md)·[벤치마킹 템플릿](product/research/TEMPLATE.md)·[기술 조사 템플릿](references/TEMPLATE.md)
 - [기술 설계와 티켓 분해](specs/README.md) — PRD·디자인 인계를 받아 `orchestrator`가 설계 문서(`docs/specs/`)를 쓰고 역할별 검토·사용자 승인 후 계약 → 병렬 구현 → 통합 티켓으로 나누는 절차, [설계 템플릿](specs/TEMPLATE.md)
 - [로컬 개발 환경](development/local-environment.md) — PostgreSQL/Valkey Compose와 로컬 웹·모바일 앱·API 실행, worktree별 로컬 인스턴스, 로그 조회
+- [선택형 FastAPI 기술 설계](specs/optional-fastapi.md) — Python API 추가 범위와 HTTP 계약·검증 설계
+- [API 백엔드 선택](development/api-backends.md) — NestJS 또는 Python + FastAPI 선택, 공통 명령, HTTP 계약과 전환 범위
 - [검증 루프](development/verification.md) — `pnpm verify`·`pnpm smoke` 로컬 CI와 GitHub Actions CD의 경계·완료 보고 전 확인 범위
+- [보안 의존성 관리](development/dependency-security.md) — 제한된 override·패치의 이유와 감사 한계
 - [환경과 비밀값 관리](development/environment-secrets.md) — local/dev/prod 격리와 서비스별 설정 소유권
 - [영역별 병렬 개발](development/parallel-work.md) — 자동 발견되는 OMP 역할, `jev_route` 직접 라우팅, 소유 경로(`owns`), 복합 작업의 `orchestrator` 통합
 - [work item 실행기](development/agent-runner.md) — [WORKFLOW.md](../WORKFLOW.md) 정책으로 착수 가능한 티켓마다 worktree와 코딩 에이전트를 실행하는 `pnpm work:run`
@@ -32,6 +33,8 @@
 - [ADR 0007 저장소 work item 실행기](adr/0007-repository-work-item-runner.md) — 저장소 work item을 제어 평면으로, 브랜치를 착수 점유로, 에이전트 명령을 설정으로 두는 결정
 - [ADR 0008 worktree별 로컬 인스턴스](adr/0008-worktree-local-instances.md) — worktree마다 포트 슬롯·Compose project·볼륨을 나누는 결정
 - [ADR 0009 work item을 역할별 폴더에 둠](adr/0009-work-item-role-folders.md) — 에픽은 `docs/work/epics/`, 티켓은 `docs/work/<역할>/`에 두고 계층은 계속 필드로 표현하는 결정
+- [ADR 0010 API 백엔드 선택](adr/0010-selectable-api-backends.md) — NestJS 기본값을 유지하며 FastAPI를 공통 개발·검증 명령에 연결하는 제안
+- [ADR 0011 로컬 CI와 Actions CD 분리](adr/0011-local-ci-actions-cd.md) — CI를 로컬에서 실행하고 Actions의 CD 실행 경계를 보존
 - [외부 서비스·도구 의존](architecture/external-dependencies.md) — 현재 사용 중이거나 계획된 외부 SaaS·도구와 기준 위치
 - [자주 묻는 질문](faq.md) — 저장소 구조, 개발 도구, 로컬 실행, 배포 목표, 언어 정책
 - [배포 대상 아키텍처](architecture/deployment-target.md) — Vercel, Supabase, Oracle ARM 목표 구성 및 미구현 범위
@@ -46,7 +49,7 @@
 
 - 제품·여러 영역 공통 문서: `docs/`(PRD·벤치마킹 `docs/product/`, 기술 설계 `docs/specs/`)
 - 여러 영역에 영향을 주는 ADR: `docs/adr/`
-- 백엔드 전용 문서와 ADR: `apps/api/docs/`, `apps/api/docs/adr/`
+- 백엔드 전용 문서와 ADR: `apps/api/docs/`·`apps/api/docs/adr/` 또는 `apps/api-python/docs/`·`apps/api-python/docs/adr/`
 - 모바일 앱 전용 문서와 ADR: `apps/app/docs/`, `apps/app/docs/adr/`
 - 브라우저 웹 전용 문서와 ADR: `apps/web/docs/`, `apps/web/docs/adr/`
 - 인프라 전용 문서와 ADR: `infra/docs/`, `infra/docs/adr/`

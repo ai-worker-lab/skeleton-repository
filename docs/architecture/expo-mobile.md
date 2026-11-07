@@ -19,8 +19,8 @@ Expo Router route 파일은 화면 전환과 URL/Deep Link 경계만 담당한�
 
 ## API와 보안 경계
 
-- 앱은 `src/lib/api/client.ts`를 통해 Nest API를 호출하고 `@app-skeleton/shared`의 경로·타입을 사용한다. 오류는 API의 `{code, message}` 형태를 그대로 해석한다.
-- Expo Router의 route 보호는 client navigation UX일 뿐 보안 경계가 아니다. 권한이 필요한 기능이 생기면 실제 권한 경계는 NestJS에 둔다.
+- 앱은 `src/lib/api/client.ts`를 통해 선택한 API를 호출하고 `@app-skeleton/shared`의 경로·타입을 사용한다. 오류는 API의 `{code, message}` 형태를 그대로 해석한다.
+- Expo Router의 route 보호는 client navigation UX일 뿐 보안 경계가 아니다. 권한이 필요한 기능이 생기면 실제 권한 경계는 [선택한 백엔드](../development/api-backends.md)에 둔다.
 - `EXPO_PUBLIC_*` 값은 앱 번들에 포함되는 공개 설정이다. 비밀 키나 서명 자격 증명을 넣지 않는다. 민감한 값을 기기에 저장해야 하면 AsyncStorage가 아니라 `expo-secure-store` 같은 암호화 저장소를 사용한다.
 - 색·간격·모서리·글자 크기는 `@app-skeleton/design-tokens`의 객체만 사용한다([사용법](../../packages/design-tokens/docs/usage.md)).
 

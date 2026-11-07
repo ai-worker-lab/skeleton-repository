@@ -19,7 +19,7 @@ help:
 	  '  up / down / restart / status       전체 로컬 서비스(이 checkout 인스턴스)' \
 	  '  infra-up / infra-down / infra-restart  로컬 PostgreSQL + Valkey' \
 	  '  infra-status / infra-logs              로컬 인프라 상태와 로그' \
-	  '  api-up / api-down / api-restart       NestJS 개발 서버' \
+	  '  api-up / api-down / api-restart       선택한 API 개발 서버(api.config.json 또는 API_BACKEND)' \
 	  '  web-up / web-down / web-restart       Next.js 개발 서버' \
 	  '  app-up / app-down / app-restart       Expo 개발 서버' \
 	  '  instance-destroy CONFIRM=1            연결된 worktree 인스턴스의 컨테이너·볼륨·PM2 삭제(주 checkout 거부)' \
@@ -69,6 +69,7 @@ infra-logs:
 
 # PM2 restart는 처음 시작할 때의 환경을 재사용하므로, 지우고 다시 시작해 ecosystem.config.cjs가 현재 인스턴스 값을 읽게 합니다.
 api-up:
+	@node scripts/instance.mjs >/dev/null
 	pnpm --filter @app-skeleton/shared build
 	@$(PM2) delete app-skeleton-api >/dev/null 2>&1 || true
 	$(PM2) start ecosystem.config.cjs --only app-skeleton-api

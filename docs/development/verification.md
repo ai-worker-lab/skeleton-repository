@@ -11,9 +11,11 @@ CI는 개발자 또는 에이전트의 로컬 실행 환경에서 수행하며 G
 | `pnpm verify` | `test:init → tokens:check → work:check → docs:check → design:check → lint → typecheck → build → test` |
 | `pnpm verify --fast` | `test:init → tokens:check → work:check → docs:check → design:check → lint → typecheck` |
 
+- API 단계는 [백엔드 선택](api-backends.md)에 따라 실행됩니다. 기본값은 NestJS이며 `API_BACKEND=fastapi pnpm verify`는 Python API와 웹·앱·공용 패키지를 검사합니다. Python 3.12와 uv를 준비하고 `API_BACKEND=fastapi pnpm api sync`로 잠긴 의존성을 설치합니다.
 - 기본은 첫 실패에서 멈추고 남은 단계를 `건너뜀`으로 표시합니다. 모든 단계 결과를 보려면 `--keep-going`을 붙입니다.
 - `test:init`은 임시 Git 복사본에서 초기화 CLI의 입력·미리보기·식별자·포트·기존 설정 보호·검증 재시도를 검사합니다. 실제 설치·빌드는 아래 CI 절차의 초기화 복사본 검증으로 확인합니다.
 - `.local/instance.env`([인스턴스 설정](local-environment.md))가 있으면 그 값을 환경변수로 보충합니다. 이미 설정된 환경변수가 우선합니다. `test` 단계의 API 통합 테스트는 이 값의 `TEST_DATABASE_URL`로 현재 작업공간의 PostgreSQL에 연결합니다.
+- `test`에는 Expo 의존성의 이미지 읽기·경로 탐색·URL 처리 회귀 검사(`scripts/security-dependencies.test.mjs`)가 포함됩니다. [보안 의존성 관리](dependency-security.md)를 참고합니다.
 - `test`는 실제 PostgreSQL이 필요합니다. 먼저 `make infra-up`으로 DB를 띄웁니다.
 - `design:check`는 `design/` 산출물의 색 리터럴과 인계 문서를 검사하고, 로컬 OpenDesign이 실행 중일 때만 `od lint`를 함께 돌립니다([OpenDesign 사용 기준](../../design/docs/opendesign.md#검사)). OpenDesign이 없는 실행 환경에서는 `od lint`를 건너뛰며 이를 검증 기록에 구분합니다.
 
@@ -36,10 +38,11 @@ CI는 개발자 또는 에이전트의 로컬 실행 환경에서 수행하며 G
 
 ## CI
 
-CI는 GitHub Actions 밖에서 실행합니다. 기본 실행 환경은 개발자 또는 에이전트의 로컬 checkout이며, 검증 원본은 `package.json`의 명령과 `scripts/verify.mjs`입니다. PR·push 이벤트로 검증 workflow를 실행하지 않습니다([ADR 0010](../adr/0010-local-ci-actions-cd.md)).
+CI는 GitHub Actions 밖에서 실행합니다. 기본 실행 환경은 개발자 또는 에이전트의 로컬 checkout이며, 검증 원본은 `package.json`의 명령과 `scripts/verify.mjs`입니다. PR·push 이벤트로 검증 workflow를 실행하지 않습니다([ADR 0011](../adr/0011-local-ci-actions-cd.md)).
 
 ```sh
 pnpm install --frozen-lockfile
+pnpm api sync                    # 저장된 API 선택에 맞춰 의존성 준비
 make up
 pnpm verify --keep-going
 pnpm smoke
@@ -47,10 +50,12 @@ pnpm work:scope 0013 --base origin/main # 실제 티켓 번호와 PR 기준 브�
 make down
 ```
 
+공유 HTTP 계약이나 백엔드 선택 도구를 바꾸면 NestJS·FastAPI를 각각 선택해 같은 로컬 검증과 smoke를 실행합니다. FastAPI에는 Python 3.12와 uv가 필요합니다. 일시적으로 선택할 때는 `API_BACKEND=fastapi`를 `pnpm api sync`, `make up`, `pnpm verify`에 함께 지정하고 선택 변경 후 API를 다시 시작합니다([전환 방법](api-backends.md)). 두 백엔드 테스트는 실제 PostgreSQL에 연결하며 실행하지 않은 조합은 미검증으로 기록합니다.
+
 - smoke 브라우저는 최초 한 번 `pnpm exec playwright install chromium`으로 설치합니다. `make down`은 데이터 볼륨을 보존합니다.
 - PR에 검증한 커밋 또는 변경 식별자, Node/pnpm 버전, 실행 명령·결과·미실행 범위를 남깁니다. 코드를 고쳤으면 영향받는 검증을 다시 수행합니다. 로컬 검증을 건너뛰거나 실패를 성공으로 기록하지 않습니다.
-- Node.js 지원 대상은 22·24·26이고 로컬 기본값은 `.nvmrc`입니다. 기본 버전 외 호환성을 주장하려면 각 버전의 로컬 실행 결과를 따로 기록합니다. Actions matrix가 대신 확인한다고 가정하지 않습니다.
-- 초기화 CLI나 치환 규칙을 바꾸면 검증 대상 변경이 포함된 새 복사본에서 [새 프로젝트 시작 안내](new-project.md)를 실행합니다. 최대 40자 이름(`project-abcdefghijklmnopqrstuvwxyz-12345`)·포트 오프셋 12173으로 초기화하고 `--finish`, `make up`, `pnpm verify`, `pnpm smoke`를 확인한 뒤 종료합니다. 원본 checkout을 초기화하지 않습니다.
+- Node.js 허용 범위는 루트 `package.json`의 `engines.node`(22.13 이상인 22계열·24.3 이상인 24계열·26계열), 로컬 기본값은 `.nvmrc`입니다. 기본 버전 외 호환성을 주장하려면 각 버전의 로컬 실행 결과를 따로 기록합니다. Actions matrix가 대신 확인한다고 가정하지 않습니다.
+- 초기화 CLI나 치환 규칙을 바꾸면 검증 대상 변경이 포함된 새 복사본에서 [새 프로젝트 시작 안내](new-project.md)를 실행합니다. 허용 상한인 40자 이름(`project-abcdefghijklmnopqrstuvwxyz-12345`)·포트 오프셋 12173으로 초기화하고 `--finish`, `make up`, `pnpm verify`, `pnpm smoke`를 확인한 뒤 종료합니다. API 선택에 영향을 주는 변경이면 `--api nestjs`·`--api fastapi`를 별도 복사본에서 확인합니다. 원본 checkout을 초기화하지 않습니다.
 
 ### CD와의 경계
 
@@ -73,7 +78,7 @@ work item을 `검증` 상태로 올리거나 완료를 보고하기 전에 변�
 | 문서·work item만 | `pnpm verify --fast` |
 | 디자인(`design/`, 토큰 원본) | `pnpm tokens:generate`, `pnpm design:sync`, `pnpm design:check --require-lint`, `pnpm verify --fast`. 미리보기는 1280px·390px에서 직접 확인합니다([OpenDesign 사용 기준](../../design/docs/opendesign.md)). |
 | 스크립트·설정·`packages/*` | `pnpm verify` |
-| API(`apps/api/`) | `make infra-up` 후 `pnpm verify`, `make up` 후 `pnpm smoke` |
+| API(`apps/api/`·`apps/api-python/`) | 해당 백엔드를 선택하고 `make infra-up` 후 `pnpm verify`, `make up` 후 `pnpm smoke`. 공유 HTTP 계약·선택 도구 변경은 두 백엔드에서 각각 확인 |
 | 웹(`apps/web/`) | `pnpm verify`, `make up` 후 `pnpm smoke`. 바꾼 화면은 브라우저로 직접 확인합니다([웹 규칙](../../apps/web/AGENTS.md)). |
 | 앱(`apps/app/`) | `pnpm verify`. 화면 동작은 [기기 테스트](../../apps/app/docs/device-testing.md)로 확인합니다(자동 UI 테스트 없음). |
 | 인프라·`Makefile`·PM2 설정 | `make up` 후 `make status`, `pnpm smoke` |

@@ -1,6 +1,6 @@
 # 새 프로젝트 시작 안내
 
-모든 프로젝트는 NestJS API·Next.js 웹·Expo 앱과 공유 계약·디자인 토큰을 함께 사용합니다. 구성의 원본은 루트 `package.json`, `pnpm-workspace.yaml`, `apps/*/package.json`입니다. 초기화는 이 구성을 줄이거나 프레임워크를 교체하지 않습니다.
+프로젝트는 NestJS API(기본) 또는 FastAPI(선택), Next.js 웹·Expo 앱과 공유 계약·디자인 토큰으로 시작합니다. 구성의 원본은 루트 `package.json`, `pnpm-workspace.yaml`, `apps/*/package.json`, API 선택은 `api.config.json`입니다. 초기화는 웹·앱·공유 패키지를 유지하고 사용할 API를 저장합니다.
 
 ## 복제와 초기화
 
@@ -8,11 +8,13 @@ GitHub **Use this template**로 새 저장소를 만들고 clone하는 방법은
 
 ```sh
 node scripts/init-project.mjs --help
-node scripts/init-project.mjs --name my-service --repo my-org/my-service --port-offset 2000 --dry-run
-node scripts/init-project.mjs --name my-service --repo my-org/my-service --port-offset 2000
+node scripts/init-project.mjs --name my-service --repo my-org/my-service --port-offset 2000 --api nestjs --dry-run
+node scripts/init-project.mjs --name my-service --repo my-org/my-service --port-offset 2000 --api nestjs
 ```
 
 `--repo`는 새 GitHub `origin`(HTTPS·SSH)이 설정되어 있으면 생략할 수 있습니다. 원격이 없거나 템플릿 원격이면 명시해야 합니다. 이 옵션은 파일 속 저장소 식별자만 바꾸며 Git 원격·GitHub 저장소를 만들거나 수정하지 않습니다. `git remote -v`로 새 저장소를 가리키는지 확인하세요.
+
+Python API를 쓰려면 `--api fastapi`를 지정하고 Python 3.12와 uv를 준비합니다. `--api`를 생략하면 `api.config.json`의 선택을 유지합니다. 초기화와 `--finish` 검증은 저장된 선택을 사용하며 셸의 임시 `API_BACKEND`를 무시합니다. 일반 개발 명령의 환경변수 우선순위는 [API 백엔드 선택](api-backends.md)을 따릅니다.
 
 GitHub 템플릿 기능을 쓸 수 없으면 기존 템플릿 checkout에서 추적 파일만 새 빈 폴더로 복사합니다. 개인 `.env`, `.git`, 설치된 의존성은 복사하지 않습니다.
 
@@ -36,7 +38,10 @@ git remote add origin https://github.com/my-org/my-service.git
 | 프로젝트 이름 | 패키지 범위, DB 사용자/이름 예시, Compose·PM2·Expo 이름/scheme, 디자인 시스템과 문서의 템플릿 식별자를 치환 |
 | 저장소 | 템플릿 `owner/name`을 새 값으로 치환. 소유자는 추정하지 않음 |
 | 로컬 포트 | `infra/local/.env.example`의 다섯 키만 기본 포트 + 오프셋으로 수정. 다른 숫자와 컨테이너 내부 포트는 유지 |
-| 기존 로컬 설정·추적 파일 수정 | 적용 전 실패. 내용을 출력하거나 자동 삭제/덮어쓰기하지 않음 |
+| API 선택 | `--api` 또는 기존 `api.config.json`의 `backend`를 저장. FastAPI를 선택하면 검증 전에 `pnpm api sync`로 Python 의존성 설치 |
+| Python 잠금 파일 | `apps/api-python/uv.lock`은 치환하지 않음. Python 패키지 이름 `skeleton-api`도 서비스 이름과 독립적으로 유지 |
+| pnpm 잠금 파일·보안 패치 | `pnpm-lock.yaml`은 workspace 패키지 범위만 치환. `patches/`는 치환하지 않아 패치 내용과 lock hash를 유지 |
+| 기존 로컬 설정·추적 파일 수정 | `apps/api-python/.env`를 포함해 적용 전 실패. 내용을 출력하거나 자동 삭제/덮어쓰기하지 않음 |
 | 바이너리·심볼릭 링크·추적되지 않은 파일 | 치환하지 않음 |
 | 초기화 도구·계약 테스트 | 원본 템플릿 식별자를 유지. `--finish` 마무리 재시도와 회귀 검사를 위해 보존 |
 
@@ -46,13 +51,13 @@ git remote add origin https://github.com/my-org/my-service.git
 
 ## 실패 복구와 검증
 
-초기화가 적용된 후 설치·검증이 실패하면 원인을 해결하고 다음 명령을 실행합니다. 같은 이름으로 초기화를 반복하지 않습니다. 이름 치환으로 달라진 코드 줄 길이를 맞추기 위해 설치 후 Prettier 서식을 정규화하며, 재시도에서도 현재 파일의 서식을 정규화합니다.
+초기화가 적용된 후 설치·검증이 실패하면 원인을 해결하고 다음 명령을 실행합니다. 같은 이름으로 초기화를 반복하지 않습니다. 이름 치환으로 달라진 코드 줄 길이를 맞추기 위해 설치 후 Prettier와 선택한 Python 백엔드의 Ruff로 서식을 정규화하며, 재시도에서도 현재 파일의 서식을 정규화합니다.
 
 ```sh
 node scripts/init-project.mjs --finish
 ```
 
-이 명령은 이름·포트를 다시 치환하지 않고 `pnpm install --frozen-lockfile`, `pnpm exec prettier --write .`, `pnpm verify --fast`, `pnpm build`를 실행합니다. `--no-verify`로 적용만 한 경우에도 이 검증이 남아 있습니다. 초기화 전에 로컬 설정이 생겼다면 서비스를 중지하고 설정을 별도로 보관하거나 새 clone을 사용하세요.
+이 명령은 이름·포트를 다시 치환하지 않고 `pnpm install --frozen-lockfile`, FastAPI 선택 시 `pnpm api sync`(`uv sync --locked`), `pnpm exec prettier --write .`, FastAPI 선택 시 `pnpm api format`(Ruff 서식 처리 후 lint 자동 수정), `pnpm verify --fast`, `pnpm build`를 실행합니다. 모든 단계에서 `api.config.json`의 API 선택을 강제합니다. `--no-verify`로 적용만 한 경우에도 이 검증이 남아 있습니다. 초기화 전에 로컬 설정이 생겼다면 서비스를 중지하고 설정을 별도로 보관하거나 새 clone을 사용하세요. 초기화 도구는 완료 후에도 삭제하지 않습니다.
 
 ```sh
 pnpm exec playwright install chromium
@@ -64,7 +69,7 @@ git add -A
 git commit -m "프로젝트 초기화"
 ```
 
-이 검증은 로컬 개발자·에이전트 환경에서 실행합니다. GitHub Actions에는 CI를 등록하지 않고 프로젝트의 CD 용도로 사용합니다([실행 경계](verification.md#ci)). 전체 검증에는 실제 PostgreSQL을 쓰는 API 테스트가 포함됩니다. Expo는 타입 검사와 개발 서버 시작까지 확인하고, iOS·Android 실제 동작은 [기기 테스트](../../apps/app/docs/device-testing.md)로 별도 확인합니다. 종료할 때 `make down`은 DB 볼륨을 보존합니다.
+이 검증은 로컬 개발자·에이전트 환경에서 실행합니다. GitHub Actions에는 CI를 등록하지 않고 프로젝트의 CD 용도로 사용합니다([실행 경계](verification.md#ci)). 전체 검증에는 실제 PostgreSQL을 쓰는 선택한 API 테스트가 포함됩니다. Expo 타입 검사·개발 서버 시작과 iOS·Android 실제 동작 검증은 구분하며, 기기 동작은 [기기 테스트](../../apps/app/docs/device-testing.md)로 별도 확인합니다. 종료할 때 `make down`은 DB 볼륨을 보존합니다.
 
 ## 프로젝트별로 정할 내용
 
