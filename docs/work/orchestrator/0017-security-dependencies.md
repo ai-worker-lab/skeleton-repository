@@ -16,7 +16,7 @@
 - [x] Next.js의 알려진 Critical을 포함해 수정 가능한 production 의존성 취약점을 해소하고 남은 한계를 명시한다.
 - [x] 기존 프레임워크 메이저와 앱 SDK 호환성을 유지한다.
 - [x] 전체 검증·API/웹 smoke·앱 번들 검증으로 주요 실행 경로를 확인한다.
-- [ ] 변경·검증·원격 PR 상태를 기록하고 기존 play-laptop 초안을 보존한다.
+- [x] 변경·검증·원격 PR 상태를 기록하고 기존 play-laptop 초안을 보존한다.
 
 ## 범위
 
@@ -41,3 +41,4 @@
 - 2026-11-07: PM2 7.0.4로 API·웹을 기동하고 PostgreSQL 연결을 포함한 pnpm smoke5개 통과(Chromium, 웹1280px·390px). 최초 실행은 서버 준비 전 연결과 브라우저 실행 파일 부재로 중단돼 준비 완료·Chromium 설치 후 재실행했다.
 - 2026-11-07: 새 임시 사본을 play-laptop/NestJS/port-offset30000으로 초기화해 설치·fast verify6단계·API/Web build·보안 회귀4개를 통과했다. 패치가 보존·적용되고 lockfile은 패키지 namespace만 바뀌는 것을 확인했다. 긴 이름에서 발견한 별도 서식 문제는0018에 분리했다.
 - 2026-11-07: 검증용 API·웹·이 저장소의 PostgreSQL/Valkey를 종료했다. DB 볼륨과 다른 프로젝트의 실행 서비스는 보존했다.
+- 2026-11-07: 구현 커밋 c7ad22b를 work/0017-security-dependencies에 push하고 원격 HEAD 일치를 확인했다. [PR3](https://github.com/ai-worker-lab/skeleton-repository/pull/3)을 main 대상으로 열었다. 최종 CI 결과는 PR의 checks에서 확인하며 사람의 검토·병합을 기다린다. 자동 병합·배포는 하지 않았다.

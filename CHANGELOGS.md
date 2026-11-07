@@ -6,7 +6,7 @@
 
 ## 2026-11-07
 
-- 웹 Next15.5.29·API Nest11.2.8·Expo54.0.38과 보안 수정 간접 의존성을 반영했습니다. PM2는 보안 수정이 제공되는7.0.4로 갱신하고, query-string7의 ESM decoder 연결을 한 줄 패치했습니다. 근거: [보안 의존성 관리](docs/development/dependency-security.md), `docs/work/orchestrator/0017-security-dependencies.md`.
+- 웹 Next15.5.29·API Nest11.2.8·Expo54.0.38과 보안 수정 간접 의존성을 반영했습니다. PM2는 보안 수정이 제공되는7.0.4로 갱신하고, query-string7의 ESM decoder 연결을 한 줄 패치했습니다. 근거: [보안 의존성 관리](docs/development/dependency-security.md), `docs/work/orchestrator/0017-security-dependencies.md`, 커밋 c7ad22b, [PR3](https://github.com/ai-worker-lab/skeleton-repository/pull/3).
 - 초기화 검증에서 발견한 긴 프로젝트 이름의 서식 실패는 별도 분류 대기 항목 `docs/work/orchestrator/0018-initializer-formatting.md`로 기록했습니다.
 
 ## 2026-10-15
